@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Asignar Testigos</title>
+</head>
+
+<body>
+    <h1>Asignar Testigos</h1>
+
+    <!-- Formulario para agregar un nuevo testigo -->
+    <form method="post" action="{{ url_for('asignar_testigos') }}">
+        <h2>Agregar Testigo</h2>
+        <label for="numero_documento">Número de Documento:</label>
+        <input type="text" id="numero_documento" name="numero_documento" required><br>
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required><br>
+
+        <label for="tipo_persona">Tipo de Persona:</label>
+        <select id="tipo_persona" name="tipo_persona" required>
+            <option value="Estudiante">Estudiante</option>
+            <option value="Profesor">Profesor</option>
+        </select><br>
+
+        <button type="submit" name="agregar_testigo">Agregar Testigo</button>
+    </form>
+
+    <!-- Formulario para asignar testigo a una mesa -->
+    <form method="post" action="{{ url_for('asignar_testigos') }}">
+        <h2>Asignar Testigo a una Mesa</h2>
+        <label for="testigo_id">Seleccionar Testigo:</label>
+        <select id="testigo_id" name="testigo_id" required>
+            {% for testigo in testigos %}
+            <option value="{{ testigo.id }}">{{ testigo.nombre }} ({{ testigo.numero_documento }})</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="mesa_numero">Seleccionar Mesa:</label>
+        <select id="mesa_numero" name="mesa_numero" required>
+            {% for asignacion in asignaciones %}
+            <option value="{{ asignacion.mesa_numero }}">{{ asignacion.mesa_numero }}</option>
+            {% endfor %}
+        </select><br>
+
+        <button type="submit" name="asignar_testigo">Asignar Testigo</button>
+    </form>
+
+    <!-- Mostrar asignaciones realizadas -->
+    <h2>Asignaciones Realizadas</h2>
+    {% if asignaciones %}
+    <table>
+        <thead>
+            <tr>
+                <th>Testigo</th>
+                <th>Mesa Número</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asignacion in asignaciones %}
+            <tr>
+                <td>{{ asignacion.testigo.nombre }} ({{ asignacion.testigo.numero_documento }})</td>
+                <td>{{ asignacion.mesa_numero }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No se han realizado asignaciones todavía.</p>
+    {% endif %}
+</body>
+
+</html>

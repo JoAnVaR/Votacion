@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Votación</title>
+</head>
+
+<body>
+    <h1>Bienvenido al Sistema de Votación</h1>
+    <a href="{{ url_for('registro_estudiante') }}">Registrar Estudiante</a><br>
+    <a href="{{ url_for('asignar_testigos') }}">Registrar Testigo</a><br>
+    <a href="{{ url_for('registro_candidato') }}">Registrar Candidato</a><br>
+    <a href="{{ url_for('sorteo_jurados') }}">Sorteo de Jurados</a><br>
+    <a href="{{ url_for('poblar_datos') }}">Poblar Base de Datos con Datos de Prueba</a><br>
+    <a href="{{ url_for('asignar_mesas') }}">Asignar Mesas a Grados</a><br>
+    <a href="{{ url_for('reemplazo_jurados') }}">Reemplazo de Jurados</a>
+</body>
+
+</html>

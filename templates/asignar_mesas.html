@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Asignar Mesas a Grados</title>
+</head>
+
+<body>
+    <h1>Asignar Mesas a Grados</h1>
+
+    <!-- Formulario para asignar mesas a grados -->
+    <form method="post" action="{{ url_for('asignar_mesas') }}">
+        <label for="grado">Seleccionar Grado y Sección:</label>
+        <select id="grado" name="grado" required>
+            {% for grado, seccion in grados_secciones %}
+            <option value="{{ grado }}|{{ seccion }}">{{ grado }} - {{ seccion }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="mesa_numero">Número de Mesa:</label>
+        <input type="text" id="mesa_numero" name="mesa_numero" required><br>
+
+        <button type="submit">Asignar Mesa</button>
+    </form>
+
+    <!-- Mostrar asignaciones realizadas -->
+    <h2>Asignaciones Realizadas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Grado y Sección</th>
+                <th>Mesa</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asignacion in asignaciones %}
+            <tr>
+                <td>{{ asignacion.grado }} - {{ asignacion.seccion }}</td>
+                <td>{{ asignacion.mesa_numero }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

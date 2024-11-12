@@ -1,0 +1,17 @@
+venv\Scripts\activate
+
+powershell
+$env:FLASK_APP="app.py"
+
+
+flask shell
+>>> from app import db
+>>> db.create_all()
+>>> exit()
+
+
+cd C:\Users\JordyA\Documents\phyton
+
+
+venv\Scripts\activate
+python app.py

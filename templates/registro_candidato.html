@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Candidatos</title>
+</head>
+
+<body>
+    <h1>Registro de Candidatos</h1>
+    <form method="get">
+        <input type="text" name="search_query" placeholder="Buscar por nombre o documento" value="{{ search_query }}">
+        <input type="submit" value="Buscar">
+    </form>
+
+    <form method="post">
+        <label for="id_estudiante">Estudiante:</label>
+        <select id="id_estudiante" name="id_estudiante" required>
+            {% for estudiante in estudiantes %}
+            <option value="{{ estudiante.id }}">{{ estudiante.nombre }} - {{ estudiante.numero_documento }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="propuesta">Propuesta:</label>
+        <textarea id="propuesta" name="propuesta" required></textarea><br>
+
+        <input type="submit" value="Registrar">
+    </form>
+</body>
+
+</html>
