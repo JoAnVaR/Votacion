@@ -1,5 +1,5 @@
 #Importacion y configuracion inicial
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -37,7 +37,7 @@ class AsignacionMesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     grado = db.Column(db.String(20), nullable=False)
     seccion = db.Column(db.String(10), nullable=False)
-    mesa_numero = db.Column(db.String(20), nullable=False)  # Guardamos solo el número de mesa por ahora
+    mesa_numero = db.Column(db.String(20), nullable=False)
 
 class Jurado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -78,14 +78,15 @@ class Candidato(db.Model):
     seccion = db.Column(db.String(10), nullable=False)
     propuesta = db.Column(db.Text, nullable=False)
 
+
 class Reemplazo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jurado_original_id = db.Column(db.Integer, db.ForeignKey('jurado.id'), nullable=False)
+    jurado_original = db.relationship('Jurado', foreign_keys=[jurado_original_id])
     jurado_reemplazo_id = db.Column(db.Integer, db.ForeignKey('jurado.id'), nullable=False)
-    razon = db.Column(db.String(200), nullable=False)
+    jurado_reemplazo = db.relationship('Jurado', foreign_keys=[jurado_reemplazo_id])
+    razon = db.Column(db.String(255), nullable=False)
     fecha = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    jurado_original = db.relationship('Jurado', foreign_keys=[jurado_original_id], backref='reemplazos_origen')
-    jurado_reemplazo = db.relationship('Jurado', foreign_keys=[jurado_reemplazo_id], backref='reemplazos_destino')
 
 
 # Funciones para Poblar la Base de Datos y Asignar Mesas
@@ -124,40 +125,68 @@ def realizar_sorteo(fase, grado_especifico):
     candidatos_ids = [c.id for c in candidatos]
     estudiantes = Estudiante.query.filter(Estudiante.grado == grado_especifico, Estudiante.id.notin_(candidatos_ids)).all()
     profesores = Profesor.query.all()
-    asignaciones_mesa = AsignacionMesa.query.all()  # Usamos AsignacionMesa
+    asignaciones_mesa = AsignacionMesa.query.all()
 
     sorteos = []
     remanentes = []
     seleccionados = set()
+    mesas_asignadas = set()  # Nuevo conjunto para rastrear mesas asignadas
+
+    # Crear un diccionario de estudiantes por seccion
+    estudiantes_por_seccion = {}
+    for estudiante in estudiantes:
+        if estudiante.seccion not in estudiantes_por_seccion:
+            estudiantes_por_seccion[estudiante.seccion] = []
+        estudiantes_por_seccion[estudiante.seccion].append(estudiante)
+
+    # Comprobar si hay suficientes secciones diferentes
+    secciones = list(estudiantes_por_seccion.keys())
+    if len(secciones) < 2:
+        raise ValueError("No hay suficientes secciones diferentes para realizar el sorteo.")
 
     for asignacion in asignaciones_mesa:
-        estudiantes_disponibles = [e for e in estudiantes if e.id not in seleccionados]
-        if len(estudiantes_disponibles) < 3:  # Asegurarse de que hay suficientes estudiantes disponibles
-            break
+        if asignacion.mesa_numero in mesas_asignadas:
+            continue  # Saltar mesas duplicadas
 
-        estudiantes_seleccionados = random.sample(estudiantes_disponibles, 2)
+        estudiantes_seleccionados = []
+        secciones_disponibles = list(estudiantes_por_seccion.keys())
+
+        # Seleccionar estudiantes de secciones diferentes
+        while len(estudiantes_seleccionados) < 2 and secciones_disponibles:
+            seccion = random.choice(secciones_disponibles)
+            if estudiantes_por_seccion[seccion]:
+                estudiante = random.choice(estudiantes_por_seccion[seccion])
+                estudiantes_por_seccion[seccion].remove(estudiante)
+                estudiantes_seleccionados.append(estudiante)
+            if not estudiantes_por_seccion[seccion]:
+                secciones_disponibles.remove(seccion)
+
         seleccionados.update(e.id for e in estudiantes_seleccionados)
 
-        remanente_disponible = [e for e in estudiantes_disponibles if e.id not in seleccionados]
+        # Seleccionar un estudiante remanente de cualquier sección disponible
+        remanente_disponible = [e for e in estudiantes if e.id not in seleccionados]
         remanente = random.choice(remanente_disponible)
         seleccionados.add(remanente.id)
 
         profesor_seleccionado = random.choice(profesores)
 
         sorteos.append({
+            "grado": grado_especifico,
+            "seccion": asignacion.seccion,
             "mesa_numero": asignacion.mesa_numero,
-            "estudiantes": [{"id": e.id, "nombre": e.nombre, "numero_documento": e.numero_documento} for e in estudiantes_seleccionados],
+            "estudiantes": [{"id": e.id, "nombre": e.nombre, "numero_documento": e.numero_documento, "seccion": e.seccion} for e in estudiantes_seleccionados],
             "profesor": {"id": profesor_seleccionado.id, "nombre": profesor_seleccionado.nombre, "numero_documento": profesor_seleccionado.numero_documento},
-            "remanente": {"id": remanente.id, "nombre": remanente.nombre, "numero_documento": remanente.numero_documento}
+            "remanente": {"id": remanente.id, "nombre": remanente.nombre, "numero_documento": remanente.numero_documento, "seccion": remanente.seccion}
         })
         remanentes.append({"id": remanente.id, "nombre": remanente.nombre, "numero_documento": remanente.numero_documento})
+        mesas_asignadas.add(asignacion.mesa_numero)  # Añadir mesa al conjunto de mesas asignadas
 
     for sorteo in sorteos:
         for estudiante in sorteo["estudiantes"]:
-            nuevo_jurado = Jurado(numero_documento=estudiante["numero_documento"], nombre=estudiante["nombre"], tipo_persona="Estudiante", id_mesa=0, sorteo=fase)  # id_mesa ajustado temporalmente
+            nuevo_jurado = Jurado(numero_documento=estudiante["numero_documento"], nombre=estudiante["nombre"], tipo_persona="Estudiante", id_mesa=sorteo["mesa_numero"], sorteo=fase)
             db.session.add(nuevo_jurado)
         profesor = sorteo["profesor"]
-        nuevo_jurado = Jurado(numero_documento=profesor["numero_documento"], nombre=profesor["nombre"], tipo_persona="Profesor", id_mesa=0, sorteo=fase)  # id_mesa ajustado temporalmente
+        nuevo_jurado = Jurado(numero_documento=profesor["numero_documento"], nombre=profesor["nombre"], tipo_persona="Profesor", id_mesa=sorteo["mesa_numero"], sorteo=fase)
         db.session.add(nuevo_jurado)
 
     for remanente in remanentes:
@@ -167,12 +196,11 @@ def realizar_sorteo(fase, grado_especifico):
     db.session.commit()
     return sorteos, remanentes
 
-
 # Función para realizar reemplazo
 def reemplazar_jurado(jurado_id, remanente_id, razon):
     jurado = Jurado.query.get(jurado_id)
     remanente = Jurado.query.get(remanente_id)
-    if jurado and jurado.activo and remanente and remanente.activo:
+    if jurado and jurado.activo and remanente and not remanente.activo:  # Corrección: verificar que el remanente no esté activo
         # Marcar el jurado como inactivo
         jurado.activo = False
         db.session.add(jurado)
@@ -186,12 +214,14 @@ def reemplazar_jurado(jurado_id, remanente_id, razon):
         reemplazo = Reemplazo(
             jurado_original_id=jurado.id,
             jurado_reemplazo_id=remanente.id,
-            razon=razon
+            razon=razon,
+            fecha=datetime.now()  # Asegurar que la fecha se registre correctamente
         )
         db.session.add(reemplazo)
         db.session.commit()
         return remanente
     return None
+
 
 # Rutas y Vistas
 
@@ -220,37 +250,32 @@ def sorteo_jurados():
     jurados_definitivos = []  # Inicializamos jurados definitivos
 
     if request.method == 'POST' and not sorteos_realizados:
-        if 'grado' not in session or not session['grado']:
+        try:
             grado_especifico = request.form['grado']
             session['grado'] = grado_especifico
-        else:
-            grado_especifico = session['grado']
+        except KeyError:
+            grado_especifico = session.get('grado', '')
 
-        fase = request.form['fase']
+        fase = request.form.get('fase')
 
         if fase == 'Iniciar Primer Sorteo' and not fase_1_completado:
             sorteos, remanentes = realizar_sorteo(1, grado_especifico)
             session['fase'] = 1
-
         elif fase == 'Realizar Segundo Sorteo' and session.get('fase') == 1 and not fase_2_completado:
             sorteos, remanentes = realizar_sorteo(2, grado_especifico)
             session['fase'] = 2
-
         elif fase == 'Realizar Sorteo Definitivo' and session.get('fase') == 2 and not fase_3_completado:
             sorteos, remanentes = realizar_sorteo(3, grado_especifico)
             session.pop('fase', None)
 
-            return render_template('sorteo_jurados.html', grados=sorted(list(set(e.grado for e in Estudiante.query.all()))), sorteos=sorteos, remanentes=remanentes, fase=3, sorteos_realizados=True, fase_1_completado=fase_1_completado, fase_2_completado=fase_2_completado, fase_3_completado=fase_3_completado, jurados_definitivos=jurados_definitivos)
-
+        # Guardar sorteos en la sesión para mostrarlos después
         session['sorteos'] = sorteos
         session['remanentes'] = remanentes
 
-    else:
-        session.pop('sorteos', None)
-        session.pop('remanentes', None)
-        session.pop('fase', None)
-        session.pop('grado', None)
+        # Redireccionamos para actualizar la página y mostrar los resultados
+        return redirect(url_for('sorteo_jurados'))
 
+    # Cargar datos de la sesión si existen
     sorteos = session.get('sorteos', [])
     remanentes = session.get('remanentes', [])
     fase = session.get('fase', 0)
@@ -283,31 +308,31 @@ def registro_estudiante():
 # Ruta para Reemplazo de Jurados
 @app.route('/reemplazo_jurados', methods=['GET', 'POST'])
 def reemplazo_jurados():
-    # Obtener todos los jurados actuales del último sorteo excluyendo remanentes
-    jurados = Jurado.query.filter(Jurado.activo == True, Jurado.sorteo == 3, Jurado.id_mesa != 0).all()
-    # Obtener los remanentes del último sorteo
-    remanentes = Jurado.query.filter_by(activo=True, sorteo=3, id_mesa=0).all()
-    # Obtener los reemplazos realizados
+    if request.method == 'POST':
+        jurado_id = request.form['jurado_id']
+        remanente_id = request.form['remanente_id']
+        razon = request.form['razon']
+
+        # Llamar a la función de reemplazo
+        resultado_reemplazo = reemplazar_jurado(jurado_id, remanente_id, razon)
+
+        if resultado_reemplazo:
+            flash("Reemplazo realizado con éxito.", "success")
+        else:
+            flash("Error al realizar el reemplazo. Verifica los datos e intenta de nuevo.", "error")
+        
+        return redirect(url_for('reemplazo_jurados'))
+
+    # Obtener los jurados activos del sorteo final (fase 3) excluyendo remanentes
+    jurados = Jurado.query.filter(Jurado.activo == True, Jurado.sorteo == 3, Jurado.tipo_persona != 'Remanente').all()
+
+    # Obtener los remanentes del sorteo final (fase 3)
+    remanentes = Jurado.query.filter(Jurado.activo == False, Jurado.sorteo == 3, Jurado.tipo_persona == 'Remanente').all()
+
     reemplazos = Reemplazo.query.all()
 
-    # Si es una solicitud POST, manejar el reemplazo de un jurado
-    if request.method == 'POST':
-        jurado_id = request.form.get('jurado_id')
-        remanente_id = request.form.get('remanente_id')
-        razon = request.form.get('razon')
-
-        nuevo_jurado = reemplazar_jurado(jurado_id, remanente_id, razon)
-        if nuevo_jurado:
-            mensaje = f"Jurado {nuevo_jurado.nombre} ha sido seleccionado como reemplazo por la razón: {razon}."
-        else:
-            mensaje = "No se pudo reemplazar el jurado."
-        
-        jurados = Jurado.query.filter(Jurado.activo == True, Jurado.sorteo == 3, Jurado.id_mesa != 0).all()
-        remanentes = Jurado.query.filter_by(activo=True, sorteo=3, id_mesa=0).all()
-        reemplazos = Reemplazo.query.all()
-        return render_template('reemplazo_jurados.html', jurados=jurados, remanentes=remanentes, reemplazos=reemplazos, mensaje=mensaje)
-
     return render_template('reemplazo_jurados.html', jurados=jurados, remanentes=remanentes, reemplazos=reemplazos)
+
 
 # Ruta para Registro de Testigos
 @app.route('/asignar_testigos', methods=['GET', 'POST'])
@@ -351,6 +376,7 @@ def asignar_mesas():
         
         # Asignar la mesa al grado y seccion
         asignacion_mesa = AsignacionMesa(grado=grado, seccion=seccion, mesa_numero=mesa_numero)
+        print(f"Debug: Grado={grado}, Seccion={seccion}, Mesa Numero={mesa_numero}")  # Depuración
         db.session.add(asignacion_mesa)
         db.session.commit()
 
@@ -364,6 +390,7 @@ def asignar_mesas():
     grados_secciones = [gs for gs in grados_secciones if gs not in grados_asignados]
 
     return render_template('asignar_mesas.html', grados_secciones=grados_secciones, asignaciones=asignaciones)
+
 
 
 # Ruta para Registro de Candidatos
@@ -394,6 +421,6 @@ def registro_candidato():
 
 if __name__ == '__main__': 
     with app.app_context(): 
-        db.drop_all()  # Eliminar todas las tablas existentes 
+        #db.drop_all()  # Eliminar todas las tablas existentes 
         db.create_all()  # Crear todas las tablas con la estructura actualizada 
     app.run(debug=True)

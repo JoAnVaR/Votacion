@@ -12,23 +12,19 @@
     <!-- Formulario para seleccionar grado y fase del sorteo -->
     <form method="post" action="{{ url_for('sorteo_jurados') }}">
         <label for="grado">Seleccionar Grado:</label>
-        <select id="grado" name="grado" required>
+        <select id="grado" name="grado" required {% if fase_1_completado %}disabled{% endif %}>
             {% for grado in grados %}
             <option value="{{ grado }}" {% if grado==grado_especifico %}selected{% endif %}>{{ grado }}</option>
             {% endfor %}
         </select><br>
 
-        <label for="fase">Seleccionar Fase:</label>
-        <select id="fase" name="fase" required>
-            <option value="Iniciar Primer Sorteo" {% if fase==1 %}selected{% endif %} {% if fase_1_completado
-                %}disabled{% endif %}>Iniciar Primer Sorteo</option>
-            <option value="Realizar Segundo Sorteo" {% if fase==2 %}selected{% endif %} {% if fase_2_completado
-                %}disabled{% endif %}>Realizar Segundo Sorteo</option>
-            <option value="Realizar Sorteo Definitivo" {% if fase==3 %}selected{% endif %} {% if fase_3_completado
-                %}disabled{% endif %}>Realizar Sorteo Definitivo</option>
-        </select><br>
-
-        <button type="submit">Realizar Sorteo</button>
+        <!-- Botones para las fases del sorteo -->
+        <button type="submit" name="fase" value="Iniciar Primer Sorteo" {% if fase_1_completado %}disabled{% endif
+            %}>Simulacro 1</button>
+        <button type="submit" name="fase" value="Realizar Segundo Sorteo" {% if not fase_1_completado or
+            fase_2_completado %}disabled{% endif %}>Simulacro 2</button>
+        <button type="submit" name="fase" value="Realizar Sorteo Definitivo" {% if not fase_2_completado or
+            fase_3_completado %}disabled{% endif %}>Sorteo Final</button>
     </form>
 
     <!-- Mostrar Sorteos -->
@@ -50,43 +46,20 @@
                 <td>
                     <ul>
                         {% for estudiante in sorteo.estudiantes %}
-                        <li>{{ estudiante.nombre }} ({{ estudiante.numero_documento }})</li>
+                        <li>{{ estudiante.nombre }} ({{ estudiante.numero_documento }} {{sorteo.grado}}-{{
+                            sorteo.seccion }})</li>
                         {% endfor %}
                     </ul>
                 </td>
                 <td>{{ sorteo.profesor.nombre }} ({{ sorteo.profesor.numero_documento }})</td>
-                <td>{{ sorteo.remanente.nombre }} ({{ sorteo.remanente.numero_documento }})</td>
+                <td>{{ sorteo.remanente.nombre }} ({{ sorteo.remanente.numero_documento }} {{sorteo.grado}}-{{
+                    sorteo.seccion }})</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
     <p>No se han realizado sorteos todavía.</p>
-    {% endif %}
-
-    <!-- Mostrar Jurados Definitivos -->
-    <h2>Jurados Definitivos</h2>
-    {% if jurados_definitivos %}
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Número de Documento</th>
-                <th>Mesa Número</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for jurado in jurados_definitivos %}
-            <tr>
-                <td>{{ jurado.nombre }}</td>
-                <td>{{ jurado.numero_documento }}</td>
-                <td>{{ jurado.id_mesa }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No se han asignado jurados definitivos todavía.</p>
     {% endif %}
 </body>
 

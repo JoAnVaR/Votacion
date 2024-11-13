@@ -9,16 +9,22 @@
 <body>
     <h1>Reemplazo de Jurados</h1>
 
-    {% if mensaje %}
-    <p>{{ mensaje }}</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
     {% endif %}
+    {% endwith %}
 
     <form method="post" action="{{ url_for('reemplazo_jurados') }}">
         <label for="jurado_id">Seleccionar Jurado a Reemplazar:</label>
         <select id="jurado_id" name="jurado_id" required>
             {% for jurado in jurados %}
             <option value="{{ jurado.id }}">{{ jurado.nombre }} ({{ jurado.numero_documento }}) - {{ jurado.tipo_persona
-                }} en {{ jurado.mesa.ubicacion }}</option>
+                }} en Mesa {{ jurado.id_mesa }}</option>
             {% endfor %}
         </select><br>
 
@@ -52,8 +58,7 @@
                 <td>{{ reemplazo.jurado_reemplazo.nombre }} ({{ reemplazo.jurado_reemplazo.numero_documento }})</td>
                 <td>{{ reemplazo.razon }}</td>
                 <td>{{ reemplazo.fecha }}</td>
-            </tr>
-            {% endfor %}
+                {% endfor %}
         </tbody>
     </table>
 </body>
