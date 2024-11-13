@@ -4,23 +4,78 @@
 <head>
     <meta charset="UTF-8">
     <title>Registro de Candidatos</title>
+    <style>
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-results {
+            display: none;
+        }
+    </style>
+    <script>
+        function searchEstudiantes() {
+            let input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchEstudianteInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("estudiantesTable");
+            tr = table.getElementsByTagName("tr");
+            let hasResults = false;
+            if (filter === "") {
+                document.getElementById("searchEstudianteResults").style.display = "none";
+                return;
+            }
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td")[2];  // Columna del número de documento
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        hasResults = true;
+                    }
+                }
+            }
+            document.getElementById("searchEstudianteResults").style.display = hasResults ? "block" : "none";
+        }
+
+
+    </script>
 </head>
 
 <body>
     <h1>Registro de Candidatos</h1>
     <form method="get">
-        <input type="text" name="search_query" placeholder="Buscar por nombre o documento" value="{{ search_query }}">
-        <input type="submit" value="Buscar">
+        <div class="search-box">
+            <label for="searchJuradoInput">Buscar Estudiante:</label>
+            <input type="text" id="searchEstudianteInput" onkeyup="searchEstudiantes()"
+                placeholder="Buscar por nombre o documento...">
+        </div>
     </form>
 
     <form method="post">
-        <label for="id_estudiante">Estudiante:</label>
-        <select id="id_estudiante" name="id_estudiante" required>
-            {% for estudiante in estudiantes %}
-            <option value="{{ estudiante.id }}">{{ estudiante.nombre }} - {{ estudiante.numero_documento }}</option>
-            {% endfor %}
-        </select><br>
-
+        <div id="searchEstudianteResults" class="search-results">
+            <table id="estudiantesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Número de Documento</th>
+                        <th>Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for estudiante in estudiantes %}
+                    <tr>
+                        <td>{{ estudiante.id }}</td>
+                        <td>{{ estudiante.nombre }}</td>
+                        <td>{{ estudiante.numero_documento }}</td>
+                        <td><input type="radio" name="id_estudiante" value="{{ estudiante.id }}" required></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table><br>
+        </div>
         <label for="propuesta">Propuesta:</label>
         <textarea id="propuesta" name="propuesta" required></textarea><br>
 

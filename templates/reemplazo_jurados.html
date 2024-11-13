@@ -4,6 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <title>Reemplazo de Jurados</title>
+    <style>
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-results {
+            display: none;
+        }
+    </style>
+    <script>
+        function searchJurados() {
+            let input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchJuradoInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("juradosTable");
+            tr = table.getElementsByTagName("tr");
+            let hasResults = false;
+            if (filter === "") {
+                document.getElementById("searchJuradoResults").style.display = "none";
+                return;
+            }
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td")[1];  // Columna del nombre
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        hasResults = true;
+                    }
+                }
+            }
+            document.getElementById("searchJuradoResults").style.display = hasResults ? "block" : "none";
+        }
+
+        function searchRemanentes() {
+            let input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchRemanenteInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("remanentesTable");
+            tr = table.getElementsByTagName("tr");
+            let hasResults = false;
+            if (filter === "") {
+                document.getElementById("searchRemanenteResults").style.display = "none";
+                return;
+            }
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td")[1];  // Columna del nombre
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        hasResults = true;
+                    }
+                }
+            }
+            document.getElementById("searchRemanenteResults").style.display = hasResults ? "block" : "none";
+        }
+
+    </script>
 </head>
 
 <body>
@@ -20,27 +81,72 @@
     {% endwith %}
 
     <form method="post" action="{{ url_for('reemplazo_jurados') }}">
-        <label for="jurado_id">Seleccionar Jurado a Reemplazar:</label>
-        <select id="jurado_id" name="jurado_id" required>
-            {% for jurado in jurados %}
-            <option value="{{ jurado.id }}">{{ jurado.nombre }} ({{ jurado.numero_documento }}) - {{ jurado.tipo_persona
-                }} en Mesa {{ jurado.id_mesa }}</option>
-            {% endfor %}
-        </select><br>
-
-        <label for="remanente_id">Seleccionar Remanente para Reemplazar:</label>
-        <select id="remanente_id" name="remanente_id" required>
-            {% for remanente in remanentes %}
-            <option value="{{ remanente.id }}">{{ remanente.nombre }} ({{ remanente.numero_documento }})</option>
-            {% endfor %}
-        </select><br>
+        <div class="search-box">
+            <label for="searchJuradoInput">Buscar Jurado a Reemplazar:</label>
+            <input type="text" id="searchJuradoInput" onkeyup="searchJurados()"
+                placeholder="Buscar por nombre o documento...">
+        </div>
+        <div id="searchJuradoResults" class="search-results">
+            <table id="juradosTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Número de Documento</th>
+                        <th>Tipo Persona</th>
+                        <th>Mesa</th>
+                        <th>Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for jurado in jurados %}
+                    <tr>
+                        <td>{{ jurado.id }}</td>
+                        <td>{{ jurado.nombre }}</td>
+                        <td>{{ jurado.numero_documento }}</td>
+                        <td>{{ jurado.tipo_persona }}</td>
+                        <td>{{ jurado.id_mesa }}</td>
+                        <td><input type="radio" name="jurado_id" value="{{ jurado.id }}" required></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table><br>
+        </div>
+        <div class="search-box">
+            <label for="searchRemanenteInput">Buscar Remanente para Reemplazar:</label>
+            <input type="text" id="searchRemanenteInput" onkeyup="searchRemanentes()"
+                placeholder="Buscar por nombre o documento...">
+        </div>
+        <div id="searchRemanenteResults" class="search-results">
+            <table id="remanentesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Número de Documento</th>
+                        <th>Tipo Persona</th>
+                        <th>Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for remanente in remanentes %}
+                    <tr>
+                        <td>{{ remanente.id }}</td>
+                        <td>{{ remanente.nombre }}</td>
+                        <td>{{ remanente.numero_documento }}</td>
+                        <td>{{ remanente.tipo_persona }}</td>
+                        <td><input type="radio" name="remanente_id" value="{{ remanente.id }}" required></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table><br>
+        </div>
 
         <label for="razon">Razón del Reemplazo:</label>
         <input type="text" id="razon" name="razon" required><br>
 
         <button type="submit">Reemplazar</button>
     </form>
-
     <h2>Reemplazos Realizados</h2>
     <table>
         <thead>

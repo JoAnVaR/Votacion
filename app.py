@@ -200,7 +200,7 @@ def realizar_sorteo(fase, grado_especifico):
 def reemplazar_jurado(jurado_id, remanente_id, razon):
     jurado = Jurado.query.get(jurado_id)
     remanente = Jurado.query.get(remanente_id)
-    if jurado and jurado.activo and remanente and not remanente.activo:  # Corrección: verificar que el remanente no esté activo
+    if jurado and jurado.activo and remanente and remanente.id_mesa == 0:  # Verificar que el remanente tiene id_mesa == 0
         # Marcar el jurado como inactivo
         jurado.activo = False
         db.session.add(jurado)
@@ -215,12 +215,13 @@ def reemplazar_jurado(jurado_id, remanente_id, razon):
             jurado_original_id=jurado.id,
             jurado_reemplazo_id=remanente.id,
             razon=razon,
-            fecha=datetime.now()  # Asegurar que la fecha se registre correctamente
+            fecha=datetime.now()
         )
         db.session.add(reemplazo)
         db.session.commit()
         return remanente
     return None
+
 
 
 # Rutas y Vistas
@@ -287,7 +288,6 @@ def sorteo_jurados():
     # Pasar las variables a la plantilla
     return render_template('sorteo_jurados.html', grados=sorted(list(set(e.grado for e in Estudiante.query.all()))), sorteos=sorteos, remanentes=remanentes, fase=fase, grado=grado_especifico, sorteos_realizados=sorteos_realizados, jurados_definitivos=jurados_definitivos, fase_1_completado=fase_1_completado, fase_2_completado=fase_2_completado, fase_3_completado=fase_3_completado)
 
-
 # Ruta para Registro de Estudiantes
 @app.route('/registro_estudiante', methods=['GET', 'POST'])
 def registro_estudiante():
@@ -323,16 +323,15 @@ def reemplazo_jurados():
         
         return redirect(url_for('reemplazo_jurados'))
 
-    # Obtener los jurados activos del sorteo final (fase 3) excluyendo remanentes
-    jurados = Jurado.query.filter(Jurado.activo == True, Jurado.sorteo == 3, Jurado.tipo_persona != 'Remanente').all()
+    # Obtener los jurados activos del sorteo final (fase 3) excluyendo remanentes (id_mesa != 0)
+    jurados = Jurado.query.filter(Jurado.activo == True, Jurado.sorteo == 3, Jurado.id_mesa != 0).all()
 
-    # Obtener los remanentes del sorteo final (fase 3)
-    remanentes = Jurado.query.filter(Jurado.activo == False, Jurado.sorteo == 3, Jurado.tipo_persona == 'Remanente').all()
+    # Obtener los remanentes del sorteo final (fase 3) que son inactivos y tienen id_mesa == 0
+    remanentes = Jurado.query.filter(Jurado.activo == True, Jurado.sorteo == 3, Jurado.id_mesa == 0).all()
 
     reemplazos = Reemplazo.query.all()
 
     return render_template('reemplazo_jurados.html', jurados=jurados, remanentes=remanentes, reemplazos=reemplazos)
-
 
 # Ruta para Registro de Testigos
 @app.route('/asignar_testigos', methods=['GET', 'POST'])
@@ -362,7 +361,6 @@ def asignar_testigos():
 
     return render_template('asignar_testigos.html', testigos=testigos, asignaciones=asignaciones)
 
-
 # Ruta para asignar mesas
 @app.route('/asignar_mesas', methods=['GET', 'POST'])
 def asignar_mesas():
@@ -389,9 +387,8 @@ def asignar_mesas():
     # Filtrar grados ya asignados
     grados_secciones = [gs for gs in grados_secciones if gs not in grados_asignados]
 
+
     return render_template('asignar_mesas.html', grados_secciones=grados_secciones, asignaciones=asignaciones)
-
-
 
 # Ruta para Registro de Candidatos
 @app.route('/registro_candidato', methods=['GET', 'POST'])

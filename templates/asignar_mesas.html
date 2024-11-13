@@ -4,19 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <title>Asignar Mesas a Grados</title>
+    <style>
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-results {
+            display: none;
+        }
+    </style>
+    <script>
+        function searchGrados() {
+            let input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchGradoInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("gradosTable");
+            tr = table.getElementsByTagName("tr");
+            let hasResults = false;
+            if (filter === "") {
+                document.getElementById("searchGradoResults").style.display = "none";
+                return;
+            }
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td")[0];  // Columna del grado
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        hasResults = true;
+                    }
+                }
+            }
+            document.getElementById("searchGradoResults").style.display = hasResults ? "block" : "none";
+        }
+    </script>
 </head>
 
 <body>
     <h1>Asignar Mesas a Grados</h1>
 
-    <!-- Formulario para asignar mesas a grados -->
     <form method="post" action="{{ url_for('asignar_mesas') }}">
-        <label for="grado">Seleccionar Grado y Sección:</label>
-        <select id="grado" name="grado" required>
-            {% for grado, seccion in grados_secciones %}
-            <option value="{{ grado }}|{{ seccion }}">{{ grado }} - {{ seccion }}</option>
-            {% endfor %}
-        </select><br>
+        <div class="search-box">
+            <label for="searchGradoInput">Buscar Grado:</label>
+            <input type="text" id="searchGradoInput" onkeyup="searchGrados()" placeholder="Buscar por grado...">
+        </div>
+        <div id="searchGradoResults" class="search-results">
+            <table id="gradosTable">
+                <thead>
+                    <tr>
+                        <th>Grado</th>
+                        <th>Sección</th>
+                        <th>Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grado, seccion in grados_secciones %}
+                    <tr>
+                        <td>{{ grado }}</td>
+                        <td>{{ seccion }}</td>
+                        <td><input type="radio" name="grado" value="{{ grado }}|{{ seccion }}" required></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table><br>
+        </div>
 
         <label for="mesa_numero">Número de Mesa:</label>
         <input type="text" id="mesa_numero" name="mesa_numero" required><br>
@@ -24,20 +76,21 @@
         <button type="submit">Asignar Mesa</button>
     </form>
 
-    <!-- Mostrar asignaciones realizadas -->
     <h2>Asignaciones Realizadas</h2>
     <table>
         <thead>
             <tr>
-                <th>Grado y Sección</th>
                 <th>Mesa</th>
+                <th>Grado</th>
+                <th>Sección</th>
             </tr>
         </thead>
         <tbody>
             {% for asignacion in asignaciones %}
             <tr>
-                <td>{{ asignacion.grado }} - {{ asignacion.seccion }}</td>
                 <td>{{ asignacion.mesa_numero }}</td>
+                <td>{{ asignacion.grado }}</td>
+                <td>{{ asignacion.seccion }}</td>
             </tr>
             {% endfor %}
         </tbody>
