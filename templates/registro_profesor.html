@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Profesores</title>
+    <style>
+        .profesor-details {
+            display: none;
+            margin-left: 20px;
+        }
+    </style>
+    <script>
+        function toggleProfesores(sedeId) {
+            var profesoresDiv = document.getElementById('profesores-' + sedeId);
+            if (profesoresDiv.style.display === 'none' || profesoresDiv.style.display === '') {
+                profesoresDiv.style.display = 'block';
+            } else {
+                profesoresDiv.style.display = 'none';
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Registro de Profesores</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <form method="post" enctype="multipart/form-data">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required><br>
+
+        <label for="numero_documento">Número de Documento:</label>
+        <input type="text" id="numero_documento" name="numero_documento" required><br>
+
+        <label for="departamento">Departamento:</label>
+        <input type="text" id="departamento" name="departamento" required><br>
+
+        <label for="titulo">Título:</label>
+        <input type="text" id="titulo" name="titulo" required><br>
+
+        <label for="sede_id">Sede:</label>
+        <select id="sede_id" name="sede_id" required>
+            {% for sede in sedes %}
+            <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+            {% endfor %}
+        </select><br>
+
+        <input type="submit" value="Registrar">
+    </form>
+
+    <form method="post" enctype="multipart/form-data">
+        <label for="file">Subir archivo CSV:</label>
+        <input type="file" id="file" name="file" accept=".csv" required>
+        <input type="submit" value="Cargar CSV">
+    </form>
+
+    <p><a href="{{ url_for('descargar_plantilla_profesor') }}">Descargar plantilla CSV</a></p>
+
+    <h2>Profesores Registrados</h2>
+    <ul>
+        {% for sede in sedes %}
+        <li>
+            <a href="javascript:void(0);" onclick="toggleProfesores('{{ sede.id }}')">
+                {{ sede.nombre }} ({{ sede.profesores|length }} Profesores)
+            </a>
+            <div id="profesores-{{ sede.id }}" class="profesor-details">
+                <ul>
+                    {% for profesor in sede.profesores %}
+                    <li>
+                        {{ profesor.numero_documento }} - {{ profesor.nombre }} - {{ profesor.departamento }} - {{
+                        profesor.titulo }}
+                        <form method="post" action="{{ url_for('eliminar_profesor', id=profesor.id) }}"
+                            style="display:inline;">
+                            <button type="submit">Eliminar</button>
+                        </form>
+                        <a href="{{ url_for('modificar_profesor', id=profesor.id) }}">Modificar</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>
