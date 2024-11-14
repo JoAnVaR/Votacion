@@ -4,11 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Registro de Estudiantes</title>
+    <script>
+        function toggleGrados(sedeId) {
+            var gradosDiv = document.getElementById('grados-' + sedeId);
+            if (gradosDiv.style.display === 'none') {
+                gradosDiv.style.display = 'block';
+            } else {
+                gradosDiv.style.display = 'none';
+            }
+        }
+    </script>
 </head>
 
 <body>
     <h1>Registro de Estudiantes</h1>
-    <form method="post">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <form method="post" enctype="multipart/form-data">
         <label for="numero_documento">Número de Documento:</label>
         <input type="text" id="numero_documento" name="numero_documento" required><br>
 
@@ -21,8 +42,45 @@
         <label for="seccion">Sección:</label>
         <input type="text" id="seccion" name="seccion" required><br>
 
+        <label for="sede">Sede:</label>
+        <select id="sede_id" name="sede_id" required>
+            {% for sede in sedes %}
+            <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+            {% endfor %}
+        </select><br>
+
         <input type="submit" value="Registrar">
     </form>
+
+    <form method="post" enctype="multipart/form-data">
+        <label for="file">Subir archivo CSV:</label>
+        <input type="file" id="file" name="file" accept=".csv" required>
+        <input type="submit" value="Cargar CSV">
+    </form>
+
+    <p><a href="{{ url_for('descargar_plantilla') }}">Descargar plantilla CSV</a></p>
+
+    <h2>Totales</h2>
+    <p>Total de estudiantes: {{ total_estudiantes }}</p>
+
+    <h2>Totales por Sede</h2>
+    <ul>
+        {% for sede, total in totales_por_sede %}
+        <li>
+            <a href="javascript:void(0);" onclick="toggleGrados('{{ sede }}')">{{ sede }}: {{ total }} estudiantes</a>
+            <div id="grados-{{ sede }}" style="display: none;">
+                <ul>
+                    {% for grado, seccion, sede_nombre, total in totales_por_grado_seccion %}
+                    {% if sede == sede_nombre %}
+                    <li><a href="{{ url_for('detalle_grado_seccion', grado=grado, seccion=seccion, sede=sede) }}">{{
+                            sede }} - Grado {{ grado }} Sección {{ seccion }}: {{ total }} estudiantes</a></li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
 </body>
 
 </html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle Grado {{ grado }} - Sección {{ seccion }} - Sede {{ sede }}</title>
+</head>
+
+<body>
+    <h1>Grado {{ grado }} - Sección {{ seccion }} - Sede {{ sede }}</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Número de Documento</th>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estudiante in estudiantes %}
+            <tr>
+                <td>{{ estudiante.numero_documento }}</td>
+                <td>{{ estudiante.nombre }}</td>
+                <td>
+                    <form method="post" style="display:inline;">
+                        <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
+                        <input type="text" name="nombre" value="{{ estudiante.nombre }}" required>
+                        <input type="text" name="numero_documento" value="{{ estudiante.numero_documento }}" required>
+                        <button type="submit" name="modificar">Modificar</button>
+                    </form>
+                    <form method="post" style="display:inline;">
+                        <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
+                        <button type="submit" name="eliminar">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('index') }}">Volver al inicio</a>
+</body>
+
+</html>

@@ -1,14 +1,24 @@
 #Importacion y configuracion inicial
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import os 
+import csv
+import random
+import io
+
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
+from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-import random
-
 app = Flask(__name__)
-app.secret_key = 'tu_secreto_aqui'  # Necesario para usar la sesión
+app.config['SECRET_KEY'] = 'tu_secreto'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///votacion.db'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 db = SQLAlchemy(app)
+
+# Crear el directorio de subida si no existe 
+if not os.path.exists(app.config['UPLOAD_FOLDER']): 
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 #Context Processor para Enumerar
 @app.context_processor
@@ -17,7 +27,6 @@ def utility_processor():
         return enumerate(iterable, start)
     return dict(enumerar=enumerar)
 
-
 #Modelos de Base de Datos
 class Estudiante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,7 +34,9 @@ class Estudiante(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     grado = db.Column(db.String(20), nullable=False)
     seccion = db.Column(db.String(10), nullable=False)
+    sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
     es_candidato = db.Column(db.Boolean, default=False)
+    sede = db.relationship('Sede', backref='estudiantes')
 
 class Profesor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,11 +44,26 @@ class Profesor(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     departamento = db.Column(db.String(100))
 
+# Definición del modelo para la tabla de sedes
+class Sede(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    direccion = db.Column(db.String(200), nullable=False)
+
+# Definición del modelo para la tabla de mesas
+class Mesa(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
+    mesa_numero = db.Column(db.Integer, nullable=False)
+    sede = db.relationship('Sede', backref=db.backref('mesas', lazy=True))
+
 class AsignacionMesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     grado = db.Column(db.String(20), nullable=False)
     seccion = db.Column(db.String(10), nullable=False)
     mesa_numero = db.Column(db.String(20), nullable=False)
+    sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
+    sede = db.relationship('Sede', backref=db.backref('asignaciones', lazy=True))
 
 class Jurado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -69,15 +95,15 @@ class AsignacionTestigo(db.Model):
     id_testigo = db.Column(db.Integer, db.ForeignKey('testigo.id'), nullable=False)
     mesa_numero = db.Column(db.String(20), nullable=False)  # Cambiamos a mesa_numero
 
-
+    # Definir el modelo Candidato con el campo foto_path
 class Candidato(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    numero_documento = db.Column(db.String(20), unique=True, nullable=False)
-    nombre = db.Column(db.String(100), nullable=False)
-    grado = db.Column(db.String(20), nullable=False)
-    seccion = db.Column(db.String(10), nullable=False)
+    numero_documento = db.Column(db.String(80), unique=True, nullable=False)
+    nombre = db.Column(db.String(120), nullable=False)
+    grado = db.Column(db.String(80), nullable=False)
+    seccion = db.Column(db.String(80), nullable=False)
     propuesta = db.Column(db.Text, nullable=False)
-
+    foto_path = db.Column(db.String(200), nullable=True)  # Agregar el campo foto_path
 
 class Reemplazo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -93,19 +119,6 @@ class Reemplazo(db.Model):
 
 # Función para Poblar la Base de Datos
 def poblar_base_de_datos():
-    nombres_estudiantes = ["Ana", "Luis", "Carlos", "María", "Pedro", "Lucía", "Jorge", "Claudia"]
-    grados = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
-    secciones = ["1", "2"]
-    for i in range(1, 501):  # Crear 500 estudiantes
-        estudiante = Estudiante(
-            numero_documento=f"E{i:03}",
-            nombre=f"{random.choice(nombres_estudiantes)} {i}",
-            grado=random.choice(grados),
-            seccion=random.choice(secciones),
-            es_candidato=False
-        )
-        db.session.add(estudiante)
-
     nombres_profesores = ["Prof. Juan", "Prof. Elena", "Prof. Roberto", "Prof. Sofía"]
     departamentos = ["Matemáticas", "Ciencias", "Historia", "Inglés"]
     for i in range(1, 20):  # Crear 20 profesores
@@ -222,9 +235,12 @@ def reemplazar_jurado(jurado_id, remanente_id, razon):
         return remanente
     return None
 
+# Función para verificar extensiones permitidas:
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-# Rutas y Vistas
+# Rutas y Vistas -----------------------------------------------------------------------------------------
 
 # Ruta de Inicio
 @app.route('/')
@@ -236,6 +252,49 @@ def index():
 def poblar_datos():
     poblar_base_de_datos()
     return redirect(url_for('index'))
+
+# Ruta para agregar sede
+@app.route('/agregar_sede', methods=['GET', 'POST'])
+def agregar_sede():
+    if request.method == 'POST':
+        nombre_sede = request.form['nombre_sede']
+        direccion = request.form['direccion']
+        nueva_sede = Sede(nombre=nombre_sede, direccion=direccion)
+        db.session.add(nueva_sede)
+        db.session.commit()
+        return redirect(url_for('agregar_sede'))
+    sedes = Sede.query.all()
+    mesas = Mesa.query.all()
+    return render_template('administrar_sedes_mesas.html', sedes=sedes, mesas=mesas)
+
+# Ruta para agregar mesas
+@app.route('/agregar_mesas', methods=['GET', 'POST'])
+def agregar_mesas():
+    if request.method == 'POST':
+        sede_id = int(request.form['sede_id'])
+
+        # Obtener el número de mesa más alto en la sede
+        mesas_existentes = Mesa.query.filter_by(sede_id=sede_id).order_by(Mesa.mesa_numero).all()
+        if mesas_existentes:
+            ultimo_numero = mesas_existentes[-1].mesa_numero
+            nuevo_numero = ultimo_numero + 1
+        else:
+            nuevo_numero = 1
+
+        nueva_mesa = Mesa(sede_id=sede_id, mesa_numero=nuevo_numero)
+        db.session.add(nueva_mesa)
+        db.session.commit()
+        return redirect(url_for('agregar_mesas'))
+    
+    sedes = Sede.query.all()
+    return render_template('administrar_sedes_mesas.html', sedes=sedes)
+
+# Ruta mesas existentes
+@app.route('/mesas_existentes/<int:sede_id>', methods=['GET'])
+def mesas_existentes(sede_id):
+    mesas = Mesa.query.filter_by(sede_id=sede_id).all()
+    mesa_numeros = [mesa.mesa_numero for mesa in mesas]
+    return jsonify(mesa_numeros)
 
 # Ruta para Sorteo de Jurados
 @app.route('/sorteo_jurados', methods=['GET', 'POST'])
@@ -288,22 +347,100 @@ def sorteo_jurados():
     # Pasar las variables a la plantilla
     return render_template('sorteo_jurados.html', grados=sorted(list(set(e.grado for e in Estudiante.query.all()))), sorteos=sorteos, remanentes=remanentes, fase=fase, grado=grado_especifico, sorteos_realizados=sorteos_realizados, jurados_definitivos=jurados_definitivos, fase_1_completado=fase_1_completado, fase_2_completado=fase_2_completado, fase_3_completado=fase_3_completado)
 
-# Ruta para Registro de Estudiantes
+# Ruta para registro de estudiantes
 @app.route('/registro_estudiante', methods=['GET', 'POST'])
 def registro_estudiante():
     if request.method == 'POST':
-        numero_documento = request.form['numero_documento']
-        nombre = request.form['nombre']
-        grado = request.form['grado']
-        seccion = request.form['seccion']
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename.endswith('.csv'):
+                try:
+                    # Leer el archivo CSV con codificación latin1
+                    file_stream = io.StringIO(file.stream.read().decode("latin1"))
+                    csv_reader = csv.reader(file_stream, delimiter=',')
+                    next(csv_reader)  # Saltar el encabezado
+                    for row in csv_reader:
+                        numero_documento, nombre, grado, seccion, sede_id = row
+                        # Verificar si el número de documento ya existe
+                        if Estudiante.query.filter_by(numero_documento=numero_documento).first():
+                            flash(f"El número de documento '{numero_documento}' ya existe en la base de datos.", 'error')
+                            continue
+                        nuevo_estudiante = Estudiante(
+                            numero_documento=numero_documento,
+                            nombre=nombre,
+                            grado=grado,
+                            seccion=seccion,
+                            sede_id=sede_id
+                        )
+                        db.session.add(nuevo_estudiante)
+                    db.session.commit()
+                    return redirect(url_for('registro_estudiante'))
+                except UnicodeDecodeError:
+                    flash('Error al leer el archivo CSV. Asegúrate de que el archivo está en el formato correcto y vuelve a intentarlo.', 'error')
+            else:
+                flash('Por favor, sube un archivo CSV válido (.csv)', 'error')
+        else:
+            numero_documento = request.form['numero_documento']
+            nombre = request.form['nombre']
+            grado = request.form['grado']
+            seccion = request.form['seccion']
+            sede_id = request.form['sede_id']
+            # Verificar si el número de documento ya existe
+            if Estudiante.query.filter_by(numero_documento=numero_documento).first():
+                flash(f"El número de documento '{numero_documento}' ya existe en la base de datos.", 'error')
+            else:
+                nuevo_estudiante = Estudiante(
+                    numero_documento=numero_documento,
+                    nombre=nombre,
+                    grado=grado,
+                    seccion=seccion,
+                    sede_id=sede_id
+                )
+                db.session.add(nuevo_estudiante)
+                db.session.commit()
 
-        nuevo_estudiante = Estudiante(numero_documento=numero_documento, nombre=nombre, grado=grado, seccion=seccion)
-        db.session.add(nuevo_estudiante)
-        db.session.commit()
+        return redirect(url_for('registro_estudiante'))
 
-        return redirect(url_for('index'))
+    total_estudiantes = Estudiante.query.count()
+    totales_por_sede = db.session.query(
+        Sede.nombre, db.func.count(Estudiante.id)
+    ).join(Estudiante).group_by(Sede.nombre).all()
+    totales_por_grado_seccion = db.session.query(
+        Estudiante.grado, Estudiante.seccion, Sede.nombre, db.func.count(Estudiante.id)
+    ).join(Sede).group_by(Estudiante.grado, Estudiante.seccion, Sede.nombre).order_by(db.func.count(Estudiante.id).desc()).all()
 
-    return render_template('registro_estudiante.html')
+    sedes = Sede.query.all()
+    return render_template('registro_estudiante.html', sedes=sedes, total_estudiantes=total_estudiantes, totales_por_sede=totales_por_sede, totales_por_grado_seccion=totales_por_grado_seccion)
+
+# Ruta para descargar la plantilla
+@app.route('/descargar_plantilla')
+def descargar_plantilla():
+    return send_file('plantilla_estudiantes.csv', as_attachment=True)
+
+# Ruta para detallar estudiantes
+@app.route('/detalle_grado_seccion/<grado>/<seccion>/<sede>', methods=['GET', 'POST'])
+def detalle_grado_seccion(grado, seccion, sede):
+    if request.method == 'POST':
+        if 'modificar' in request.form:
+            estudiante_id = request.form['estudiante_id']
+            estudiante = Estudiante.query.get(estudiante_id)
+            estudiante.nombre = request.form['nombre']
+            estudiante.numero_documento = request.form['numero_documento']
+            db.session.commit()
+        elif 'eliminar' in request.form:
+            estudiante_id = request.form['estudiante_id']
+            estudiante = Estudiante.query.get(estudiante_id)
+            db.session.delete(estudiante)
+            db.session.commit()
+        return redirect(url_for('detalle_grado_seccion', grado=grado, seccion=seccion, sede=sede))
+
+    estudiantes = Estudiante.query.join(Sede).filter(
+        Estudiante.grado == grado,
+        Estudiante.seccion == seccion,
+        Sede.nombre == sede
+    ).all()
+
+    return render_template('detalle_grado_seccion.html', estudiantes=estudiantes, grado=grado, seccion=seccion, sede=sede)
 
 # Ruta para Reemplazo de Jurados
 @app.route('/reemplazo_jurados', methods=['GET', 'POST'])
@@ -364,31 +501,60 @@ def asignar_testigos():
 # Ruta para asignar mesas
 @app.route('/asignar_mesas', methods=['GET', 'POST'])
 def asignar_mesas():
-    grados_secciones = sorted(set((e.grado, e.seccion) for e in Estudiante.query.all()))
+    grados_asignados = db.session.query(
+        AsignacionMesa.grado, AsignacionMesa.seccion, AsignacionMesa.sede_id
+    ).distinct().all()
 
+    grados_secciones = db.session.query(
+        (Estudiante.grado + ' - ' + Estudiante.seccion).label('grado_seccion'),
+        Estudiante.sede_id
+    ).distinct().all()
+
+    grados_secciones = [
+        gs for gs in grados_secciones
+        if (gs.grado_seccion.split(' - ')[0], gs.grado_seccion.split(' - ')[1], gs.sede_id) not in grados_asignados
+    ]
+
+    sedes = Sede.query.all()
+    mesas = Mesa.query.all()
+
+    # Filtrar sedes que tienen grados disponibles
+    sedes_con_grados = [s for s in sedes if any(gs.sede_id == s.id for gs in grados_secciones)]
+    
     if request.method == 'POST':
-        grado_seccion = request.form.get('grado').split('|')
-        grado = grado_seccion[0]
-        seccion = grado_seccion[1]
+        grado_seccion = request.form.get('grado_seccion')
         mesa_numero = request.form.get('mesa_numero')
-        
-        # Asignar la mesa al grado y seccion
-        asignacion_mesa = AsignacionMesa(grado=grado, seccion=seccion, mesa_numero=mesa_numero)
-        print(f"Debug: Grado={grado}, Seccion={seccion}, Mesa Numero={mesa_numero}")  # Depuración
+
+        if grado_seccion is None or mesa_numero is None:
+            flash('Por favor selecciona un grado, sección y una mesa', 'error')
+            return redirect(url_for('asignar_mesas'))
+
+        grado_seccion, sede_id = grado_seccion.split('|')
+        grado, seccion = grado_seccion.split(' - ')
+
+        asignacion_mesa = AsignacionMesa(grado=grado, seccion=seccion, mesa_numero=mesa_numero, sede_id=sede_id)
         db.session.add(asignacion_mesa)
         db.session.commit()
 
         return redirect(url_for('asignar_mesas'))
 
-    # Obtener asignaciones para excluir grados ya asignados
-    asignaciones = AsignacionMesa.query.all()
-    grados_asignados = set((asignacion.grado, asignacion.seccion) for asignacion in asignaciones)
+    # Ordenar asignaciones por mesa, grado y seccion
+    asignaciones = db.session.query(
+        AsignacionMesa.id, AsignacionMesa.grado, AsignacionMesa.seccion, AsignacionMesa.mesa_numero, Sede.nombre.label('sede_nombre')
+    ).join(Sede, AsignacionMesa.sede_id == Sede.id).order_by(
+        AsignacionMesa.mesa_numero, AsignacionMesa.grado, AsignacionMesa.seccion
+    ).all()
 
-    # Filtrar grados ya asignados
-    grados_secciones = [gs for gs in grados_secciones if gs not in grados_asignados]
+    return render_template('asignar_mesas.html', sedes=sedes, sedes_con_grados=sedes_con_grados, grados_secciones=grados_secciones, mesas=mesas, asignaciones=asignaciones)
 
-
-    return render_template('asignar_mesas.html', grados_secciones=grados_secciones, asignaciones=asignaciones)
+# Ruta eliminar asignacion mesa
+@app.route('/eliminar_asignacion/<int:id>', methods=['POST'])
+def eliminar_asignacion(id):
+    asignacion = AsignacionMesa.query.get_or_404(id)
+    db.session.delete(asignacion)
+    db.session.commit()
+    flash('Asignación eliminada correctamente', 'success')
+    return redirect(url_for('asignar_mesas'))
 
 # Ruta para Registro de Candidatos
 @app.route('/registro_candidato', methods=['GET', 'POST'])
@@ -397,14 +563,33 @@ def registro_candidato():
         id_estudiante = request.form['id_estudiante']
         propuesta = request.form['propuesta']
 
+        # Manejo de la subida de la foto
+        file = request.files['foto']
         estudiante = Estudiante.query.get(id_estudiante)
-        nuevo_candidato = Candidato(numero_documento=estudiante.numero_documento, nombre=estudiante.nombre, grado=estudiante.grado, seccion=estudiante.seccion, propuesta=propuesta)
-        db.session.add(nuevo_candidato)
-        estudiante.es_candidato = True
-        db.session.commit()
+        if file and allowed_file(file.filename):
+            # Renombrar el archivo con el número de documento del estudiante
+            filename = secure_filename(f"{estudiante.numero_documento}.{file.filename.rsplit('.', 1)[1].lower()}")
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
 
-        return redirect(url_for('index'))
+            # Guardar el nuevo candidato en la base de datos
+            nuevo_candidato = Candidato(
+                numero_documento=estudiante.numero_documento, 
+                nombre=estudiante.nombre, 
+                grado=estudiante.grado, 
+                seccion=estudiante.seccion, 
+                propuesta=propuesta,
+                foto_path=f"uploads/{filename}"  # Guardamos la ruta relativa de la foto en la base de datos
+            )
+            db.session.add(nuevo_candidato)
+            estudiante.es_candidato = True
+            db.session.commit()
 
+            flash('Candidato registrado exitosamente')
+            return redirect(url_for('registro_candidato'))
+        else:
+            flash('Archivo no permitido o no subido correctamente')
+    
     # Manejar búsqueda
     search_query = request.args.get('search_query')
     if search_query:
@@ -414,7 +599,24 @@ def registro_candidato():
     else:
         estudiantes = Estudiante.query.filter_by(es_candidato=False).all()
     
-    return render_template('registro_candidato.html', estudiantes=estudiantes, search_query=search_query)
+    candidatos = Candidato.query.all()  # Obtener la lista de candidatos registrados
+    
+    return render_template('registro_candidato.html', estudiantes=estudiantes, candidatos=candidatos, search_query=search_query)
+
+# Ruta para eliminar de Candidatos
+@app.route('/eliminar_candidato/<int:id>', methods=['POST'])
+def eliminar_candidato(id):
+    candidato = Candidato.query.get(id)
+    if candidato:
+        # Eliminar el candidato, pero mantener el estado de estudiante para permitir la reactivación
+        estudiante = Estudiante.query.filter_by(numero_documento=candidato.numero_documento).first()
+        if estudiante:
+            estudiante.es_candidato = False
+        
+        db.session.delete(candidato)
+        db.session.commit()
+        flash('Candidato eliminado exitosamente')
+    return redirect(url_for('registro_candidato'))
 
 if __name__ == '__main__': 
     with app.app_context(): 

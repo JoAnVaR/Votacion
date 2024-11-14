@@ -12,6 +12,13 @@
         .search-results {
             display: none;
         }
+
+        .candidate-photo {
+            width: 100px;
+            height: 133px;
+            /* Relación de aspecto 3x4 */
+            object-fit: cover;
+        }
     </style>
     <script>
         function searchEstudiantes() {
@@ -38,13 +45,23 @@
             }
             document.getElementById("searchEstudianteResults").style.display = hasResults ? "block" : "none";
         }
-
-
     </script>
 </head>
 
 <body>
     <h1>Registro de Candidatos</h1>
+
+    <!-- Mostrar mensajes flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
     <form method="get">
         <div class="search-box">
             <label for="searchJuradoInput">Buscar Estudiante:</label>
@@ -53,7 +70,7 @@
         </div>
     </form>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <div id="searchEstudianteResults" class="search-results">
             <table id="estudiantesTable">
                 <thead>
@@ -76,11 +93,48 @@
                 </tbody>
             </table><br>
         </div>
+
         <label for="propuesta">Propuesta:</label>
         <textarea id="propuesta" name="propuesta" required></textarea><br>
 
+        <!-- Campo de carga de foto 3x4 -->
+        <label for="foto">Foto 3x4:</label>
+        <input type="file" id="foto" name="foto" accept="image/*" required><br>
+
         <input type="submit" value="Registrar">
     </form>
+
+    <h2>Candidatos Registrados</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Foto</th>
+                <th>Nombre</th>
+                <th>Número de Documento</th>
+                <th>Propuesta</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for candidato in candidatos %}
+            <tr>
+                <td>
+                    <img src="{{ url_for('static', filename=candidato.foto_path) }}"
+                        alt="Foto de {{ candidato.nombre }}" class="candidate-photo">
+                </td>
+                <td>{{ candidato.nombre }}</td>
+                <td>{{ candidato.numero_documento }}</td>
+                <td>{{ candidato.propuesta }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('eliminar_candidato', id=candidato.id) }}"
+                        style="display:inline;">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 
 </html>

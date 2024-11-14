@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Administrar Sedes y Mesas</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function obtenerNumeroMesaDisponible(sedeId) {
+            $.get('/mesas_existentes/' + sedeId, function (data) {
+                var numerosExistentes = data;
+                var numeroMesa = 1;
+                while (numerosExistentes.includes(numeroMesa)) {
+                    numeroMesa++;
+                }
+                $('#mesa_numero').val(numeroMesa);
+            });
+        }
+
+        $(document).ready(function () {
+            // Asignar número de mesa al seleccionar una sede
+            $('#sede_id').change(function () {
+                var sedeId = $(this).val();
+                obtenerNumeroMesaDisponible(sedeId);
+            });
+
+            // Asignar número de mesa inicial al cargar la página
+            if ($('#sede_id').val()) {
+                obtenerNumeroMesaDisponible($('#sede_id').val());
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Administrar Sedes y Mesas</h1>
+
+    <!-- Formulario para agregar una nueva sede -->
+    <form method="post" action="{{ url_for('agregar_sede') }}">
+        <h2>Agregar Sede</h2>
+        <label for="nombre_sede">Nombre de la Sede:</label>
+        <input type="text" id="nombre_sede" name="nombre_sede" required><br>
+
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccion" required><br>
+
+        <button type="submit">Agregar Sede</button>
+    </form>
+
+    <!-- Formulario para agregar una nueva mesa -->
+    <form method="post" action="{{ url_for('agregar_mesas') }}">
+        <h2>Agregar Mesa a una Sede</h2>
+        <label for="sede_id">Seleccionar Sede:</label>
+        <select id="sede_id" name="sede_id" required>
+            {% for sede in sedes %}
+            <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="mesa_numero">Número de Mesa:</label>
+        <input type="number" id="mesa_numero" name="mesa_numero" required readonly><br>
+
+        <button type="submit">Agregar Mesa</button>
+    </form>
+
+    <!-- Mostrar sedes y mesas agrupadas -->
+    <h2>Sedes y sus Mesas</h2>
+    {% if sedes %}
+    {% for sede in sedes %}
+    <h3>ID {{ sede.id }} - {{ sede.nombre }}</h3>
+    <ul>
+        {% for mesa in sede.mesas %}
+        <li>Mesa Número: {{ mesa.mesa_numero }}</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+    {% else %}
+    <p>No se han agregado sedes ni mesas todavía.</p>
+    {% endif %}
+</body>
+
+</html>

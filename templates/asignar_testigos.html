@@ -4,6 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <title>Asignar Testigos</title>
+    <style>
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-results {
+            display: none;
+        }
+    </style>
+    <script>
+        function searchTestigos() {
+            let input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchTestigoInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("testigosTable");
+            tr = table.getElementsByTagName("tr");
+            let hasResults = false;
+            if (filter === "") {
+                document.getElementById("searchTestigoResults").style.display = "none";
+                return;
+            }
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td")[2];  // Cambiado a columna del número de documento
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        hasResults = true;
+                    }
+                }
+            }
+            document.getElementById("searchTestigoResults").style.display = hasResults ? "block" : "none";
+        }
+
+        function searchMesas() {
+            let input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchMesaInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("mesasTable");
+            tr = table.getElementsByTagName("tr");
+            let hasResults = false;
+            if (filter === "") {
+                document.getElementById("searchMesaResults").style.display = "none";
+                return;
+            }
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td")[0];  // Columna del número de mesa
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        hasResults = true;
+                    }
+                }
+            }
+            document.getElementById("searchMesaResults").style.display = hasResults ? "block" : "none";
+        }
+
+    </script>
 </head>
 
 <body>
@@ -30,19 +91,55 @@
     <!-- Formulario para asignar testigo a una mesa -->
     <form method="post" action="{{ url_for('asignar_testigos') }}">
         <h2>Asignar Testigo a una Mesa</h2>
-        <label for="testigo_id">Seleccionar Testigo:</label>
-        <select id="testigo_id" name="testigo_id" required>
-            {% for testigo in testigos %}
-            <option value="{{ testigo.id }}">{{ testigo.nombre }} ({{ testigo.numero_documento }})</option>
-            {% endfor %}
-        </select><br>
+        <div class="search-box">
+            <label for="searchTestigoInput">Buscar Testigo:</label>
+            <input type="text" id="searchTestigoInput" onkeyup="searchTestigos()" placeholder="Buscar por nombre...">
+        </div>
+        <div id="searchTestigoResults" class="search-results">
+            <table id="testigosTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Número de Documento</th>
+                        <th>Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for testigo in testigos %}
+                    <tr>
+                        <td>{{ testigo.id }}</td>
+                        <td>{{ testigo.nombre }}</td>
+                        <td>{{ testigo.numero_documento }}</td>
+                        <td><input type="radio" name="testigo_id" value="{{ testigo.id }}" required></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table><br>
+        </div>
 
-        <label for="mesa_numero">Seleccionar Mesa:</label>
-        <select id="mesa_numero" name="mesa_numero" required>
-            {% for asignacion in asignaciones %}
-            <option value="{{ asignacion.mesa_numero }}">{{ asignacion.mesa_numero }}</option>
-            {% endfor %}
-        </select><br>
+        <div class="search-box">
+            <label for="searchMesaInput">Buscar Mesa:</label>
+            <input type="text" id="searchMesaInput" onkeyup="searchMesas()" placeholder="Buscar por número de mesa...">
+        </div>
+        <div id="searchMesaResults" class="search-results">
+            <table id="mesasTable">
+                <thead>
+                    <tr>
+                        <th>Número de Mesa</th>
+                        <th>Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asignacion in asignaciones %}
+                    <tr>
+                        <td>{{ asignacion.mesa_numero }}</td>
+                        <td><input type="radio" name="mesa_numero" value="{{ asignacion.mesa_numero }}" required></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table><br>
+        </div>
 
         <button type="submit" name="asignar_testigo">Asignar Testigo</button>
     </form>
