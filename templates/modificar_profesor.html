@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Modificar Profesor</title>
+</head>
+
+<body>
+    <h1>Modificar Profesor</h1>
+
+    <form method="post">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" value="{{ profesor.nombre }}" required><br>
+
+        <label for="numero_documento">Número de Documento:</label>
+        <input type="text" id="numero_documento" name="numero_documento" value="{{ profesor.numero_documento }}"
+            required><br>
+
+        <label for="departamento">Departamento:</label>
+        <input type="text" id="departamento" name="departamento" value="{{ profesor.departamento }}" required><br>
+
+        <label for="titulo">Título:</label>
+        <input type="text" id="titulo" name="titulo" value="{{ profesor.titulo }}" required><br>
+
+        <label for="sede_id">Sede:</label>
+        <select id="sede_id" name="sede_id" required>
+            {% for sede in sedes %}
+            <option value="{{ sede.id }}" {% if sede.id==profesor.sede_id %}selected{% endif %}>{{ sede.nombre }}
+            </option>
+            {% endfor %}
+        </select><br>
+
+        <input type="submit" value="Actualizar">
+    </form>
+</body>
+
+</html>

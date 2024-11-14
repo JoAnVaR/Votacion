@@ -1,8 +1,8 @@
-#Importacion y configuracion inicial
-import os 
+import os
 import csv
 import random
 import io
+import json
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
 from werkzeug.utils import secure_filename
@@ -20,14 +20,14 @@ db = SQLAlchemy(app)
 if not os.path.exists(app.config['UPLOAD_FOLDER']): 
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-#Context Processor para Enumerar
+# Context Processor para Enumerar
 @app.context_processor
 def utility_processor():
     def enumerar(iterable, start=0):
         return enumerate(iterable, start)
     return dict(enumerar=enumerar)
 
-#Modelos de Base de Datos
+# Modelos de Base de Datos
 class Estudiante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero_documento = db.Column(db.String(20), unique=True, nullable=False)
@@ -42,7 +42,10 @@ class Profesor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero_documento = db.Column(db.String(20), unique=True, nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
-    departamento = db.Column(db.String(100))
+    departamento = db.Column(db.String(100), nullable=False)
+    titulo = db.Column(db.String(50), nullable=False)
+    sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
+    sede = db.relationship('Sede', backref='profesores')
 
 # Definición del modelo para la tabla de sedes
 class Sede(db.Model):
@@ -95,7 +98,7 @@ class AsignacionTestigo(db.Model):
     id_testigo = db.Column(db.Integer, db.ForeignKey('testigo.id'), nullable=False)
     mesa_numero = db.Column(db.String(20), nullable=False)  # Cambiamos a mesa_numero
 
-    # Definir el modelo Candidato con el campo foto_path
+# Definir el modelo Candidato con el campo foto_path
 class Candidato(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero_documento = db.Column(db.String(80), unique=True, nullable=False)
@@ -113,101 +116,6 @@ class Reemplazo(db.Model):
     jurado_reemplazo = db.relationship('Jurado', foreign_keys=[jurado_reemplazo_id])
     razon = db.Column(db.String(255), nullable=False)
     fecha = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-
-# Funciones para Poblar la Base de Datos y Asignar Mesas
-
-# Función para Poblar la Base de Datos
-def poblar_base_de_datos():
-    nombres_profesores = ["Prof. Juan", "Prof. Elena", "Prof. Roberto", "Prof. Sofía"]
-    departamentos = ["Matemáticas", "Ciencias", "Historia", "Inglés"]
-    for i in range(1, 20):  # Crear 20 profesores
-        profesor = Profesor(
-            numero_documento=f"P{i:03}",
-            nombre=random.choice(nombres_profesores),
-            departamento=random.choice(departamentos)
-        )
-        db.session.add(profesor)
-
-    db.session.commit()
-    print("Base de datos poblada con datos de prueba.")
-
-# Función para realizar sorteo
-def realizar_sorteo(fase, grado_especifico):
-    candidatos = Estudiante.query.filter_by(es_candidato=True, grado=grado_especifico).all()
-    candidatos_ids = [c.id for c in candidatos]
-    estudiantes = Estudiante.query.filter(Estudiante.grado == grado_especifico, Estudiante.id.notin_(candidatos_ids)).all()
-    profesores = Profesor.query.all()
-    asignaciones_mesa = AsignacionMesa.query.all()
-
-    sorteos = []
-    remanentes = []
-    seleccionados = set()
-    mesas_asignadas = set()  # Nuevo conjunto para rastrear mesas asignadas
-
-    # Crear un diccionario de estudiantes por seccion
-    estudiantes_por_seccion = {}
-    for estudiante in estudiantes:
-        if estudiante.seccion not in estudiantes_por_seccion:
-            estudiantes_por_seccion[estudiante.seccion] = []
-        estudiantes_por_seccion[estudiante.seccion].append(estudiante)
-
-    # Comprobar si hay suficientes secciones diferentes
-    secciones = list(estudiantes_por_seccion.keys())
-    if len(secciones) < 2:
-        raise ValueError("No hay suficientes secciones diferentes para realizar el sorteo.")
-
-    for asignacion in asignaciones_mesa:
-        if asignacion.mesa_numero in mesas_asignadas:
-            continue  # Saltar mesas duplicadas
-
-        estudiantes_seleccionados = []
-        secciones_disponibles = list(estudiantes_por_seccion.keys())
-
-        # Seleccionar estudiantes de secciones diferentes
-        while len(estudiantes_seleccionados) < 2 and secciones_disponibles:
-            seccion = random.choice(secciones_disponibles)
-            if estudiantes_por_seccion[seccion]:
-                estudiante = random.choice(estudiantes_por_seccion[seccion])
-                estudiantes_por_seccion[seccion].remove(estudiante)
-                estudiantes_seleccionados.append(estudiante)
-            if not estudiantes_por_seccion[seccion]:
-                secciones_disponibles.remove(seccion)
-
-        seleccionados.update(e.id for e in estudiantes_seleccionados)
-
-        # Seleccionar un estudiante remanente de cualquier sección disponible
-        remanente_disponible = [e for e in estudiantes if e.id not in seleccionados]
-        remanente = random.choice(remanente_disponible)
-        seleccionados.add(remanente.id)
-
-        profesor_seleccionado = random.choice(profesores)
-
-        sorteos.append({
-            "grado": grado_especifico,
-            "seccion": asignacion.seccion,
-            "mesa_numero": asignacion.mesa_numero,
-            "estudiantes": [{"id": e.id, "nombre": e.nombre, "numero_documento": e.numero_documento, "seccion": e.seccion} for e in estudiantes_seleccionados],
-            "profesor": {"id": profesor_seleccionado.id, "nombre": profesor_seleccionado.nombre, "numero_documento": profesor_seleccionado.numero_documento},
-            "remanente": {"id": remanente.id, "nombre": remanente.nombre, "numero_documento": remanente.numero_documento, "seccion": remanente.seccion}
-        })
-        remanentes.append({"id": remanente.id, "nombre": remanente.nombre, "numero_documento": remanente.numero_documento})
-        mesas_asignadas.add(asignacion.mesa_numero)  # Añadir mesa al conjunto de mesas asignadas
-
-    for sorteo in sorteos:
-        for estudiante in sorteo["estudiantes"]:
-            nuevo_jurado = Jurado(numero_documento=estudiante["numero_documento"], nombre=estudiante["nombre"], tipo_persona="Estudiante", id_mesa=sorteo["mesa_numero"], sorteo=fase)
-            db.session.add(nuevo_jurado)
-        profesor = sorteo["profesor"]
-        nuevo_jurado = Jurado(numero_documento=profesor["numero_documento"], nombre=profesor["nombre"], tipo_persona="Profesor", id_mesa=sorteo["mesa_numero"], sorteo=fase)
-        db.session.add(nuevo_jurado)
-
-    for remanente in remanentes:
-        nuevo_remanente = Jurado(numero_documento=remanente["numero_documento"], nombre=remanente["nombre"], tipo_persona="Estudiante", id_mesa=0, sorteo=fase)
-        db.session.add(nuevo_remanente)
-
-    db.session.commit()
-    return sorteos, remanentes
 
 # Función para realizar reemplazo
 def reemplazar_jurado(jurado_id, remanente_id, razon):
@@ -239,6 +147,127 @@ def reemplazar_jurado(jurado_id, remanente_id, razon):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
+# Función para realizar sorteo
+def realizar_sorteo(fase, grados_seleccionados, jurados_por_mesa, porcentaje_remanentes):
+    estudiantes = Estudiante.query.filter(
+        Estudiante.grado.in_(grados_seleccionados),
+        Estudiante.es_candidato == False
+    ).all()
+
+    profesores = Profesor.query.all()
+    asignaciones_mesa = AsignacionMesa.query.all()
+
+    print(f"Número de estudiantes disponibles: {len(estudiantes)}")
+    print(f"Profesores disponibles: {len(profesores)}")
+    print(f"Asgnaciones de mesas: {len(asignaciones_mesa)}")
+
+    sorteos = []
+    remanentes = []
+    seleccionados = set()
+    mesas_asignadas = set()
+
+    estudiantes_por_seccion = {}
+    for estudiante in estudiantes:
+        if estudiante.seccion not in estudiantes_por_seccion:
+            estudiantes_por_seccion[estudiante.seccion] = []
+        estudiantes_por_seccion[estudiante.seccion].append(estudiante)
+
+    secciones = list(estudiantes_por_seccion.keys())
+    if len(secciones) < 2:
+        raise ValueError("No hay suficientes secciones diferentes para realizar el sorteo.")
+
+    # Filtrar las asignaciones de mesas para que no se repitan en la misma sede
+    asignaciones_unicas = {}
+    for asignacion in asignaciones_mesa:
+        if asignacion.sede_id not in asignaciones_unicas:
+            asignaciones_unicas[asignacion.sede_id] = set()
+        if asignacion.mesa_numero not in asignaciones_unicas[asignacion.sede_id]:
+            asignaciones_unicas[asignacion.sede_id].add(asignacion.mesa_numero)
+
+    # Crear una lista de asignaciones únicas
+    asignaciones_mesa_unicas = []
+    for sede, mesas in asignaciones_unicas.items():
+        for mesa in mesas:
+            asignaciones_mesa_unicas.append(next(a for a in asignaciones_mesa if a.sede_id == sede and a.mesa_numero == mesa))
+
+    # Calcular correctamente los estudiantes necesarios
+    total_mesas = len(asignaciones_mesa_unicas)
+    estudiantes_necesarios = total_mesas * jurados_por_mesa  # Estudiantes necesarios por mesa
+    total_estudiantes_disponibles = len(estudiantes)
+    total_jurados = estudiantes_necesarios + len(profesores)
+
+    # Calcular remanentes basado en el porcentaje especificado
+    remanentes_necesarios = int((total_jurados * porcentaje_remanentes) / 100)
+
+    print(f"Estudiantes necesarios: {estudiantes_necesarios}")
+    print(f"Total de estudiantes disponibles: {total_estudiantes_disponibles}")
+    print(f"Remanentes necesarios: {remanentes_necesarios}")
+
+    if total_estudiantes_disponibles < estudiantes_necesarios + remanentes_necesarios:
+        raise ValueError("No hay suficientes estudiantes disponibles en los grados seleccionados. Por favor, seleccione grados adicionales.")
+
+    for asignacion in asignaciones_mesa_unicas:
+        # Verificar que no se dupliquen las mesas asignadas por sede
+        if (asignacion.mesa_numero, asignacion.sede_id) in mesas_asignadas:
+            continue
+
+        estudiantes_seleccionados = []
+        secciones_disponibles = list(estudiantes_por_seccion.keys())
+
+        while len(estudiantes_seleccionados) < (jurados_por_mesa - 1) and secciones_disponibles:
+            seccion = random.choice(secciones_disponibles)
+            if estudiantes_por_seccion[seccion]:
+                estudiante = random.choice(estudiantes_por_seccion[seccion])
+                estudiantes_por_seccion[seccion].remove(estudiante)
+                estudiantes_seleccionados.append(estudiante)
+            if not estudiantes_por_seccion[seccion]:
+                secciones_disponibles.remove(seccion)
+
+        seleccionados.update(e.id for e in estudiantes_seleccionados)
+
+        remanente_disponible = [e for e in estudiantes if e.id not in seleccionados]
+        if remanente_disponible:
+            remanente = random.choice(remanente_disponible)
+            seleccionados.add(remanente.id)
+        else:
+            remanente = None
+
+        profesor_seleccionado = random.choice(profesores) if profesores else None
+
+        sorteos.append({
+            "mesa_numero": asignacion.mesa_numero,
+            "sede_id": asignacion.sede_id,
+            "estudiantes": [{"id": e.id, "numero_documento": e.numero_documento, "nombre": e.nombre, "grado": e.grado, "seccion": e.seccion} for e in estudiantes_seleccionados],
+            "profesor": {"id": profesor_seleccionado.id, "numero_documento": profesor_seleccionado.numero_documento, "nombre": profesor_seleccionado.nombre} if profesor_seleccionado else None,
+            "remanente": {"id": remanente.id, "numero_documento": remanente.numero_documento, "nombre": remanente.nombre, "grado": remanente.grado, "seccion": remanente.seccion} if remanente else None
+        })
+        mesas_asignadas.add((asignacion.mesa_numero, asignacion.sede_id))
+
+    # Asignar remanentes según el porcentaje especificado
+    remanente_disponible = [e for e in estudiantes if e.id not in seleccionados]
+    for _ in range(remanentes_necesarios):
+        if remanente_disponible:
+            remanente = random.choice(remanente_disponible)
+            seleccionados.add(remanente.id)
+            remanentes.append({"id": remanente.id, "numero_documento": remanente.numero_documento, "nombre": remanente.nombre})
+            remanente_disponible.remove(remanente)
+
+    for sorteo in sorteos:
+        for estudiante in sorteo["estudiantes"]:
+            nuevo_jurado = Jurado(numero_documento=estudiante["numero_documento"], nombre=estudiante["nombre"], tipo_persona="Estudiante", id_mesa=sorteo["mesa_numero"], sorteo=fase)
+            db.session.add(nuevo_jurado)
+        profesor = sorteo["profesor"]
+        if profesor:
+            nuevo_jurado = Jurado(numero_documento=profesor["numero_documento"], nombre=profesor["nombre"], tipo_persona="Profesor", id_mesa=sorteo["mesa_numero"], sorteo=fase)
+            db.session.add(nuevo_jurado)
+
+    for remanente in remanentes:
+        nuevo_remanente = Jurado(numero_documento=remanente["numero_documento"], nombre=remanente["nombre"], tipo_persona="Estudiante", id_mesa=0, sorteo=fase)
+        db.session.add(nuevo_remanente)
+
+    db.session.commit()
+    return sorteos, remanentes
+
 
 # Rutas y Vistas -----------------------------------------------------------------------------------------
 
@@ -246,12 +275,6 @@ def allowed_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
-
-# Ruta para Poblar Datos
-@app.route('/poblar_datos')
-def poblar_datos():
-    poblar_base_de_datos()
-    return redirect(url_for('index'))
 
 # Ruta para agregar sede
 @app.route('/agregar_sede', methods=['GET', 'POST'])
@@ -299,53 +322,105 @@ def mesas_existentes(sede_id):
 # Ruta para Sorteo de Jurados
 @app.route('/sorteo_jurados', methods=['GET', 'POST'])
 def sorteo_jurados():
-    # Verificar si los tres sorteos ya se han realizado
     fase_1_completado = Jurado.query.filter_by(sorteo=1).first() is not None
     fase_2_completado = Jurado.query.filter_by(sorteo=2).first() is not None
     fase_3_completado = Jurado.query.filter_by(sorteo=3).first() is not None
     sorteos_realizados = fase_1_completado and fase_2_completado and fase_3_completado
 
-    sorteos = []  # Inicializamos sorteos
-    remanentes = []  # Inicializamos remanentes
-    jurados_definitivos = []  # Inicializamos jurados definitivos
+    sorteos = []
+    remanentes = []
+    jurados_definitivos = []
 
     if request.method == 'POST' and not sorteos_realizados:
         try:
-            grado_especifico = request.form['grado']
-            session['grado'] = grado_especifico
+            grados_seleccionados = request.form.getlist('grados')
+            jurados_por_mesa = int(request.form['jurados_por_mesa'])
+            porcentaje_remanentes = int(request.form['porcentaje_remanentes'])
+            session['grados'] = grados_seleccionados
+            session['jurados_por_mesa'] = jurados_por_mesa
+            session['porcentaje_remanentes'] = porcentaje_remanentes
         except KeyError:
-            grado_especifico = session.get('grado', '')
+            grados_seleccionados = session.get('grados', [])
+            jurados_por_mesa = session.get('jurados_por_mesa', 3)
+            porcentaje_remanentes = session.get('porcentaje_remanentes', 12)
 
         fase = request.form.get('fase')
 
-        if fase == 'Iniciar Primer Sorteo' and not fase_1_completado:
-            sorteos, remanentes = realizar_sorteo(1, grado_especifico)
-            session['fase'] = 1
-        elif fase == 'Realizar Segundo Sorteo' and session.get('fase') == 1 and not fase_2_completado:
-            sorteos, remanentes = realizar_sorteo(2, grado_especifico)
-            session['fase'] = 2
-        elif fase == 'Realizar Sorteo Definitivo' and session.get('fase') == 2 and not fase_3_completado:
-            sorteos, remanentes = realizar_sorteo(3, grado_especifico)
-            session.pop('fase', None)
+        try:
+            if fase == 'Iniciar Primer Sorteo' and not fase_1_completado:
+                sorteos, remanentes = realizar_sorteo(1, grados_seleccionados, jurados_por_mesa, porcentaje_remanentes)
+                session['fase'] = 1
+            elif fase == 'Realizar Segundo Sorteo' and session.get('fase') == 1 and not fase_2_completado:
+                sorteos, remanentes = realizar_sorteo(2, grados_seleccionados, jurados_por_mesa, porcentaje_remanentes)
+                session['fase'] = 2
+            elif fase == 'Realizar Sorteo Definitivo' and session.get('fase') == 2 and not fase_3_completado:
+                sorteos, remanentes = realizar_sorteo(3, grados_seleccionados, jurados_por_mesa, porcentaje_remanentes)
+                session.pop('fase', None)
 
-        # Guardar sorteos en la sesión para mostrarlos después
-        session['sorteos'] = sorteos
-        session['remanentes'] = remanentes
+            session['sorteos'] = sorteos
+            session['remanentes'] = remanentes
 
-        # Redireccionamos para actualizar la página y mostrar los resultados
-        return redirect(url_for('sorteo_jurados'))
+            return redirect(url_for('sorteo_jurados'))
+        except ValueError as e:
+            flash(str(e), 'error')
+            return redirect(url_for('sorteo_jurados'))
 
-    # Cargar datos de la sesión si existen
     sorteos = session.get('sorteos', [])
     remanentes = session.get('remanentes', [])
     fase = session.get('fase', 0)
-    grado_especifico = session.get('grado', "")
+    grados_seleccionados = session.get('grados', [])
+    jurados_por_mesa = session.get('jurados_por_mesa', 3)
+    porcentaje_remanentes = session.get('porcentaje_remanentes', 12)
 
-    # Obtener la lista de jurados definitivos del último sorteo
     jurados_definitivos = Jurado.query.filter_by(activo=True, sorteo=3).all()
 
-    # Pasar las variables a la plantilla
-    return render_template('sorteo_jurados.html', grados=sorted(list(set(e.grado for e in Estudiante.query.all()))), sorteos=sorteos, remanentes=remanentes, fase=fase, grado=grado_especifico, sorteos_realizados=sorteos_realizados, jurados_definitivos=jurados_definitivos, fase_1_completado=fase_1_completado, fase_2_completado=fase_2_completado, fase_3_completado=fase_3_completado)
+    # Serializar las sedes a diccionarios
+    sedes = Sede.query.all()
+    sedes_dict = []
+    for sede in sedes:
+        sede_dict = {"id": sede.id, "nombre": sede.nombre, "mesas": [a.mesa_numero for a in sede.asignaciones] if sede.asignaciones else []}
+        if None not in sede_dict.values():  # Asegurarnos de que no haya valores None
+            sedes_dict.append(sede_dict)
+
+    return render_template(
+        'sorteo_jurados.html',
+        sedes=sedes_dict,
+        grados=sorted(list(set(e.grado for e in Estudiante.query.all()))),
+        sorteos=sorteos,
+        remanentes=remanentes,
+        fase=fase,
+        grados_seleccionados=grados_seleccionados,
+        jurados_por_mesa=jurados_por_mesa,
+        porcentaje_remanentes=porcentaje_remanentes,
+        sorteos_realizados=sorteos_realizados,
+        jurados_definitivos=jurados_definitivos,
+        fase_1_completado=fase_1_completado,
+        fase_2_completado=fase_2_completado,
+        fase_3_completado=fase_3_completado
+    )
+
+
+# Ruta para contar numero de estudiantes
+@app.route('/numero_estudiantes', methods=['GET'])
+def numero_estudiantes():
+    grados = request.args.get('grados')
+    if grados:
+        grados_lista = grados.split(',')
+        print(f"Grados recibidos: {grados_lista}")
+
+        # Filtrar estudiantes por grados, excluyendo candidatos
+        estudiantes = Estudiante.query.filter(
+            Estudiante.grado.in_(grados_lista),
+            Estudiante.es_candidato == False
+        ).all()
+
+        print(f"Estudiantes encontrados: {len(estudiantes)}")
+        for estudiante in estudiantes:
+            print(f"Estudiante: {estudiante.nombre}, Documento: {estudiante.numero_documento}, Grado: {estudiante.grado}")
+
+        return jsonify({"numero_estudiantes": len(estudiantes)})
+
+    return jsonify({"error": "Grados no especificados"}), 400
 
 # Ruta para registro de estudiantes
 @app.route('/registro_estudiante', methods=['GET', 'POST'])
@@ -441,6 +516,92 @@ def detalle_grado_seccion(grado, seccion, sede):
     ).all()
 
     return render_template('detalle_grado_seccion.html', estudiantes=estudiantes, grado=grado, seccion=seccion, sede=sede)
+
+# Ruta para registro de profesores
+@app.route('/registro_profesor', methods=['GET', 'POST'])
+def registro_profesor():
+    if request.method == 'POST':
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename.endswith('.csv'):
+                try:
+                    stream = io.StringIO(file.stream.read().decode("latin1"), newline=None)
+                    csv_input = csv.reader(stream)
+                    for row in csv_input:
+                        if row:  # Evitar filas vacías
+                            numero_documento, nombre, departamento, titulo, sede_id = row
+                            nuevo_profesor = Profesor(
+                                numero_documento=numero_documento,
+                                nombre=nombre,
+                                departamento=departamento,
+                                titulo=titulo,
+                                sede_id=sede_id
+                            )
+                            db.session.add(nuevo_profesor)
+                    db.session.commit()
+                    flash('Profesores cargados exitosamente')
+                except Exception as e:
+                    flash(f'Error al procesar el archivo CSV: {str(e)}')
+                return redirect(url_for('registro_profesor'))
+        else:
+            numero_documento = request.form['numero_documento']
+            nombre = request.form['nombre']
+            departamento = request.form['departamento']
+            titulo = request.form['titulo']
+            sede_id = request.form['sede_id']
+
+            nuevo_profesor = Profesor(
+                numero_documento=numero_documento,
+                nombre=nombre,
+                departamento=departamento,
+                titulo=titulo,
+                sede_id=sede_id
+            )
+            db.session.add(nuevo_profesor)
+            db.session.commit()
+
+            flash('Profesor registrado exitosamente')
+            return redirect(url_for('registro_profesor'))
+
+    sedes = Sede.query.all()
+
+    for sede in sedes: 
+        sede.profesores = Profesor.query.filter_by(sede_id=sede.id).order_by(Profesor.numero_documento).all()
+
+    return render_template('registro_profesor.html', sedes=sedes)
+
+# Ruta para descargar la plantilla profesor
+@app.route('/descargar_plantilla_profesor')
+def descargar_plantilla_profesor():
+    return send_file('plantilla_profesores.csv', as_attachment=True)
+
+# Ruta para detallar profesor
+@app.route('/eliminar_profesor/<int:id>', methods=['POST'])
+def eliminar_profesor(id):
+    profesor = Profesor.query.get(id)
+    if profesor:
+        db.session.delete(profesor)
+        db.session.commit()
+        flash('Profesor eliminado exitosamente')
+    return redirect(url_for('registro_profesor'))
+
+# Ruta para modificar profesor
+@app.route('/modificar_profesor/<int:id>', methods=['GET', 'POST'])
+def modificar_profesor(id):
+    profesor = Profesor.query.get(id)
+    if request.method == 'POST':
+        profesor.nombre = request.form['nombre']
+        profesor.numero_documento = request.form['numero_documento']
+        profesor.departamento = request.form['departamento']
+        profesor.titulo = request.form['titulo']
+        profesor.sede_id = request.form['sede_id']
+
+        db.session.commit()
+        flash('Profesor modificado exitosamente')
+        return redirect(url_for('registro_profesor'))
+
+    sedes = Sede.query.all()
+    return render_template('modificar_profesor.html', profesor=profesor, sedes=sedes)
 
 # Ruta para Reemplazo de Jurados
 @app.route('/reemplazo_jurados', methods=['GET', 'POST'])
@@ -608,11 +769,17 @@ def registro_candidato():
 def eliminar_candidato(id):
     candidato = Candidato.query.get(id)
     if candidato:
+        # Eliminar el archivo de la foto
+        if candidato.foto_path:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], candidato.foto_path.split('/')[-1])
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
         # Eliminar el candidato, pero mantener el estado de estudiante para permitir la reactivación
         estudiante = Estudiante.query.filter_by(numero_documento=candidato.numero_documento).first()
         if estudiante:
             estudiante.es_candidato = False
-        
+
         db.session.delete(candidato)
         db.session.commit()
         flash('Candidato eliminado exitosamente')
@@ -620,6 +787,6 @@ def eliminar_candidato(id):
 
 if __name__ == '__main__': 
     with app.app_context(): 
-        #db.drop_all()  # Eliminar todas las tablas existentes 
+        # db.drop_all()  # Eliminar todas las tablas existentes si es necesario
         db.create_all()  # Crear todas las tablas con la estructura actualizada 
     app.run(debug=True)
