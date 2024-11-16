@@ -19,7 +19,6 @@
 
         .checkbox-container label {
             width: 50px;
-            /* Ajusta según sea necesario */
             margin-right: 10px;
             display: flex;
             flex-direction: row-reverse;
@@ -29,6 +28,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             sortCheckboxes();
+            disableCheckboxes();
         });
 
         function sortCheckboxes() {
@@ -74,7 +74,7 @@
         function calcularRemanentes(totalEstudiantesJurados) {
             var porcentajeRemanentes = document.getElementById('porcentaje_remanentes').value;
             var totalJurados = parseInt(document.getElementById('info_box').innerText.match(/Total de Jurados: (\d+)/)[1]);
-            var remanentes = Math.round(totalJurados * (porcentajeRemanentes / 100));
+            var remanentes = Math.ceil(totalJurados * (porcentajeRemanentes / 100));
             var totalEstudiantesNecesarios = totalEstudiantesJurados + remanentes;
             var remanentesInfo = "<p>Remanentes necesarios: " + remanentes + "</p>";
             var estudiantesNecesariosInfo = "<p>Número de estudiantes necesarios: " + totalEstudiantesNecesarios + "</p>";
@@ -121,11 +121,12 @@
             fase_1_completado or fase_2_completado or fase_3_completado %}disabled{% endif %}><br>
 
         <label for="grados">Seleccionar Grado(s):</label>
-        <div class="checkbox-container" onchange="calcularJuradosNecesarios()">
+        <div class="checkbox-container" {% if fase_1_completado or fase_2_completado or fase_3_completado
+            %}style="pointer-events: none; opacity: 0.6;" {% endif %} onchange="calcularJuradosNecesarios()">
             {% for grado in grados %}
             <label><input type="checkbox" name="grados" value="{{ grado }}" {% if grado in grados_seleccionados
                     %}checked{% endif %} {% if fase_1_completado or fase_2_completado or fase_3_completado %}disabled{%
-                    endif %}>{{ grado }}</label>
+                    endif %}> {{ grado }}</label>
             {% endfor %}
         </div><br>
 
@@ -173,13 +174,8 @@
     {% else %}
     <p>No se han realizado sorteos todavía.</p>
     {% endif %}
-
-
     <h2>Remanentes</h2>
-    <ul>
-        {% for remanente in remanentes %}
-        <li>{{ remanente.numero_documento }} {{ remanente.nombre }}</li>
-        {% endfor %}
+    <ul> {% for remanente in remanentes %} <li>{{ remanente.numero_documento }} {{ remanente.nombre }}</li> {% endfor %}
     </ul>
 </body>
 
