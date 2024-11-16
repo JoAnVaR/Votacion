@@ -11,50 +11,95 @@
             border: 1px solid #ccc;
             background-color: #f9f9f9;
         }
+
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-container label {
+            width: 50px;
+            /* Ajusta según sea necesario */
+            margin-right: 10px;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+        }
     </style>
     <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            sortCheckboxes();
+        });
+
+        function sortCheckboxes() {
+            const container = document.querySelector('.checkbox-container');
+            const checkboxes = Array.from(container.querySelectorAll('label'));
+
+            checkboxes.sort((a, b) => {
+                const numA = parseInt(a.querySelector('input').value, 10);
+                const numB = parseInt(b.querySelector('input').value, 10);
+                return numA - numB;
+            });
+
+            checkboxes.forEach(checkbox => container.appendChild(checkbox));
+        }
+
         function calcularJuradosNecesarios() {
             var juradosPorMesa = document.getElementById('jurados_por_mesa').value;
             var mesasPorSede = JSON.parse('{{ sedes|tojson|safe }}');
-            var infoBox = document.getElementById('info_jurados_necesarios');
+            var infoBox = document.getElementById('info_box');
             infoBox.innerHTML = "";
 
             var totalMesas = 0;
-            var totalJurados = 0;
+            var totalEstudiantes = 0;
+            var totalProfesores = mesasPorSede.reduce((acc, sede) => acc + new Set(sede.mesas).size, 0); // Total de profesores igual a total de mesas
 
             mesasPorSede.forEach(function (sede) {
-                var juradosNecesarios = sede.mesas.length * juradosPorMesa;
-                totalMesas += sede.mesas.length;
-                totalJurados += juradosNecesarios;
-                var info = "<p>Sede " + sede.nombre + ": " + juradosNecesarios + " jurados necesarios para " + sede.mesas.length + " mesas.</p>";
+                var mesasSede = new Set(sede.mesas); // Asegurar unicidad de mesas por sede
+                var juradosNecesarios = mesasSede.size * juradosPorMesa;
+                totalMesas += mesasSede.size;
+                totalEstudiantes += juradosNecesarios;
+                var info = "<p>Sede " + sede.nombre + ": " + juradosNecesarios + " jurados necesarios para " + mesasSede.size + " mesas.</p>";
                 infoBox.innerHTML += info;
             });
 
+            var totalEstudiantesJurados = totalEstudiantes - totalProfesores;
             infoBox.innerHTML += "<p>Total de Mesas: " + totalMesas + "</p>";
-            infoBox.innerHTML += "<p>Total de Jurados (Estudiantes + Profesores): " + totalJurados + "</p>";
+            infoBox.innerHTML += "Estudiantes: " + totalEstudiantesJurados + "</p>";
+            infoBox.innerHTML += "Profesores: " + totalProfesores + "</p>";
+            infoBox.innerHTML += "Total de Jurados: " + totalEstudiantes + "</p>";
+            calcularRemanentes(totalEstudiantesJurados);
         }
 
-        function calcularRemanentes() {
+        function calcularRemanentes(totalEstudiantesJurados) {
             var porcentajeRemanentes = document.getElementById('porcentaje_remanentes').value;
-            var totalJurados = parseInt(document.getElementById('info_jurados_necesarios').innerText.match(/Total de Jurados \(Estudiantes \+ Profesores\): (\d+)/)[1]);
-            var remanentes = Math.ceil(totalJurados * (porcentajeRemanentes / 100));
-            var remanentesInfoBox = document.getElementById('info_remanentes');
-            remanentesInfoBox.innerHTML = "<p>Remanentes necesarios: " + remanentes + "</p>";
+            var totalJurados = parseInt(document.getElementById('info_box').innerText.match(/Total de Jurados: (\d+)/)[1]);
+            var remanentes = Math.round(totalJurados * (porcentajeRemanentes / 100));
+            var totalEstudiantesNecesarios = totalEstudiantesJurados + remanentes;
+            var remanentesInfo = "<p>Remanentes necesarios: " + remanentes + "</p>";
+            var estudiantesNecesariosInfo = "<p>Número de estudiantes necesarios: " + totalEstudiantesNecesarios + "</p>";
+            document.getElementById('info_box').innerHTML += remanentesInfo + estudiantesNecesariosInfo;
+            actualizarNumeroEstudiantes(totalEstudiantesNecesarios);
         }
 
-        function actualizarNumeroEstudiantes() {
-            var gradosSeleccionados = Array.from(document.querySelectorAll('#grados option:checked'), option => option.value);
+        function actualizarNumeroEstudiantes(totalEstudiantesNecesarios) {
+            var gradosSeleccionados = Array.from(document.querySelectorAll('.checkbox-container input[type=checkbox]:checked'), checkbox => checkbox.value);
             var url = new URL('{{ url_for("numero_estudiantes") }}', window.location.origin);
             url.searchParams.append('grados', gradosSeleccionados.join(','));
 
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    var estudiantesInfoBox = document.getElementById('info_numero_estudiantes');
-                    if (data.numero_estudiantes !== undefined) {
-                        estudiantesInfoBox.innerHTML = "<p>Número de estudiantes disponibles: " + data.numero_estudiantes + "</p>";
+                    var estudiantesInfo = "<p>Número de estudiantes disponibles: " + data.numero_estudiantes + "</p>";
+                    document.getElementById('info_box').innerHTML += estudiantesInfo;
+
+                    // Verificar si los estudiantes disponibles son suficientes
+                    if (data.numero_estudiantes < totalEstudiantesNecesarios) {
+                        // Deshabilitar el botón si no hay suficientes estudiantes disponibles 
+                        document.querySelector('button[name="fase"][value="Iniciar Primer Sorteo"]').disabled = true;
                     } else {
-                        estudiantesInfoBox.innerHTML = "<p>Error al obtener el número de estudiantes.</p>";
+                        // Habilitar el botón si hay suficientes estudiantes disponibles
+                        document.querySelector('button[name="fase"][value="Iniciar Primer Sorteo"]').disabled = false;
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -64,32 +109,24 @@
 
 <body>
     <h1>Sorteo de Jurados</h1>
-
     <form method="post" action="{{ url_for('sorteo_jurados') }}">
         <label for="jurados_por_mesa">Jurados por Mesa:</label>
         <input type="number" id="jurados_por_mesa" name="jurados_por_mesa" required
-            oninput="calcularJuradosNecesarios()" {% if fase_1_completado or fase_2_completado or fase_3_completado
-            %}disabled{% endif %}>
-        <div id="info_jurados_necesarios" class="info-box">
-            <!-- Aquí se mostrará la información sobre los jurados necesarios -->
-        </div><br>
+            oninput="calcularJuradosNecesarios()" value="{{ session.get('jurados_por_mesa', '') }}" {% if
+            fase_1_completado or fase_2_completado or fase_3_completado %}disabled{% endif %}><br>
 
         <label for="porcentaje_remanentes">Porcentaje de Remanentes (%):</label>
-        <input type="number" id="porcentaje_remanentes" name="porcentaje_remanentes" value="12" required
-            oninput="calcularRemanentes()"><br>
-        <div id="info_remanentes" class="info-box">
-            <!-- Aquí se mostrará el cálculo de los remanentes -->
-        </div><br>
+        <input type="number" id="porcentaje_remanentes" name="porcentaje_remanentes"
+            value="{{ session.get('porcentaje_remanentes', 12) }}" required oninput="calcularJuradosNecesarios()" {% if
+            fase_1_completado or fase_2_completado or fase_3_completado %}disabled{% endif %}><br>
 
         <label for="grados">Seleccionar Grado(s):</label>
-        <select id="grados" name="grados" multiple required onchange="actualizarNumeroEstudiantes()" {% if
-            fase_1_completado or fase_2_completado or fase_3_completado %}disabled{% endif %}>
+        <div class="checkbox-container" onchange="calcularJuradosNecesarios()">
             {% for grado in grados %}
-            <option value="{{ grado }}" {% if grado in grados_seleccionados %}selected{% endif %}>{{ grado }}</option>
+            <label><input type="checkbox" name="grados" value="{{ grado }}" {% if grado in grados_seleccionados
+                    %}checked{% endif %} {% if fase_1_completado or fase_2_completado or fase_3_completado %}disabled{%
+                    endif %}>{{ grado }}</label>
             {% endfor %}
-        </select>
-        <div id="info_numero_estudiantes" class="info-box">
-            <!-- Aquí se mostrará el número de estudiantes disponibles -->
         </div><br>
 
         <button type="submit" name="fase" value="Iniciar Primer Sorteo" {% if fase_1_completado %}disabled{% endif
@@ -99,6 +136,10 @@
         <button type="submit" name="fase" value="Realizar Sorteo Definitivo" {% if not fase_2_completado or
             fase_3_completado %}disabled{% endif %}>Sorteo Final</button>
     </form>
+
+    <div id="info_box" class="info-box">
+        <!-- Aquí se mostrarán todas las informaciones combinadas -->
+    </div>
 
     <h2>Sorteos Realizados</h2>
     {% if sorteos %}
@@ -113,21 +154,18 @@
             </tr>
         </thead>
         <tbody>
-            {% for sorteo in sorteos %}
-            {% if sorteo.sede_id == sede.id %}
+            {% for sorteo in sorteos|sort(attribute='mesa_numero') if sorteo.sede_id == sede.id %}
             <tr>
                 <td>{{ sorteo.mesa_numero }}</td>
                 <td>
                     <ul>
                         {% for estudiante in sorteo.estudiantes %}
-                        <li>{{ estudiante.numero_documento }} {{ estudiante.nombre }} {{ sorteo.grado }}-{{
-                            sorteo.seccion }}</li>
+                        <li>{{ estudiante.numero_documento }} {{ estudiante.nombre }}</li>
                         {% endfor %}
                     </ul>
                 </td>
                 <td>{{ sorteo.profesor.numero_documento }} {{ sorteo.profesor.nombre }}</td>
             </tr>
-            {% endif %}
             {% endfor %}
         </tbody>
     </table>
@@ -136,20 +174,13 @@
     <p>No se han realizado sorteos todavía.</p>
     {% endif %}
 
+
     <h2>Remanentes</h2>
     <ul>
         {% for remanente in remanentes %}
         <li>{{ remanente.numero_documento }} {{ remanente.nombre }}</li>
         {% endfor %}
     </ul>
-
-    <div id="info_jurados_necesarios" class="info-box">
-        <!-- Aquí se mostrará la información sobre los jurados necesarios -->
-    </div>
-
-    <div id="info_numero_estudiantes" class="info-box">
-        <!-- Aquí se mostrará el número de estudiantes disponibles -->
-    </div>
 </body>
 
 </html>
