@@ -63,12 +63,22 @@
             }
             document.getElementById("searchMesaResults").style.display = hasResults ? "block" : "none";
         }
-
     </script>
 </head>
 
 <body>
     <h1>Asignar Testigos</h1>
+
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
 
     <!-- Formulario para agregar un nuevo testigo -->
     <form method="post" action="{{ url_for('asignar_testigos') }}">
@@ -83,6 +93,15 @@
         <select id="tipo_persona" name="tipo_persona" required>
             <option value="Estudiante">Estudiante</option>
             <option value="Profesor">Profesor</option>
+            <option value="Otro">Otro</option> <!-- Nueva opción -->
+        </select><br>
+
+        <label for="candidato">Candidato:</label>
+        <select id="candidato" name="id_candidato" required>
+            {% for candidato in candidatos %}
+            <option value="{{ candidato.id }}">{{ candidato.nombre }}</option>
+            {% endfor %}
+            <option value="Voto en Blanco">Voto en Blanco</option> <!-- Nueva opción -->
         </select><br>
 
         <button type="submit" name="agregar_testigo">Agregar Testigo</button>
@@ -118,31 +137,40 @@
             </table><br>
         </div>
 
-        <div class="search-box">
-            <label for="searchMesaInput">Buscar Mesa:</label>
-            <input type="text" id="searchMesaInput" onkeyup="searchMesas()" placeholder="Buscar por número de mesa...">
-        </div>
-        <div id="searchMesaResults" class="search-results">
-            <table id="mesasTable">
-                <thead>
-                    <tr>
-                        <th>Número de Mesa</th>
-                        <th>Seleccionar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for asignacion in asignaciones %}
-                    <tr>
-                        <td>{{ asignacion.mesa_numero }}</td>
-                        <td><input type="radio" name="mesa_numero" value="{{ asignacion.mesa_numero }}" required></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table><br>
+        <label for="sede">Sede:</label>
+        <select id="sede" name="id_sede" onchange="loadMesas(this.value)" required>
+            {% for sede in sedes %}
+            <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="mesas">Seleccionar Mesas:</label>
+        <div class="checkbox-container">
+            <!-- Aquí se cargarán dinámicamente las mesas correspondientes a la sede seleccionada -->
         </div>
 
         <button type="submit" name="asignar_testigo">Asignar Testigo</button>
     </form>
+
+
+    <script>
+        function loadMesas(sedeId) {
+            // Realiza una petición al servidor para obtener las mesas de la sede seleccionada
+            fetch(`/get_mesas/${sedeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let container = document.querySelector('.checkbox-container');
+                    container.innerHTML = ''; // Limpiar contenido anterior
+
+                    data.forEach(mesa => {
+                        let label = document.createElement('label');
+                        label.innerHTML = `<input type="checkbox" name="mesas" value="${mesa.mesa_numero}"> ${mesa.mesa_numero}`;
+                        container.appendChild(label);
+                    });
+                })
+                .catch(error => console.error('Error cargando mesas:', error));
+        }
+    </script>
 
     <!-- Mostrar asignaciones realizadas -->
     <h2>Asignaciones Realizadas</h2>
@@ -152,6 +180,7 @@
             <tr>
                 <th>Testigo</th>
                 <th>Mesa Número</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -159,6 +188,13 @@
             <tr>
                 <td>{{ asignacion.testigo.nombre }} ({{ asignacion.testigo.numero_documento }})</td>
                 <td>{{ asignacion.mesa_numero }}</td>
+                <td>
+                    <form method="post"
+                        action="{{ url_for('eliminar_asignacion_testigo', asignacion_id=asignacion.id) }}"
+                        style="display:inline;">
+                        <button type="submit" name="eliminar_asignacion">Eliminar</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -166,6 +202,7 @@
     {% else %}
     <p>No se han realizado asignaciones todavía.</p>
     {% endif %}
+
 </body>
 
 </html>

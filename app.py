@@ -61,6 +61,7 @@ class Mesa(db.Model):
     mesa_numero = db.Column(db.Integer, nullable=False)
     sede = db.relationship('Sede', backref=db.backref('mesas', lazy=True))
 
+
 class AsignacionMesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     grado = db.Column(db.String(20), nullable=False)
@@ -89,15 +90,20 @@ class Votacion(db.Model):
 
 class Testigo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    numero_documento = db.Column(db.String(20), nullable=False)
+    numero_documento = db.Column(db.String(20), nullable=False, unique=True)
     nombre = db.Column(db.String(100), nullable=False)
     tipo_persona = db.Column(db.String(20), nullable=False)  # Estudiante o Profesor
-    asignaciones = db.relationship('AsignacionTestigo', backref='testigo', lazy=True)
+    id_candidato = db.Column(db.Integer, db.ForeignKey('candidato.id'), nullable=True)
+    asignaciones = db.relationship('AsignacionTestigo', backref='testigo', lazy=True)  # Cambiamos a 'testigo'
 
 class AsignacionTestigo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_testigo = db.Column(db.Integer, db.ForeignKey('testigo.id'), nullable=False)
-    mesa_numero = db.Column(db.String(20), nullable=False)  # Cambiamos a mesa_numero
+    id_sede = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
+    mesa_numero = db.Column(db.String(20), nullable=False)
+    # No necesitamos redefinir aquí el backref, solo en el modelo Testigo
+    sede = db.relationship('Sede', backref='asignaciones_testigos')
+
 
 # Definir el modelo Candidato con el campo foto_path
 class Candidato(db.Model):
@@ -267,7 +273,6 @@ def realizar_sorteo(fase, grados_seleccionados, jurados_por_mesa, porcentaje_rem
 
     db.session.commit()
     return sorteos, remanentes
-
 
 # Rutas y Vistas -----------------------------------------------------------------------------------------
 
@@ -641,34 +646,6 @@ def reemplazo_jurados():
 
     return render_template('reemplazo_jurados.html', jurados=jurados, reemplazos=reemplazos)
 
-# Ruta para Registro de Testigos
-@app.route('/asignar_testigos', methods=['GET', 'POST'])
-def asignar_testigos():
-    testigos = Testigo.query.all()
-    asignaciones = AsignacionTestigo.query.all()  # Usamos AsignacionTestigo
-
-    if request.method == 'POST':
-        if 'agregar_testigo' in request.form:
-            numero_documento = request.form.get('numero_documento')
-            nombre = request.form.get('nombre')
-            tipo_persona = request.form.get('tipo_persona')
-            nuevo_testigo = Testigo(
-                numero_documento=numero_documento,
-                nombre=nombre,
-                tipo_persona=tipo_persona
-            )
-            db.session.add(nuevo_testigo)
-            db.session.commit()
-        elif 'asignar_testigo' in request.form:
-            testigo_id = request.form.get('testigo_id')
-            mesa_numero = request.form.get('mesa_numero')
-            asignacion = AsignacionTestigo(id_testigo=testigo_id, mesa_numero=mesa_numero)
-            db.session.add(asignacion)
-            db.session.commit()
-        return redirect(url_for('asignar_testigos'))
-
-    return render_template('asignar_testigos.html', testigos=testigos, asignaciones=asignaciones)
-
 # Ruta para asignar mesas
 @app.route('/asignar_mesas', methods=['GET', 'POST'])
 def asignar_mesas():
@@ -794,6 +771,67 @@ def eliminar_candidato(id):
         db.session.commit()
         flash('Candidato eliminado exitosamente')
     return redirect(url_for('registro_candidato'))
+
+# Ruta para Registro de Testigos
+@app.route('/asignar_testigos', methods=['GET', 'POST'])
+def asignar_testigos():
+    testigos = Testigo.query.all()
+    asignaciones = AsignacionTestigo.query.all()
+    candidatos = Candidato.query.all()
+    sedes = Sede.query.all()
+
+    if request.method == 'POST':
+        if 'agregar_testigo' in request.form:
+            numero_documento = request.form.get('numero_documento')
+            nombre = request.form.get('nombre')
+            tipo_persona = request.form.get('tipo_persona')
+            id_candidato = request.form.get('id_candidato')
+            nuevo_testigo = Testigo(
+                numero_documento=numero_documento,
+                nombre=nombre,
+                tipo_persona=tipo_persona,
+                id_candidato=id_candidato
+            )
+            try:
+                db.session.add(nuevo_testigo)
+                db.session.commit()
+                flash("Testigo agregado con éxito.", "success")
+            except IntegrityError:
+                db.session.rollback()
+                flash("Error: El número de documento ya existe.", "error")
+        elif 'asignar_testigo' in request.form:
+            testigo_id = request.form.get('testigo_id')
+            id_sede = request.form.get('id_sede')
+            mesas_seleccionadas = request.form.getlist('mesas')
+
+            for mesa_numero in mesas_seleccionadas:
+                asignacion = AsignacionTestigo(id_testigo=testigo_id, id_sede=id_sede, mesa_numero=mesa_numero)
+                db.session.add(asignacion)
+            db.session.commit()
+            flash("Testigo asignado con éxito a las mesas seleccionadas.", "success")
+        return redirect(url_for('asignar_testigos'))
+
+    return render_template('asignar_testigos.html', testigos=testigos, asignaciones=asignaciones, candidatos=candidatos, sedes=sedes)
+
+
+# Ruta para obtener las mesas de una sede
+@app.route('/get_mesas/<int:sede_id>')
+def get_mesas(sede_id):
+    mesas = Mesa.query.filter_by(sede_id=sede_id).all()
+    return jsonify([{'mesa_numero': mesa.mesa_numero} for mesa in mesas])
+
+# Ruta para eliminar una asignación de testigo
+@app.route('/eliminar_asignacion/_testigo<int:asignacion_id>', methods=['POST'])
+def eliminar_asignacion_testigo(asignacion_id):
+    asignacion = AsignacionTestigo.query.get(asignacion_id)
+    if asignacion:
+        db.session.delete(asignacion)
+        db.session.commit()
+        flash("Asignación eliminada con éxito.", "success")
+    else:
+        flash("Error: Asignación no encontrada.", "error")
+    return redirect(url_for('asignar_testigos'))
+
 
 if __name__ == '__main__': 
     with app.app_context(): 
