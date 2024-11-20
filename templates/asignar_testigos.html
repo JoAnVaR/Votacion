@@ -4,6 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Asignar Testigos</title>
+    <!-- Incluir Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Incluir CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         .search-box {
             margin-bottom: 20px;
@@ -63,97 +67,7 @@
             }
             document.getElementById("searchMesaResults").style.display = hasResults ? "block" : "none";
         }
-    </script>
-</head>
 
-<body>
-    <h1>Asignar Testigos</h1>
-
-    <!-- Mensajes flash -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <ul class="flashes">
-        {% for category, message in messages %}
-        <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
-
-    <!-- Formulario para agregar un nuevo testigo -->
-    <form method="post" action="{{ url_for('asignar_testigos') }}">
-        <h2>Agregar Testigo</h2>
-        <label for="numero_documento">Número de Documento:</label>
-        <input type="text" id="numero_documento" name="numero_documento" required><br>
-
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" name="nombre" required><br>
-
-        <label for="tipo_persona">Tipo de Persona:</label>
-        <select id="tipo_persona" name="tipo_persona" required>
-            <option value="Estudiante">Estudiante</option>
-            <option value="Profesor">Profesor</option>
-            <option value="Otro">Otro</option> <!-- Nueva opción -->
-        </select><br>
-
-        <label for="candidato">Candidato:</label>
-        <select id="candidato" name="id_candidato" required>
-            {% for candidato in candidatos %}
-            <option value="{{ candidato.id }}">{{ candidato.nombre }}</option>
-            {% endfor %}
-            <option value="Voto en Blanco">Voto en Blanco</option> <!-- Nueva opción -->
-        </select><br>
-
-        <button type="submit" name="agregar_testigo">Agregar Testigo</button>
-    </form>
-
-    <!-- Formulario para asignar testigo a una mesa -->
-    <form method="post" action="{{ url_for('asignar_testigos') }}">
-        <h2>Asignar Testigo a una Mesa</h2>
-        <div class="search-box">
-            <label for="searchTestigoInput">Buscar Testigo:</label>
-            <input type="text" id="searchTestigoInput" onkeyup="searchTestigos()" placeholder="Buscar por nombre...">
-        </div>
-        <div id="searchTestigoResults" class="search-results">
-            <table id="testigosTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Número de Documento</th>
-                        <th>Seleccionar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for testigo in testigos %}
-                    <tr>
-                        <td>{{ testigo.id }}</td>
-                        <td>{{ testigo.nombre }}</td>
-                        <td>{{ testigo.numero_documento }}</td>
-                        <td><input type="radio" name="testigo_id" value="{{ testigo.id }}" required></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table><br>
-        </div>
-
-        <label for="sede">Sede:</label>
-        <select id="sede" name="id_sede" onchange="loadMesas(this.value)" required>
-            {% for sede in sedes %}
-            <option value="{{ sede.id }}">{{ sede.nombre }}</option>
-            {% endfor %}
-        </select><br>
-
-        <label for="mesas">Seleccionar Mesas:</label>
-        <div class="checkbox-container">
-            <!-- Aquí se cargarán dinámicamente las mesas correspondientes a la sede seleccionada -->
-        </div>
-
-        <button type="submit" name="asignar_testigo">Asignar Testigo</button>
-    </form>
-
-
-    <script>
         function loadMesas(sedeId) {
             // Realiza una petición al servidor para obtener las mesas de la sede seleccionada
             fetch(`/get_mesas/${sedeId}`)
@@ -171,38 +85,150 @@
                 .catch(error => console.error('Error cargando mesas:', error));
         }
     </script>
+</head>
 
-    <!-- Mostrar asignaciones realizadas -->
-    <h2>Asignaciones Realizadas</h2>
-    {% if asignaciones %}
-    <table>
-        <thead>
-            <tr>
-                <th>Testigo</th>
-                <th>Mesa Número</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for asignacion in asignaciones %}
-            <tr>
-                <td>{{ asignacion.testigo.nombre }} ({{ asignacion.testigo.numero_documento }})</td>
-                <td>{{ asignacion.mesa_numero }}</td>
-                <td>
-                    <form method="post"
-                        action="{{ url_for('eliminar_asignacion_testigo', asignacion_id=asignacion.id) }}"
-                        style="display:inline;">
-                        <button type="submit" name="eliminar_asignacion">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No se han realizado asignaciones todavía.</p>
-    {% endif %}
+<body>
+    <div class="container mt-5">
+        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
+            <h1>Asignar Testigos</h1>
+        </header>
 
+        <div class="mt-5">
+            <!-- Mostrar mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alert-container mt-4">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Formulario para agregar un nuevo testigo -->
+            <form method="post" action="{{ url_for('asignar_testigos') }}" class="mb-4">
+                <h2 class="text-primary">Agregar Testigo</h2>
+                <div class="form-group">
+                    <label for="numero_documento">Número de Documento:</label>
+                    <input type="text" id="numero_documento" name="numero_documento" class="form-control mb-2" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control mb-2" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo_persona">Tipo de Persona:</label>
+                    <select id="tipo_persona" name="tipo_persona" class="form-control mb-2" required>
+                        <option value="Estudiante">Estudiante</option>
+                        <option value="Profesor">Profesor</option>
+                        <option value="Otro">Otro</option> <!-- Nueva opción -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="candidato">Candidato:</label>
+                    <select id="candidato" name="id_candidato" class="form-control mb-2" required>
+                        {% for candidato in candidatos %}
+                        <option value="{{ candidato.id }}">{{ candidato.nombre }}</option>
+                        {% endfor %}
+                        <option value="Voto en Blanco">Voto en Blanco</option> <!-- Nueva opción -->
+                    </select>
+                </div>
+
+                <button type="submit" name="agregar_testigo" class="btn btn-primary">Agregar Testigo</button>
+            </form>
+
+            <!-- Formulario para asignar testigo a una mesa -->
+            <form method="post" action="{{ url_for('asignar_testigos') }}" class="mb-4">
+                <h2 class="text-primary">Asignar Testigo a una Mesa</h2>
+                <div class="search-box">
+                    <label for="searchTestigoInput">Buscar Testigo:</label>
+                    <input type="text" id="searchTestigoInput" class="form-control" onkeyup="searchTestigos()"
+                        placeholder="Buscar por nombre...">
+                </div>
+                <div id="searchTestigoResults" class="search-results">
+                    <table id="testigosTable" class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Número de Documento</th>
+                                <th>Seleccionar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for testigo in testigos %}
+                            <tr>
+                                <td>{{ testigo.id }}</td>
+                                <td>{{ testigo.nombre }}</td>
+                                <td>{{ testigo.numero_documento }}</td>
+                                <td><input type="radio" name="testigo_id" value="{{ testigo.id }}" required></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table><br>
+                </div>
+
+                <div class="form-group">
+                    <label for="sede">Sede:</label>
+                    <select id="sede" name="id_sede" class="form-control mb-2" onchange="loadMesas(this.value)"
+                        required>
+                        {% for sede in sedes %}
+                        <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="mesas">Seleccionar Mesas:</label>
+                    <div class="checkbox-container">
+                        <!-- Aquí se cargarán dinámicamente las mesas correspondientes a la sede seleccionada -->
+                    </div>
+                </div>
+
+                <button type="submit" name="asignar_testigo" class="btn btn-primary">Asignar Testigo</button>
+            </form>
+
+            <!-- Mostrar asignaciones realizadas -->
+            <h2 class="text-primary mt-5">Asignaciones Realizadas</h2>
+            {% if asignaciones %}
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Testigo</th>
+                        <th>Mesa Número</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asignacion in asignaciones %}
+                    <tr>
+                        <td>{{ asignacion.testigo.nombre }} ({{ asignacion.testigo.numero_documento }})</td>
+                        <td>{{ asignacion.mesa_numero }}</td>
+                        <td>
+                            <form method="post"
+                                action="{{ url_for('eliminar_asignacion_testigo', asignacion_id=asignacion.id) }}"
+                                style="display:inline;">
+                                <button type="submit" name="eliminar_asignacion"
+                                    class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No se han realizado asignaciones todavía.</p>
+            {% endif %}
+        </div>
+    </div>
 </body>
 
 </html>

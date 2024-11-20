@@ -4,35 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <title>Modificar Profesor</title>
+    <!-- Incluir Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Incluir CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-    <h1>Modificar Profesor</h1>
+    <div class="container mt-5">
+        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
+            <h1>Modificar Profesor</h1>
+        </header>
 
-    <form method="post">
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" name="nombre" value="{{ profesor.nombre }}" required><br>
+        <div class="mt-5">
+            <form method="post" class="mb-4">
+                <h2 class="text-primary">Información del Profesor</h2>
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" value="{{ profesor.nombre }}" class="form-control mb-2"
+                        required>
+                </div>
 
-        <label for="numero_documento">Número de Documento:</label>
-        <input type="text" id="numero_documento" name="numero_documento" value="{{ profesor.numero_documento }}"
-            required><br>
+                <div class="form-group">
+                    <label for="numero_documento">Número de Documento:</label>
+                    <input type="text" id="numero_documento" name="numero_documento"
+                        value="{{ profesor.numero_documento }}" class="form-control mb-2" required>
+                </div>
 
-        <label for="departamento">Departamento:</label>
-        <input type="text" id="departamento" name="departamento" value="{{ profesor.departamento }}" required><br>
+                <div class="form-group">
+                    <label for="departamento">Departamento:</label>
+                    <input type="text" id="departamento" name="departamento" value="{{ profesor.departamento }}"
+                        class="form-control mb-2" required>
+                </div>
 
-        <label for="titulo">Título:</label>
-        <input type="text" id="titulo" name="titulo" value="{{ profesor.titulo }}" required><br>
+                <div class="form-group">
+                    <label for="titulo">Título:</label>
+                    <input type="text" id="titulo" name="titulo" value="{{ profesor.titulo }}" class="form-control mb-2"
+                        required>
+                </div>
 
-        <label for="sede_id">Sede:</label>
-        <select id="sede_id" name="sede_id" required>
-            {% for sede in sedes %}
-            <option value="{{ sede.id }}" {% if sede.id==profesor.sede_id %}selected{% endif %}>{{ sede.nombre }}
-            </option>
-            {% endfor %}
-        </select><br>
+                <div class="form-group">
+                    <label for="sede_id">Sede:</label>
+                    <select id="sede_id" name="sede_id" class="form-control mb-2" required>
+                        {% for sede in sedes %}
+                        <option value="{{ sede.id }}" {% if sede.id==profesor.sede_id %}selected{% endif %}>{{
+                            sede.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <input type="submit" value="Actualizar">
-    </form>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

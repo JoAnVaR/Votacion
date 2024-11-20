@@ -4,6 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Administrar Sedes y Mesas</title>
+    <!-- Incluir Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Incluir CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function obtenerNumeroMesaDisponible(sedeId) {
@@ -33,50 +37,68 @@
 </head>
 
 <body>
-    <h1>Administrar Sedes y Mesas</h1>
+    <div class="container mt-5">
+        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
+            <h1>Administrar Sedes y Mesas</h1>
+        </header>
+        <div class="mt-5">
+            <!-- Formulario para agregar una nueva sede -->
+            <form method="post" action="{{ url_for('agregar_sede') }}" class="mb-4">
+                <h2 class="text-primary">Agregar Sede</h2>
+                <div class="form-group">
+                    <label for="nombre_sede">Nombre de la Sede:</label>
+                    <input type="text" id="nombre_sede" name="nombre_sede" class="form-control mb-2" required>
+                </div>
 
-    <!-- Formulario para agregar una nueva sede -->
-    <form method="post" action="{{ url_for('agregar_sede') }}">
-        <h2>Agregar Sede</h2>
-        <label for="nombre_sede">Nombre de la Sede:</label>
-        <input type="text" id="nombre_sede" name="nombre_sede" required><br>
+                <div class="form-group">
+                    <label for="direccion">Dirección:</label>
+                    <input type="text" id="direccion" name="direccion" class="form-control mb-2" required>
+                </div>
 
-        <label for="direccion">Dirección:</label>
-        <input type="text" id="direccion" name="direccion" required><br>
+                <button type="submit" class="btn btn-primary">Agregar Sede</button>
+            </form>
 
-        <button type="submit">Agregar Sede</button>
-    </form>
+            <!-- Formulario para agregar una nueva mesa -->
+            <form method="post" action="{{ url_for('agregar_mesas') }}" class="mb-4">
+                <h2 class="text-primary">Agregar Mesa a una Sede</h2>
+                <div class="form-group">
+                    <label for="sede_id">Seleccionar Sede:</label>
+                    <select id="sede_id" name="sede_id" class="form-control mb-2" required>
+                        {% for sede in sedes %}
+                        <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-    <!-- Formulario para agregar una nueva mesa -->
-    <form method="post" action="{{ url_for('agregar_mesas') }}">
-        <h2>Agregar Mesa a una Sede</h2>
-        <label for="sede_id">Seleccionar Sede:</label>
-        <select id="sede_id" name="sede_id" required>
+                <div class="form-group">
+                    <label for="mesa_numero">Número de Mesa:</label>
+                    <input type="number" id="mesa_numero" name="mesa_numero" class="form-control mb-2" required
+                        readonly>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Agregar Mesa</button>
+            </form>
+
+            <!-- Mostrar sedes y mesas agrupadas -->
+            <h2 class="text-primary">Sedes y sus Mesas</h2>
+            {% if sedes %}
             {% for sede in sedes %}
-            <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    ID {{ sede.id }} - {{ sede.nombre }}
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for mesa in sede.mesas %}
+                    <li class="list-group-item">Mesa Número: {{ mesa.mesa_numero }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
             {% endfor %}
-        </select><br>
-
-        <label for="mesa_numero">Número de Mesa:</label>
-        <input type="number" id="mesa_numero" name="mesa_numero" required readonly><br>
-
-        <button type="submit">Agregar Mesa</button>
-    </form>
-
-    <!-- Mostrar sedes y mesas agrupadas -->
-    <h2>Sedes y sus Mesas</h2>
-    {% if sedes %}
-    {% for sede in sedes %}
-    <h3>ID {{ sede.id }} - {{ sede.nombre }}</h3>
-    <ul>
-        {% for mesa in sede.mesas %}
-        <li>Mesa Número: {{ mesa.mesa_numero }}</li>
-        {% endfor %}
-    </ul>
-    {% endfor %}
-    {% else %}
-    <p>No se han agregado sedes ni mesas todavía.</p>
-    {% endif %}
+            {% else %}
+            <p>No se han agregado sedes ni mesas todavía.</p>
+            {% endif %}
+        </div>
+    </div>
 </body>
 
 </html>

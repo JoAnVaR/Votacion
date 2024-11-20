@@ -4,20 +4,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Votación</title>
+    <!-- Incluir Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Incluir CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-    <!-- Encabezado del sitio -->
-    <h1>Bienvenido al Sistema de Votación</h1>
-    <a href="{{ url_for('agregar_sede') }}">Administrar Sedes y Mesas</a><br>
-    <a href="{{ url_for('registro_estudiante') }}">Registrar Estudiante</a><br>
-    <a href="{{ url_for('registro_profesor') }}">Registrar Profesor</a><br>
-    <a href="{{ url_for('asignar_mesas') }}">Asignar Mesas a Grados</a><br>
-    <a href="{{ url_for('registro_candidato') }}">Registrar Candidato</a><br>
-    <a href="{{ url_for('sorteo_jurados') }}">Sorteo de Jurados</a><br>
-    <a href="{{ url_for('reemplazo_jurados') }}">Reemplazo de Jurados</a><br>
-    <a href="{{ url_for('asignar_testigos') }}">Registrar Testigo</a><br>
-
+    <div class="container mt-5">
+        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
+            <h1>Bienvenido al Sistema de Votación</h1>
+        </header>
+        <div class="mt-5 text-center">
+            <h2 class="text-primary">Seleccione una Opción</h2>
+            <div class="list-group mx-auto" style="max-width: 400px;">
+                <a href="{{ url_for('agregar_sede') }}" class="list-group-item list-group-item-action">Administrar Sedes
+                    y Mesas</a>
+                <a href="{{ url_for('registro_estudiante') }}" class="list-group-item list-group-item-action">Registrar
+                    Estudiante</a>
+                <a href="{{ url_for('registro_profesor') }}" class="list-group-item list-group-item-action">Registrar
+                    Profesor</a>
+                <a href="{{ url_for('asignar_mesas') }}" class="list-group-item list-group-item-action">Asignar Mesas a
+                    Grados</a>
+                <a href="{{ url_for('registro_candidato') }}" class="list-group-item list-group-item-action">Registrar
+                    Candidato</a>
+                <a href="{{ url_for('sorteo_jurados') }}" class="list-group-item list-group-item-action">Sorteo de
+                    Jurados</a>
+                <a href="{{ url_for('reemplazo_jurados') }}" class="list-group-item list-group-item-action">Reemplazo de
+                    Jurados</a>
+                <a href="{{ url_for('asignar_testigos') }}" class="list-group-item list-group-item-action">Registrar
+                    Testigo</a>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 
 </html>

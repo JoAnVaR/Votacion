@@ -4,6 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Reemplazo de Jurados</title>
+    <!-- Incluir Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Incluir CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         .search-box {
             margin-bottom: 20px;
@@ -42,76 +46,88 @@
 </head>
 
 <body>
-    <h1>Reemplazo de Jurados</h1>
+    <div class="container mt-5">
+        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
+            <h1>Reemplazo de Jurados</h1>
+        </header>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <ul class="flashes">
-        {% for category, message in messages %}
-        <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
+        <div class="mt-5">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul class="flashes mt-4">
+                {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
 
-    <form method="post" action="{{ url_for('reemplazo_jurados') }}">
-        <div class="search-box">
-            <label for="searchJuradoInput">Buscar Jurado a Reemplazar:</label>
-            <input type="text" id="searchJuradoInput" onkeyup="searchJurados()"
-                placeholder="Buscar por número de documento...">
-        </div>
-        <div id="searchJuradoResults" class="search-results">
-            <table id="juradosTable">
-                <thead>
+            <form method="post" action="{{ url_for('reemplazo_jurados') }}" class="mb-4">
+                <div class="search-box">
+                    <label for="searchJuradoInput">Buscar Jurado a Reemplazar:</label>
+                    <input type="text" id="searchJuradoInput" class="form-control" onkeyup="searchJurados()"
+                        placeholder="Buscar por número de documento...">
+                </div>
+                <div id="searchJuradoResults" class="search-results">
+                    <table id="juradosTable" class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Número de Documento</th>
+                                <th>Tipo Persona</th>
+                                <th>Mesa</th>
+                                <th>Seleccionar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for jurado in jurados %}
+                            <tr>
+                                <td>{{ jurado.id }}</td>
+                                <td>{{ jurado.nombre }}</td>
+                                <td>{{ jurado.numero_documento }}</td>
+                                <td>{{ jurado.tipo_persona }}</td>
+                                <td>{{ jurado.id_mesa }}</td>
+                                <td><input type="radio" name="jurado_id" value="{{ jurado.id }}" required></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table><br>
+                </div>
+
+                <div class="form-group">
+                    <label for="razon">Razón del Reemplazo:</label>
+                    <input type="text" id="razon" name="razon" class="form-control mb-2" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Reemplazar</button>
+            </form>
+
+            <h2 class="text-primary mt-5">Reemplazos Realizados</h2>
+            <table class="table table-striped">
+                <thead class="thead-dark">
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Número de Documento</th>
-                        <th>Tipo Persona</th>
-                        <th>Mesa</th>
-                        <th>Seleccionar</th>
+                        <th>Jurado Original</th>
+                        <th>Jurado Reemplazo</th>
+                        <th>Razón</th>
+                        <th>Fecha</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for jurado in jurados %}
+                    {% for reemplazo in reemplazos %}
                     <tr>
-                        <td>{{ jurado.id }}</td>
-                        <td>{{ jurado.nombre }}</td>
-                        <td>{{ jurado.numero_documento }}</td>
-                        <td>{{ jurado.tipo_persona }}</td>
-                        <td>{{ jurado.id_mesa }}</td>
-                        <td><input type="radio" name="jurado_id" value="{{ jurado.id }}" required></td>
+                        <td>{{ reemplazo.jurado_original.nombre }} ({{ reemplazo.jurado_original.numero_documento }})
+                        </td>
+                        <td>{{ reemplazo.jurado_reemplazo.nombre }} ({{ reemplazo.jurado_reemplazo.numero_documento }})
+                        </td>
+                        <td>{{ reemplazo.razon }}</td>
+                        <td>{{ reemplazo.fecha }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table><br>
+            </table>
         </div>
-
-        <label for="razon">Razón del Reemplazo:</label>
-        <input type="text" id="razon" name="razon" required><br>
-
-        <button type="submit">Reemplazar</button>
-    </form>
-    <h2>Reemplazos Realizados</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Jurado Original</th>
-                <th>Jurado Reemplazo</th>
-                <th>Razón</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for reemplazo in reemplazos %}
-            <tr>
-                <td>{{ reemplazo.jurado_original.nombre }} ({{ reemplazo.jurado_original.numero_documento }})</td>
-                <td>{{ reemplazo.jurado_reemplazo.nombre }} ({{ reemplazo.jurado_reemplazo.numero_documento }})</td>
-                <td>{{ reemplazo.razon }}</td>
-                <td>{{ reemplazo.fecha }}</td>
-                {% endfor %}
-        </tbody>
-    </table>
+    </div>
 </body>
 
 </html>

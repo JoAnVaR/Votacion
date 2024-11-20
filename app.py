@@ -834,6 +834,7 @@ def eliminar_asignacion_testigo(asignacion_id):
 
 
 if __name__ == '__main__': 
+    app.run(host='192.168.1.40', port=5000)
     with app.app_context(): 
         # db.drop_all()  # Eliminar todas las tablas existentes si es necesario
         db.create_all()  # Crear todas las tablas con la estructura actualizada 

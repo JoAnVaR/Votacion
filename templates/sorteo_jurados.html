@@ -4,6 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Sorteo de Jurados</title>
+    <!-- Incluir Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Incluir CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         .info-box {
             margin-top: 20px;
@@ -108,75 +112,101 @@
 </head>
 
 <body>
-    <h1>Sorteo de Jurados</h1>
-    <form method="post" action="{{ url_for('sorteo_jurados') }}">
-        <label for="jurados_por_mesa">Jurados por Mesa:</label>
-        <input type="number" id="jurados_por_mesa" name="jurados_por_mesa" required
-            oninput="calcularJuradosNecesarios()" value="{{ session.get('jurados_por_mesa', '') }}" {% if
-            fase_1_completado or fase_2_completado or fase_3_completado %}disabled{% endif %}><br>
+    <div class="container mt-5">
+        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
+            <h1>Sorteo de Jurados</h1>
+        </header>
 
-        <label for="porcentaje_remanentes">Porcentaje de Remanentes (%):</label>
-        <input type="number" id="porcentaje_remanentes" name="porcentaje_remanentes"
-            value="{{ session.get('porcentaje_remanentes', 12) }}" required oninput="calcularJuradosNecesarios()" {% if
-            fase_1_completado or fase_2_completado or fase_3_completado %}disabled{% endif %}><br>
+        <div class="mt-5">
+            <form method="post" action="{{ url_for('sorteo_jurados') }}" class="mb-4">
+                <h2 class="text-primary">Configuración del Sorteo</h2>
+                <div class="form-group">
+                    <label for="jurados_por_mesa">Jurados por Mesa:</label>
+                    <input type="number" id="jurados_por_mesa" name="jurados_por_mesa" class="form-control mb-2"
+                        required oninput="calcularJuradosNecesarios()" value="{{ session.get('jurados_por_mesa', '') }}"
+                        {% if fase_1_completado or fase_2_completado or fase_3_completado %}disabled{% endif %}>
+                </div>
 
-        <label for="grados">Seleccionar Grado(s):</label>
-        <div class="checkbox-container" {% if fase_1_completado or fase_2_completado or fase_3_completado
-            %}style="pointer-events: none; opacity: 0.6;" {% endif %} onchange="calcularJuradosNecesarios()">
-            {% for grado in grados %}
-            <label><input type="checkbox" name="grados" value="{{ grado }}" {% if grado in grados_seleccionados
-                    %}checked{% endif %} {% if fase_1_completado or fase_2_completado or fase_3_completado %}disabled{%
-                    endif %}> {{ grado }}</label>
-            {% endfor %}
-        </div><br>
+                <div class="form-group">
+                    <label for="porcentaje_remanentes">Porcentaje de Remanentes (%):</label>
+                    <input type="number" id="porcentaje_remanentes" name="porcentaje_remanentes"
+                        class="form-control mb-2" value="{{ session.get('porcentaje_remanentes', 12) }}" required
+                        oninput="calcularJuradosNecesarios()" {% if fase_1_completado or fase_2_completado or
+                        fase_3_completado %}disabled{% endif %}>
+                </div>
 
-        <button type="submit" name="fase" value="Iniciar Primer Sorteo" {% if fase_1_completado %}disabled{% endif
-            %}>Simulacro 1</button>
-        <button type="submit" name="fase" value="Realizar Segundo Sorteo" {% if not fase_1_completado or
-            fase_2_completado %}disabled{% endif %}>Simulacro 2</button>
-        <button type="submit" name="fase" value="Realizar Sorteo Definitivo" {% if not fase_2_completado or
-            fase_3_completado %}disabled{% endif %}>Sorteo Final</button>
-    </form>
-
-    <div id="info_box" class="info-box">
-        <!-- Aquí se mostrarán todas las informaciones combinadas -->
-    </div>
-
-    <h2>Sorteos Realizados</h2>
-    {% if sorteos %}
-    {% for sede in sedes %}
-    <h3>{{ sede.nombre }}</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Mesa Número</th>
-                <th>Estudiantes</th>
-                <th>Profesor</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for sorteo in sorteos|sort(attribute='mesa_numero') if sorteo.sede_id == sede.id %}
-            <tr>
-                <td>{{ sorteo.mesa_numero }}</td>
-                <td>
-                    <ul>
-                        {% for estudiante in sorteo.estudiantes %}
-                        <li>{{ estudiante.numero_documento }} {{ estudiante.nombre }}</li>
+                <div class="form-group">
+                    <label for="grados">Seleccionar Grado(s):</label>
+                    <div class="checkbox-container" {% if fase_1_completado or fase_2_completado or fase_3_completado
+                        %}style="pointer-events: none; opacity: 0.6;" {% endif %}
+                        onchange="calcularJuradosNecesarios()">
+                        {% for grado in grados %}
+                        <label><input type="checkbox" name="grados" value="{{ grado }}" {% if grado in
+                                grados_seleccionados %}checked{% endif %} {% if fase_1_completado or fase_2_completado
+                                or fase_3_completado %}disabled{% endif %}> {{ grado }}</label>
                         {% endfor %}
-                    </ul>
-                </td>
-                <td>{{ sorteo.profesor.numero_documento }} {{ sorteo.profesor.nombre }}</td>
-            </tr>
+                    </div>
+                </div>
+
+                <button type="submit" name="fase" value="Iniciar Primer Sorteo" class="btn btn-primary" {% if
+                    fase_1_completado %}disabled{% endif %}>Simulacro 1</button>
+                <button type="submit" name="fase" value="Realizar Segundo Sorteo" class="btn btn-primary" {% if not
+                    fase_1_completado or fase_2_completado %}disabled{% endif %}>Simulacro 2</button>
+                <button type="submit" name="fase" value="Realizar Sorteo Definitivo" class="btn btn-primary" {% if not
+                    fase_2_completado or fase_3_completado %}disabled{% endif %}>Sorteo Final</button>
+            </form>
+
+            <div id="info_box" class="info-box">
+                <!-- Aquí se mostrarán todas las informaciones combinadas -->
+            </div>
+        </div>
+
+        <h2 class="text-primary mt-5">Sorteos Realizados</h2>
+        {% if sorteos %}
+        {% for sede in sedes %}
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                {{ sede.nombre }}
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Mesa Número</th>
+                            <th>Estudiantes</th>
+                            <th>Profesor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sorteo in sorteos|sort(attribute='mesa_numero') if sorteo.sede_id == sede.id %}
+                        <tr>
+                            <td>{{ sorteo.mesa_numero }}</td>
+                            <td>
+                                <ul>
+                                    {% for estudiante in sorteo.estudiantes %}
+                                    <li>{{ estudiante.numero_documento }} {{ estudiante.nombre }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>{{ sorteo.profesor.numero_documento }} {{ sorteo.profesor.nombre }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No se han realizado sorteos todavía.</p>
+        {% endif %}
+
+        <h2 class="text-primary mt-5">Remanentes</h2>
+        <ul>
+            {% for remanente in remanentes %}
+            <li>{{ remanente.numero_documento }} {{ remanente.nombre }}</li>
             {% endfor %}
-        </tbody>
-    </table>
-    {% endfor %}
-    {% else %}
-    <p>No se han realizado sorteos todavía.</p>
-    {% endif %}
-    <h2>Remanentes</h2>
-    <ul> {% for remanente in remanentes %} <li>{{ remanente.numero_documento }} {{ remanente.nombre }}</li> {% endfor %}
-    </ul>
+        </ul>
+    </div>
 </body>
 
 </html>
