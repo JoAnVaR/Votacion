@@ -15,3 +15,21 @@ cd C:\Users\JordyA\Documents\phyton
 
 venv\Scripts\activate
 python app.py
+
+
+project/
+│
+├── app.py                # Archivo principal de la aplicación
+├── models.py             # Modelos de la base de datos
+├── routes/
+│   ├── __init__.py       # Para hacer que 'routes' sea un paquete
+│   ├── jurados.py        # Rutas relacionadas con los jurados
+│   ├── candidatos.py     # Rutas relacionadas con los candidatos
+│   ├── testigos.py       # Rutas relacionadas con los testigos
+│   └── mesas.py          # Rutas relacionadas con las mesas
+├── utils/
+│   ├── __init__.py       # Para hacer que 'utils' sea un paquete
+│   └── helpers.py        # Funciones auxiliares y utilidades
+├── templates/            # Plantillas HTML
+├── static/               # Archivos estáticos (CSS, JS, Imágenes)
+└── uploads/              # Directorio para fotos de candidatos
