@@ -1,113 +1,185 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Registro de Estudiantes</title>
-    <!-- Incluir Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Incluir CSS personalizado -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script>
-        function toggleGrados(sedeId) {
-            var gradosDiv = document.getElementById('grados-' + sedeId);
-            if (gradosDiv.style.display === 'none') {
-                gradosDiv.style.display = 'block';
-            } else {
-                gradosDiv.style.display = 'none';
-            }
-        }
-    </script>
-</head>
+{% block title %}Registro de Estudiantes{% endblock %}
 
-<body>
-    <div class="container mt-5">
-        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
-            <h1>Registro de Estudiantes</h1>
-        </header>
+{% block content %}
+<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+    <h1>Registro de Estudiantes</h1>
+</header>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <ul class="flashes mt-4">
-            {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %}
-
-        <div class="mt-5">
-            <form method="post" enctype="multipart/form-data" class="mb-4">
-                <h2 class="text-primary">Registrar Estudiante</h2>
-                <div class="form-group">
-                    <label for="numero_documento">Número de Documento:</label>
-                    <input type="text" id="numero_documento" name="numero_documento" class="form-control mb-2" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" id="nombre" name="nombre" class="form-control mb-2" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="grado">Grado:</label>
-                    <input type="text" id="grado" name="grado" class="form-control mb-2" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="seccion">Sección:</label>
-                    <input type="text" id="seccion" name="seccion" class="form-control mb-2" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="sede">Sede:</label>
-                    <select id="sede_id" name="sede_id" class="form-control mb-2" required>
-                        {% for sede in sedes %}
-                        <option value="{{ sede.id }}">{{ sede.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Registrar</button>
-            </form>
-
-            <form method="post" enctype="multipart/form-data" class="mb-4">
-                <h2 class="text-primary">Subir archivo CSV</h2>
-                <div class="form-group">
-                    <label for="file">Subir archivo CSV:</label>
-                    <input type="file" id="file" name="file" class="form-control mb-2" accept=".csv" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Cargar CSV</button>
-            </form>
-
-            <p><a href="{{ url_for('descargar_plantilla') }}" class="btn btn-secondary">Descargar plantilla CSV</a></p>
-
-            <h2 class="text-primary mt-5">Totales</h2>
-            <p>Total de estudiantes: {{ total_estudiantes }}</p>
-
-            <h2 class="text-primary mt-5">Totales por Sede</h2>
-            <ul>
-                {% for sede, total in totales_por_sede %}
-                <li>
-                    <a href="javascript:void(0);" onclick="toggleGrados('{{ sede }}')">{{ sede }}: {{ total }}
-                        estudiantes</a>
-                    <div id="grados-{{ sede }}" style="display: none;">
-                        <ul>
-                            {% for grado, seccion, sede_nombre, total in totales_por_grado_seccion %}
-                            {% if sede == sede_nombre %}
-                            <li><a
-                                    href="{{ url_for('detalle_grado_seccion', grado=grado, seccion=seccion, sede=sede) }}">{{
-                                    sede }} - Grado {{ grado }} Sección {{ seccion }}: {{ total }} estudiantes</a></li>
-                            {% endif %}
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
+<div class="mt-5">
+    <!-- Formulario individual -->
+    <form id="formEstudiante" action="{{ url_for('estudiante.registro_estudiante') }}" method="post" class="mb-4">
+        <h2 style="color: var(--primary-color)">Registrar Estudiante</h2>
+        <div class="form-group">
+            <label for="numero_documento">Número de Documento:</label>
+            <input type="text" id="numero_documento" name="numero_documento" class="form-control mb-2" required>
         </div>
-    </div>
-</body>
 
-</html>
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" class="form-control mb-2" required>
+        </div>
+
+        <div class="form-group">
+            <label for="grado">Grado:</label>
+            <input type="text" id="grado" name="grado" class="form-control mb-2" required>
+        </div>
+
+        <div class="form-group">
+            <label for="seccion">Sección:</label>
+            <input type="text" id="seccion" name="seccion" class="form-control mb-2" required>
+        </div>
+
+        <div class="form-group">
+            <label for="sede">Sede:</label>
+            <select id="sede_id" name="sede_id" class="form-control mb-2" required>
+                {% for sede in sedes %}
+                <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+            style="background-color: var(--primary-color); border-color: var(--primary-color);">
+            Registrar
+        </button>
+    </form>
+
+    <!-- Formulario CSV -->
+    <form id="formCSV" action="{{ url_for('estudiante.cargar_csv') }}" method="post" enctype="multipart/form-data"
+        class="mb-4" {% if not sedes %}style="display: none;" {% endif %}>
+        <h2 style="color: var(--primary-color)">Subir archivo CSV</h2>
+        <div class="form-group">
+            <label for="file">Subir archivo CSV:</label>
+            <input type="file" id="file" name="file" class="form-control mb-2" accept=".csv" required>
+            <small class="form-text text-muted">
+                El archivo CSV debe contener las columnas: numero_documento, nombre, grado, seccion, sede
+                <br>
+                Las sedes disponibles son: {% for sede in sedes %}{{ sede.nombre }}{% if not loop.last %}, {% endif %}{%
+                endfor %}
+                <br>
+                <strong>Nota:</strong> El archivo debe estar en formato CSV y preferiblemente guardado con codificación
+                UTF-8.
+            </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+            style="background-color: var(--primary-color); border-color: var(--primary-color);">
+            Cargar CSV
+        </button>
+        <a href="{{ url_for('estudiante.descargar_plantilla_estudiante') }}" class="btn btn-secondary ml-2"
+            style="background-color: var(--dark-blue); border-color: var(--dark-blue);">
+            Descargar plantilla CSV
+        </a>
+    </form>
+
+    {% if not sedes %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        No hay sedes registradas. Por favor, registre al menos una sede antes de cargar estudiantes.
+    </div>
+    {% endif %}
+
+    <!-- Estadísticas -->
+    <div id="estadisticas">
+        <!-- Será actualizado vía AJAX -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        // Configuración de Toastr
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000"
+        };
+
+        // Manejar el envío del formulario individual
+        $('#formEstudiante').on('submit', function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success('Estudiante registrado exitosamente');
+                        $('#formEstudiante')[0].reset();
+                        actualizarEstadisticas();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr) {
+                    toastr.error('Error al registrar estudiante');
+                }
+            });
+        });
+
+        // Manejar la carga del archivo CSV
+        $('#formCSV').on('submit', function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $('#formCSV')[0].reset();
+                        actualizarEstadisticas();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr) {
+                    toastr.error('Error al procesar el archivo CSV');
+                }
+            });
+        });
+
+        // Función para actualizar estadísticas
+        function actualizarEstadisticas() {
+            $.ajax({
+                url: "{{ url_for('estudiante.obtener_estadisticas') }}",
+                type: 'GET',
+                success: function (response) {
+                    if (response.html) {
+                        $('#estadisticas').html(response.html);
+                        // Reinicializar los toggles después de actualizar
+                        $('.toggle-grados').off('click').on('click', function (e) {
+                            e.preventDefault();
+                            $(this).next('.grados-lista').slideToggle();
+                        });
+                    } else {
+                        toastr.error('Error al cargar estadísticas');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error('Error al cargar estadísticas: ' + error);
+                }
+            });
+        }
+
+        // Cargar estadísticas al iniciar la página
+        actualizarEstadisticas();
+
+        // Toggle para mostrar/ocultar grados
+        $('.toggle-grados').on('click', function (e) {
+            e.preventDefault();
+            $(this).next('.grados-lista').slideToggle();
+        });
+    });
+</script>
+{% endblock %}

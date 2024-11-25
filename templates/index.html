@@ -1,45 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Sistema de Votación</title>
-    <!-- Incluir Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Incluir CSS personalizado -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
+{% block title %}Sistema de Votación{% endblock %}
 
-<body>
-    <div class="container mt-5">
-        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
-            <h1>Bienvenido al Sistema de Votación</h1>
-        </header>
-        <div class="mt-5 text-center">
-            <h2 class="text-primary">Seleccione una Opción</h2>
-            <div class="list-group mx-auto" style="max-width: 400px;">
-                <a href="{{ url_for('agregar_sede') }}" class="list-group-item list-group-item-action">Administrar Sedes
-                    y Mesas</a>
-                <a href="{{ url_for('registro_estudiante') }}" class="list-group-item list-group-item-action">Registrar
-                    Estudiante</a>
-                <a href="{{ url_for('registro_profesor') }}" class="list-group-item list-group-item-action">Registrar
-                    Profesor</a>
-                <a href="{{ url_for('asignar_mesas') }}" class="list-group-item list-group-item-action">Asignar Mesas a
-                    Grados</a>
-                <a href="{{ url_for('registro_candidato') }}" class="list-group-item list-group-item-action">Registrar
-                    Candidato</a>
-                <a href="{{ url_for('sorteo_jurados') }}" class="list-group-item list-group-item-action">Sorteo de
-                    Jurados</a>
-                <a href="{{ url_for('reemplazo_jurados') }}" class="list-group-item list-group-item-action">Reemplazo de
-                    Jurados</a>
-                <a href="{{ url_for('asignar_testigos') }}" class="list-group-item list-group-item-action">Registrar
-                    Testigo</a>
-            </div>
+{% block content %}
+<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+    <h1>Bienvenido al Sistema de Votación</h1>
+</header>
+<div class="mt-5 text-center">
+    <h2 style="color: var(--primary-color)">Seleccione una Opción</h2>
+    <div class="list-group mx-auto" style="max-width: 400px;">
+        <!-- Sección de Configuración Inicial -->
+        <div class="mb-4">
+            <h3 style="color: var(--secondary-color)">Configuración Inicial</h3>
+            <a href="{{ url_for('sede.agregar_sede') }}" class="list-group-item list-group-item-action menu-item">
+                Administrar Sedes y Mesas
+            </a>
+            <a href="{{ url_for('estudiante.registro_estudiante') }}"
+                class="list-group-item list-group-item-action menu-item">
+                Registrar Estudiante
+            </a>
+            <a href="{{ url_for('profesor.registro_profesor') }}"
+                class="list-group-item list-group-item-action menu-item">
+                Registrar Profesor
+            </a>
+            <a href="{{ url_for('asignar_mesa.asignar_mesas') }}"
+                class="list-group-item list-group-item-action menu-item">
+                Asignar Mesas a Grados
+            </a>
+            <a href="{{ url_for('estadisticas.dashboard') }}"
+                class="list-group-item list-group-item-action dashboard-item">
+                <i class="fas fa-chart-bar"></i> Dashboard de Estadísticas
+            </a>
+        </div>
+
+        <!-- Nueva Sección: Proceso de Votación -->
+        <div class="mb-4">
+            <h3 style="color: var(--secondary-color)">Proceso de Votación</h3>
+            <a href="{{ url_for('votacion.paso1') }}" class="list-group-item list-group-item-action menu-item" {% if not
+                config.CONFIGURACION_FINALIZADA %}disabled{% endif %}>
+                Paso 1: Verificación de Identidad
+            </a>
+            <a href="{{ url_for('votacion.paso2') }}" class="list-group-item list-group-item-action menu-item" {% if not
+                config.CONFIGURACION_FINALIZADA %}disabled{% endif %}>
+                Paso 2: Selección de Candidatos
+            </a>
+            <a href="{{ url_for('votacion.paso3') }}" class="list-group-item list-group-item-action menu-item" {% if not
+                config.CONFIGURACION_FINALIZADA %}disabled{% endif %}>
+                Paso 3: Confirmación del Voto
+            </a>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-</body>
-
-</html>
+</div>
+{% endblock %}

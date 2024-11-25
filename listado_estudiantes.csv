@@ -1,243 +1,243 @@
-numero_documento,nombre,grado,seccion,sede_id
-6669581755,Martina Paredes,1,1,1
-7462594686,Valentina Suárez,1,1,1
-9342040667,Renata Mendoza,1,1,1
-3584068741,Isabella Moreno,1,1,1
-2218436526,Juan Carlos Pérez García,1,1,1
-4576118495,Renata Mendoza,1,1,1
-1214757193,Martina Paredes,1,1,1
-6384156402,Valentina Suárez,1,1,1
-0698181350,María Rodríguez,1,1,1
-2610868395,Luis Alberto Hernández Rivera,1,1,1
-3287434536,Isabella Moreno,1,1,1
-6774264565,Sofía Castro,1,2,1
-6316488950,Valentina Suárez,1,2,1
-4421703112,Antonio Díaz,1,2,1
-8138443984,Martina Paredes,1,2,1
-2488855420,Mía Torres,1,2,1
-0184707020,David Ruiz,1,2,1
-6368944388,Juan Carlos Pérez García,1,2,1
-1295150150,Antonio Díaz,1,2,1
-9630521846,Pedro Martínez,1,2,1
-4306594289,Ana María García López,1,2,1
-3868009213,Juan Carlos Pérez García,1,2,1
-0753940134,Elena Sánchez,2,1,1
-0449719839,Isabella Moreno,2,1,1
-3922012512,Ana María García López,2,1,1
-4997693076,Samuel Herrera,2,1,1
-8584645455,Valentina Suárez,2,1,1
-3438997717,Daniel Morales,2,1,1
-7544789244,Juan Carlos Pérez García,2,1,1
-8859926348,Valentina Suárez,2,1,1
-5401296448,Luis Alberto Hernández Rivera,2,1,1
-2167768872,Mía Torres,2,1,1
-8077941393,Sofía Castro,2,1,1
-2808268176,David Ruiz,2,2,1
-5744652939,Sofía Castro,2,2,1
-9094409087,Sofía Castro,2,2,1
-3023581054,Samuel Herrera,2,2,1
-2117226973,María Rodríguez,2,2,1
-2829402753,Antonio Díaz,2,2,1
-7792534881,Daniel Morales,2,2,1
-8399875486,Valentina Suárez,2,2,1
-5949770250,Samuel Herrera,2,2,1
-3359755628,Luis Alberto Hernández Rivera,2,2,1
-1935035997,Laura Ramírez,2,2,1
-2478457740,Renata Mendoza,3,1,1
-4707817066,Carla López,3,1,1
-8261566105,Emilio González,3,1,1
-1547127445,Pedro Martínez,3,1,1
-3428837428,Carla López,3,1,1
-9493189912,Diego Rojas,3,1,1
-2501606924,Elena Sánchez,3,1,1
-6741600661,José González,3,1,1
-9848430673,Samuel Herrera,3,1,1
-9094887043,David Ruiz,3,1,1
-0212009187,Emilio González,3,1,1
-7209260579,Samuel Herrera,3,2,1
-9247378579,Elena Sánchez,3,2,1
-7188893523,Martina Paredes,3,2,1
-2096378183,Samuel Herrera,3,2,1
-1117404751,Martina Paredes,3,2,1
-4149454520,Mía Torres,3,2,1
-0487044352,Sofía Castro,3,2,1
-7579186569,Laura Ramírez,3,2,1
-7291003892,Luis Alberto Hernández Rivera,3,2,1
-6909910546,Juan Carlos Pérez García,3,2,1
-2819145321,José González,3,2,1
-1406568367,Elena Sánchez,4,1,1
-7022662730,Ana María García López,4,1,1
-7662552135,Emilio González,4,1,1
-5934634876,Lucas Fernández,4,1,1
-5041908556,Valentina Suárez,4,1,1
-2673290754,Diego Rojas,4,1,1
-5293006454,José González,4,1,1
-1192125041,Antonio Díaz,4,1,1
-7487603253,Martina Paredes,4,1,1
-3217259129,Isabella Moreno,4,1,1
-0439874477,Valentina Suárez,4,1,1
-7344430640,Samuel Herrera,4,2,1
-2115722034,Elena Sánchez,4,2,1
-5731466599,Lucas Fernández,4,2,1
-3849433752,Pedro Martínez,4,2,1
-4057159162,Emilio González,4,2,1
-6300607792,Emilio González,4,2,1
-6141063936,Samuel Herrera,4,2,1
-8811930651,Isabella Moreno,4,2,1
-2996009261,Martina Paredes,4,2,1
-7457834436,Laura Ramírez,4,2,1
-0379976885,Lucas Fernández,4,2,1
-6427484850,Antonio Díaz,5,1,1
-5883691168,Martina Paredes,5,1,1
-1035090884,Martina Paredes,5,1,1
-8418884269,Sofía Castro,5,1,1
-6730502072,Mía Torres,5,1,1
-3102528864,Mía Torres,5,1,1
-4180597929,Luis Alberto Hernández Rivera,5,1,1
-9798246664,Sofía Castro,5,1,1
-4607398030,Pedro Martínez,5,1,1
-2083000375,María Rodríguez,5,1,1
-7738199771,Mía Torres,5,1,1
-0371676824,Daniel Morales,5,2,1
-4393611866,María Rodríguez,5,2,1
-6091053018,Renata Mendoza,5,2,1
-2943592238,Lucas Fernández,5,2,1
-5716972890,Renata Mendoza,5,2,1
-7981905776,Pedro Martínez,5,2,1
-6981716444,Lucas Fernández,5,2,1
-5109323545,Martina Paredes,5,2,1
-0571432969,Antonio Díaz,5,2,1
-2017876855,Mía Torres,5,2,1
-8841823869,Daniel Morales,5,2,1
-4152844976,Samuel Herrera,6,1,2
-3642709208,Antonio Díaz,6,1,2
-7730404319,Daniel Morales,6,1,2
-8805281043,María Rodríguez,6,1,2
-5072277797,Pedro Martínez,6,1,2
-5438841018,Antonio Díaz,6,1,2
-0585417075,Valentina Suárez,6,1,2
-3942970322,Emilio González,6,1,2
-1376737148,Lucas Fernández,6,1,2
-9985553121,Martina Paredes,6,1,2
-8242572409,Pedro Martínez,6,1,2
-5560559345,Isabella Moreno,6,2,2
-2362711277,Ana María García López,6,2,2
-6176213993,Lucas Fernández,6,2,2
-5776863419,Emilio González,6,2,2
-9283154852,Luis Alberto Hernández Rivera,6,2,2
-0089573821,Valentina Suárez,6,2,2
-6221842644,Pedro Martínez,6,2,2
-8757692827,Ana María García López,6,2,2
-6385418392,Antonio Díaz,6,2,2
-2316737015,Pedro Martínez,6,2,2
-4740121654,Valentina Suárez,6,2,2
-8371242791,Laura Ramírez,7,1,2
-5806751245,María Rodríguez,7,1,2
-3487941411,Isabella Moreno,7,1,2
-5979887321,Isabella Moreno,7,1,2
-6459492208,Martina Paredes,7,1,2
-5739616968,Juan Carlos Pérez García,7,1,2
-1602595864,David Ruiz,7,1,2
-4970980841,Valentina Suárez,7,1,2
-4897327089,Ana María García López,7,1,2
-2169313348,Carla López,7,1,2
-5025285842,Mía Torres,7,1,2
-3628059331,Carla López,7,2,2
-7749790631,Daniel Morales,7,2,2
-0057700915,Renata Mendoza,7,2,2
-5674352807,David Ruiz,7,2,2
-5545001668,Valentina Suárez,7,2,2
-3648667798,Lucas Fernández,7,2,2
-9728690423,Daniel Morales,7,2,2
-3527634799,Elena Sánchez,7,2,2
-7200603429,Daniel Morales,7,2,2
-2004177675,José González,7,2,2
-9431544858,Laura Ramírez,7,2,2
-2617525626,Sofía Castro,8,1,2
-0995774527,Mía Torres,8,1,2
-8567355436,Mía Torres,8,1,2
-7033313924,Isabella Moreno,8,1,2
-2142757745,Martina Paredes,8,1,2
-7723587574,Martina Paredes,8,1,2
-1179016975,Isabella Moreno,8,1,2
-4752076098,Isabella Moreno,8,1,2
-0992449585,David Ruiz,8,1,2
-4184089067,Pedro Martínez,8,1,2
-3966909276,Diego Rojas,8,1,2
-2756231846,María Rodríguez,8,2,2
-5067017752,Pedro Martínez,8,2,2
-8742719308,Martina Paredes,8,2,2
-5021439945,Mía Torres,8,2,2
-9447979678,David Ruiz,8,2,2
-3862495164,Mía Torres,8,2,2
-3677595906,Juan Carlos Pérez García,8,2,2
-4242118207,Diego Rojas,8,2,2
-8522439326,Luis Alberto Hernández Rivera,8,2,2
-9166557672,María Rodríguez,8,2,2
-5805095823,Luis Alberto Hernández Rivera,8,2,2
-7053980296,María Rodríguez,9,1,2
-0337669571,Daniel Morales,9,1,2
-3433450431,David Ruiz,9,1,2
-4316872004,Luis Alberto Hernández Rivera,9,1,2
-5742296303,Daniel Morales,9,1,2
-9549196911,Antonio Díaz,9,1,2
-8291871932,María Rodríguez,9,1,2
-9837672323,José González,9,1,2
-3843532173,Emilio González,9,1,2
-8088275837,Pedro Martínez,9,1,2
-2218919814,Valentina Suárez,9,1,2
-3904925346,Antonio Díaz,9,2,2
-9297569105,Samuel Herrera,9,2,2
-4232764618,Lucas Fernández,9,2,2
-0518341601,Pedro Martínez,9,2,2
-3111057269,Ana María García López,9,2,2
-1761555839,Isabella Moreno,9,2,2
-0993076503,Renata Mendoza,9,2,2
-3531572627,Elena Sánchez,9,2,2
-2549964774,Laura Ramírez,9,2,2
-4214160487,David Ruiz,9,2,2
-6621000715,David Ruiz,9,2,2
-9549055835,Isabella Moreno,10,1,2
-2461128536,Samuel Herrera,10,1,2
-6920393966,Laura Ramírez,10,1,2
-0302200341,Carla López,10,1,2
-8853126576,Valentina Suárez,10,1,2
-8450193254,Sofía Castro,10,1,2
-3959365208,Samuel Herrera,10,1,2
-2508942753,Elena Sánchez,10,1,2
-5801030253,Renata Mendoza,10,1,2
-5286849002,Antonio Díaz,10,1,2
-8397414113,Mía Torres,10,1,2
-6164387185,Carla López,10,2,2
-1101207111,Diego Rojas,10,2,2
-8863863827,Laura Ramírez,10,2,2
-7912971051,Renata Mendoza,10,2,2
-1746936490,David Ruiz,10,2,2
-8836482823,Carla López,10,2,2
-3588503334,Carla López,10,2,2
-4630656770,Mía Torres,10,2,2
-9650701394,Pedro Martínez,10,2,2
-9661618284,Emilio González,10,2,2
-5026737532,Laura Ramírez,10,2,2
-7125807513,Daniel Morales,11,1,2
-9749714558,Samuel Herrera,11,1,2
-7670252965,Juan Carlos Pérez García,11,1,2
-1706141775,Luis Alberto Hernández Rivera,11,1,2
-1099272295,María Rodríguez,11,1,2
-1817456806,Mía Torres,11,1,2
-6363725252,Elena Sánchez,11,1,2
-9625694768,Antonio Díaz,11,1,2
-1471915256,Mía Torres,11,1,2
-4940595232,Pedro Martínez,11,1,2
-1280526345,Renata Mendoza,11,1,2
-1681147078,Diego Rojas,11,2,2
-2603913041,Laura Ramírez,11,2,2
-8977780160,Pedro Martínez,11,2,2
-3510818815,Carla López,11,2,2
-5329974016,Luis Alberto Hernández Rivera,11,2,2
-9707599925,Samuel Herrera,11,2,2
-4193481326,Ana María García López,11,2,2
-1535773379,Samuel Herrera,11,2,2
-8005335587,Isabella Moreno,11,2,2
-2562835894,María Rodríguez,11,2,2
-4337781149,Lucas Fernández,11,2,2
+numero_documento,nombre,grado,seccion,sede
+6669581755,Martina Paredes,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+7462594686,Valentina Suárez,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+9342040667,Renata Mendoza,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+3584068741,Isabella Moreno,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+2218436526,Juan Carlos Pérez García,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+4576118495,Renata Mendoza,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+1214757193,Martina Paredes,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+6384156402,Valentina Suárez,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+698181350,María Rodríguez,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+2610868395,Luis Alberto Hernández Rivera,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+3287434536,Isabella Moreno,1,1,Institución Educativa Juan Pablo II -Sede Primaria
+6774264565,Sofía Castro,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+6316488950,Valentina Suárez,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+4421703112,Antonio Díaz,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+8138443984,Martina Paredes,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+2488855420,Mía Torres,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+184707020,David Ruiz,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+6368944388,Juan Carlos Pérez García,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+1295150150,Antonio Díaz,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+9630521846,Pedro Martínez,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+4306594289,Ana María García López,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+3868009213,Juan Carlos Pérez García,1,2,Institución Educativa Juan Pablo II -Sede Primaria
+753940134,Elena Sánchez,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+449719839,Isabella Moreno,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+3922012512,Ana María García López,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+4997693076,Samuel Herrera,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+8584645455,Valentina Suárez,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+3438997717,Daniel Morales,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+7544789244,Juan Carlos Pérez García,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+8859926348,Valentina Suárez,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+5401296448,Luis Alberto Hernández Rivera,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+2167768872,Mía Torres,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+8077941393,Sofía Castro,2,1,Institución Educativa Juan Pablo II -Sede Primaria
+2808268176,David Ruiz,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+5744652939,Sofía Castro,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+9094409087,Sofía Castro,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+3023581054,Samuel Herrera,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+2117226973,María Rodríguez,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+2829402753,Antonio Díaz,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+7792534881,Daniel Morales,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+8399875486,Valentina Suárez,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+5949770250,Samuel Herrera,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+3359755628,Luis Alberto Hernández Rivera,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+1935035997,Laura Ramírez,2,2,Institución Educativa Juan Pablo II -Sede Primaria
+2478457740,Renata Mendoza,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+4707817066,Carla López,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+8261566105,Emilio González,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+1547127445,Pedro Martínez,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+3428837428,Carla López,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+9493189912,Diego Rojas,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+2501606924,Elena Sánchez,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+6741600661,José González,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+9848430673,Samuel Herrera,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+9094887043,David Ruiz,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+212009187,Emilio González,3,1,Institución Educativa Juan Pablo II -Sede Primaria
+7209260579,Samuel Herrera,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+9247378579,Elena Sánchez,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+7188893523,Martina Paredes,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+2096378183,Samuel Herrera,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+1117404751,Martina Paredes,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+4149454520,Mía Torres,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+487044352,Sofía Castro,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+7579186569,Laura Ramírez,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+7291003892,Luis Alberto Hernández Rivera,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+6909910546,Juan Carlos Pérez García,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+2819145321,José González,3,2,Institución Educativa Juan Pablo II -Sede Primaria
+1406568367,Elena Sánchez,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+7022662730,Ana María García López,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+7662552135,Emilio González,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+5934634876,Lucas Fernández,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+5041908556,Valentina Suárez,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+2673290754,Diego Rojas,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+5293006454,José González,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+1192125041,Antonio Díaz,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+7487603253,Martina Paredes,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+3217259129,Isabella Moreno,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+439874477,Valentina Suárez,4,1,Institución Educativa Juan Pablo II -Sede Primaria
+7344430640,Samuel Herrera,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+2115722034,Elena Sánchez,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+5731466599,Lucas Fernández,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+3849433752,Pedro Martínez,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+4057159162,Emilio González,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+6300607792,Emilio González,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+6141063936,Samuel Herrera,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+8811930651,Isabella Moreno,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+2996009261,Martina Paredes,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+7457834436,Laura Ramírez,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+379976885,Lucas Fernández,4,2,Institución Educativa Juan Pablo II -Sede Primaria
+6427484850,Antonio Díaz,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+5883691168,Martina Paredes,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+1035090884,Martina Paredes,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+8418884269,Sofía Castro,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+6730502072,Mía Torres,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+3102528864,Mía Torres,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+4180597929,Luis Alberto Hernández Rivera,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+9798246664,Sofía Castro,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+4607398030,Pedro Martínez,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+2083000375,María Rodríguez,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+7738199771,Mía Torres,5,1,Institución Educativa Juan Pablo II -Sede Primaria
+371676824,Daniel Morales,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+4393611866,María Rodríguez,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+6091053018,Renata Mendoza,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+2943592238,Lucas Fernández,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+5716972890,Renata Mendoza,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+7981905776,Pedro Martínez,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+6981716444,Lucas Fernández,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+5109323545,Martina Paredes,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+571432969,Antonio Díaz,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+2017876855,Mía Torres,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+8841823869,Daniel Morales,5,2,Institución Educativa Juan Pablo II -Sede Primaria
+4152844976,Samuel Herrera,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3642709208,Antonio Díaz,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+7730404319,Daniel Morales,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8805281043,María Rodríguez,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5072277797,Pedro Martínez,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5438841018,Antonio Díaz,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+585417075,Valentina Suárez,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3942970322,Emilio González,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1376737148,Lucas Fernández,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+9985553121,Martina Paredes,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8242572409,Pedro Martínez,6,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5560559345,Isabella Moreno,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+2362711277,Ana María García López,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+6176213993,Lucas Fernández,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5776863419,Emilio González,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9283154852,Luis Alberto Hernández Rivera,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+89573821,Valentina Suárez,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+6221842644,Pedro Martínez,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8757692827,Ana María García López,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+6385418392,Antonio Díaz,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+2316737015,Pedro Martínez,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+4740121654,Valentina Suárez,6,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8371242791,Laura Ramírez,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5806751245,María Rodríguez,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3487941411,Isabella Moreno,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5979887321,Isabella Moreno,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+6459492208,Martina Paredes,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5739616968,Juan Carlos Pérez García,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1602595864,David Ruiz,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+4970980841,Valentina Suárez,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+4897327089,Ana María García López,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+2169313348,Carla López,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5025285842,Mía Torres,7,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3628059331,Carla López,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+7749790631,Daniel Morales,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+57700915,Renata Mendoza,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5674352807,David Ruiz,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5545001668,Valentina Suárez,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3648667798,Lucas Fernández,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9728690423,Daniel Morales,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3527634799,Elena Sánchez,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+7200603429,Daniel Morales,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+2004177675,José González,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9431544858,Laura Ramírez,7,2,Institución Educativa Juan Pablo II -Sede Secundaria
+2617525626,Sofía Castro,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+995774527,Mía Torres,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8567355436,Mía Torres,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+7033313924,Isabella Moreno,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+2142757745,Martina Paredes,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+7723587574,Martina Paredes,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1179016975,Isabella Moreno,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+4752076098,Isabella Moreno,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+992449585,David Ruiz,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+4184089067,Pedro Martínez,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3966909276,Diego Rojas,8,1,Institución Educativa Juan Pablo II -Sede Secundaria
+2756231846,María Rodríguez,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5067017752,Pedro Martínez,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8742719308,Martina Paredes,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5021439945,Mía Torres,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9447979678,David Ruiz,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3862495164,Mía Torres,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3677595906,Juan Carlos Pérez García,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+4242118207,Diego Rojas,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8522439326,Luis Alberto Hernández Rivera,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9166557672,María Rodríguez,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5805095823,Luis Alberto Hernández Rivera,8,2,Institución Educativa Juan Pablo II -Sede Secundaria
+7053980296,María Rodríguez,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+337669571,Daniel Morales,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3433450431,David Ruiz,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+4316872004,Luis Alberto Hernández Rivera,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5742296303,Daniel Morales,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+9549196911,Antonio Díaz,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8291871932,María Rodríguez,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+9837672323,José González,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3843532173,Emilio González,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8088275837,Pedro Martínez,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+2218919814,Valentina Suárez,9,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3904925346,Antonio Díaz,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9297569105,Samuel Herrera,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+4232764618,Lucas Fernández,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+518341601,Pedro Martínez,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3111057269,Ana María García López,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+1761555839,Isabella Moreno,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+993076503,Renata Mendoza,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3531572627,Elena Sánchez,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+2549964774,Laura Ramírez,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+4214160487,David Ruiz,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+6621000715,David Ruiz,9,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9549055835,Isabella Moreno,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+2461128536,Samuel Herrera,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+6920393966,Laura Ramírez,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+302200341,Carla López,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8853126576,Valentina Suárez,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8450193254,Sofía Castro,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+3959365208,Samuel Herrera,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+2508942753,Elena Sánchez,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5801030253,Renata Mendoza,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+5286849002,Antonio Díaz,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+8397414113,Mía Torres,10,1,Institución Educativa Juan Pablo II -Sede Secundaria
+6164387185,Carla López,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+1101207111,Diego Rojas,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8863863827,Laura Ramírez,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+7912971051,Renata Mendoza,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+1746936490,David Ruiz,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8836482823,Carla López,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3588503334,Carla López,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+4630656770,Mía Torres,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9650701394,Pedro Martínez,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9661618284,Emilio González,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5026737532,Laura Ramírez,10,2,Institución Educativa Juan Pablo II -Sede Secundaria
+7125807513,Daniel Morales,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+9749714558,Samuel Herrera,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+7670252965,Juan Carlos Pérez García,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1706141775,Luis Alberto Hernández Rivera,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1099272295,María Rodríguez,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1817456806,Mía Torres,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+6363725252,Elena Sánchez,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+9625694768,Antonio Díaz,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1471915256,Mía Torres,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+4940595232,Pedro Martínez,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1280526345,Renata Mendoza,11,1,Institución Educativa Juan Pablo II -Sede Secundaria
+1681147078,Diego Rojas,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+2603913041,Laura Ramírez,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8977780160,Pedro Martínez,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+3510818815,Carla López,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+5329974016,Luis Alberto Hernández Rivera,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+9707599925,Samuel Herrera,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+4193481326,Ana María García López,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+1535773379,Samuel Herrera,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+8005335587,Isabella Moreno,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+2562835894,María Rodríguez,11,2,Institución Educativa Juan Pablo II -Sede Secundaria
+4337781149,Lucas Fernández,11,2,Institución Educativa Juan Pablo II -Sede Secundaria

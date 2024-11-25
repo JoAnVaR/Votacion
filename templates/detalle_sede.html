@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Detalle Grado {{ grado }} - Sección {{ seccion }} - Sede {{ sede }}{% endblock %}
+{% block title %}Detalle Sede {{ sede }}{% endblock %}
 
 {% block content %}
 <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
-    <h1>Grado {{ grado }} - {{ seccion }} - Sede {{ sede }}</h1>
+    <h1>Sede {{ sede }}</h1>
 </header>
 
 <div class="mt-5">
@@ -13,30 +13,40 @@
             <tr>
                 <th style="background-color: var(--primary-color); color: var(--white-color);">Número de Documento</th>
                 <th style="background-color: var(--primary-color); color: var(--white-color);">Nombre</th>
+                <th style="background-color: var(--primary-color); color: var(--white-color);">Departamento</th>
+                <th style="background-color: var(--primary-color); color: var(--white-color);">Título</th>
                 <th style="background-color: var(--primary-color); color: var(--white-color);">Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for estudiante in estudiantes %}
+            {% for profesor in profesores %}
             <tr>
                 <td>
-                    <input type="text" name="numero_documento" value="{{ estudiante.numero_documento }}"
-                        class="form-control form-control-sm" required form="form-{{ estudiante.id }}">
+                    <input type="text" name="numero_documento" value="{{ profesor.numero_documento }}"
+                        class="form-control form-control-sm" required form="form-{{ profesor.id }}">
                 </td>
                 <td>
-                    <input type="text" name="nombre" value="{{ estudiante.nombre }}"
-                        class="form-control form-control-sm" required form="form-{{ estudiante.id }}">
+                    <input type="text" name="nombre" value="{{ profesor.nombre }}" class="form-control form-control-sm"
+                        required form="form-{{ profesor.id }}">
                 </td>
                 <td>
-                    <form id="form-{{ estudiante.id }}" class="form-modificar d-inline">
-                        <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
+                    <input type="text" name="departamento" value="{{ profesor.departamento }}"
+                        class="form-control form-control-sm" required form="form-{{ profesor.id }}">
+                </td>
+                <td>
+                    <input type="text" name="titulo" value="{{ profesor.titulo }}" class="form-control form-control-sm"
+                        required form="form-{{ profesor.id }}">
+                </td>
+                <td>
+                    <form id="form-{{ profesor.id }}" class="form-modificar d-inline">
+                        <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
                         <button type="submit" class="btn btn-sm"
                             style="background-color: var(--primary-color); color: var(--white-color);">
                             Modificar
                         </button>
                     </form>
                     <form class="form-eliminar d-inline">
-                        <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
+                        <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
                         <button type="submit" class="btn btn-sm"
                             style="background-color: var(--secondary-color); color: var(--white-color);">
                             Eliminar
@@ -48,7 +58,7 @@
         </tbody>
     </table>
 
-    <a href="{{ url_for('estudiante.registro_estudiante') }}" class="btn mt-3"
+    <a href="{{ url_for('profesor.registro_profesor') }}" class="btn mt-3"
         style="background-color: var(--dark-blue); color: var(--white-color);">
         Volver al registro
     </a>
@@ -58,26 +68,28 @@
 {% block extra_js %}
 <script>
     $(document).ready(function () {
-        // Manejar modificación de estudiante
+        // Manejar modificación de profesor
         $('.form-modificar').on('submit', function (e) {
             e.preventDefault();
             var $form = $(this);
-            var estudiante_id = $form.find('input[name="estudiante_id"]').val();
+            var profesor_id = $form.find('input[name="profesor_id"]').val();
             var $row = $form.closest('tr');
 
             var datos = {
-                estudiante_id: estudiante_id,
+                profesor_id: profesor_id,
                 numero_documento: $row.find('input[name="numero_documento"]').val(),
-                nombre: $row.find('input[name="nombre"]').val()
+                nombre: $row.find('input[name="nombre"]').val(),
+                departamento: $row.find('input[name="departamento"]').val(),
+                titulo: $row.find('input[name="titulo"]').val()
             };
 
             $.ajax({
-                url: "{{ url_for('estudiante.modificar_estudiante') }}",
+                url: "{{ url_for('profesor.actualizar_profesor') }}",
                 type: 'POST',
                 data: datos,
                 success: function (response) {
                     if (response.success) {
-                        mostrarMensaje('Estudiante modificado exitosamente', 'success');
+                        mostrarMensaje('Profesor modificado exitosamente', 'success');
                         setTimeout(function () {
                             location.reload();
                         }, 1000);
@@ -86,32 +98,32 @@
                     }
                 },
                 error: function (xhr) {
-                    mostrarMensaje('Error al modificar estudiante: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                    mostrarMensaje('Error al modificar profesor: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
                 }
             });
         });
 
-        // Manejar eliminación de estudiante
+        // Manejar eliminación de profesor
         $('.form-eliminar').on('submit', function (e) {
             e.preventDefault();
             var $form = $(this);
             var $row = $form.closest('tr');
 
-            if (confirm('¿Está seguro de que desea eliminar este estudiante?')) {
+            if (confirm('¿Está seguro de que desea eliminar este profesor?')) {
                 $.ajax({
-                    url: "{{ url_for('estudiante.eliminar_estudiante') }}",
+                    url: "{{ url_for('profesor.borrar_profesor') }}",
                     type: 'POST',
                     data: $form.serialize(),
                     success: function (response) {
                         if (response.success) {
-                            mostrarMensaje('Estudiante eliminado exitosamente', 'success');
+                            mostrarMensaje('Profesor eliminado exitosamente', 'success');
                             $row.fadeOut(300, function () { $(this).remove(); });
                         } else {
                             mostrarMensaje(response.message, 'error');
                         }
                     },
                     error: function () {
-                        mostrarMensaje('Error al eliminar estudiante', 'error');
+                        mostrarMensaje('Error al eliminar profesor', 'error');
                     }
                 });
             }

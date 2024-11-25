@@ -1,138 +1,321 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Asignar Mesas a Grados</title>
-    <!-- Incluir Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Incluir CSS personalizado -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        .search-box {
-            margin-bottom: 20px;
-        }
+{% block content %}
+<!-- Agregar input oculto al inicio del contenido -->
+<input type="hidden" id="configuracionFinalizada" value="{{ config.configuracion_finalizada|string|lower }}">
 
-        .search-results {
-            display: none;
-        }
-    </style>
-    <script>
-        function toggleGrados(sedeId) {
-            var gradosDiv = document.getElementById('grados-' + sedeId);
-            if (gradosDiv.style.display === 'none' || gradosDiv.style.display === '') {
-                gradosDiv.style.display = 'block';
-            } else {
-                gradosDiv.style.display = 'none';
-            }
-        }
+<div class="container mt-5">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+        <h1>Asignar Mesas a Grados</h1>
+    </header>
 
-        function seleccionarMesa(gradoSeccion, mesaNumero, sedeId) {
-            var form = document.getElementById("asignarMesaForm");
-            form.grado_seccion.value = gradoSeccion + '|' + sedeId;
-            form.mesa_numero.value = mesaNumero;
-            form.submit();
-        }
-    </script>
-</head>
+    <div class="mt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
-<body>
-    <div class="container mt-5">
-        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
-            <h1>Asignar Mesas a Grados</h1>
-        </header>
+        <!-- Formulario de asignación -->
+        {% if sedes_con_grados %}
+        <form id="asignarMesaForm" method="post" action="{{ url_for('asignar_mesa.asignar_mesas') }}" class="mb-4">
+            <input type="hidden" name="grado_seccion" value="">
+            <input type="hidden" name="mesa_numero" value="">
 
-        <div class="mt-5">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <ul class="flashes mt-4">
-                {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            {% endwith %}
-
-            {% if sedes_con_grados %}
-            <form id="asignarMesaForm" method="post" action="{{ url_for('asignar_mesas') }}" class="mb-4">
-                <input type="hidden" name="grado_seccion" value="">
-                <input type="hidden" name="mesa_numero" value="">
-                <h2 class="text-primary">Seleccione una Sede</h2>
-                <ul>
-                    {% for sede in sedes_con_grados %}
-                    <li>
-                        <a href="javascript:void(0);" onclick="toggleGrados('{{ sede.id }}')" class="btn btn-link">{{
-                            sede.nombre }}</a>
-                        <div id="grados-{{ sede.id }}" style="display: none;">
-                            <h3>Grados y Secciones</h3>
-                            <table id="gradosTable" class="table table-striped">
-                                <thead class="thead-dark">
-                                    <tr>
-                                        <th>Grado y Sección</th>
-                                        {% for mesa in mesas %}
-                                        {% if mesa.sede_id == sede.id %}
-                                        <th>Mesa {{ mesa.mesa_numero }}</th>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for grado_seccion, sede_id in grados_secciones %}
-                                    {% if sede_id == sede.id %}
-                                    <tr>
-                                        <td>{{ grado_seccion }}</td>
-                                        {% for mesa in mesas %}
-                                        {% if mesa.sede_id == sede.id %}
-                                        <td>
-                                            <input type="radio" name="mesa_numero_{{ grado_seccion }}"
-                                                value="{{ mesa.mesa_numero }}"
-                                                onchange="seleccionarMesa('{{ grado_seccion }}', '{{ mesa.mesa_numero }}', '{{ sede.id }}')">
-                                        </td>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </tr>
+            <h2 style="color: var(--primary-color)">Seleccione una Sede</h2>
+            <ul class="sede-list">
+                {% for sede in sedes_con_grados %}
+                <li class="sede-item">
+                    <div class="sede-header" style="background-color: var(--primary-color); color: var(--white-color);">
+                        <a href="javascript:void(0);" class="sede-link" data-sede-id="{{ sede.id }}"
+                            style="color: var(--white-color);">
+                            {{ sede.nombre }}
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                    <div id="grados-{{ sede.id }}" class="grados-container" style="display: none;">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="background-color: var(--primary-color); color: var(--white-color);">
+                                        Grado y Sección
+                                    </th>
+                                    {% for mesa in mesas %}
+                                    {% if mesa.sede_id == sede.id %}
+                                    <th style="background-color: var(--primary-color); color: var(--white-color);">
+                                        Mesa {{ mesa.mesa_numero }}
+                                    </th>
                                     {% endif %}
                                     {% endfor %}
-                                </tbody>
-                            </table><br>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </form>
-            {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for grado_seccion, sede_id in grados_secciones %}
+                                {% if sede_id == sede.id %}
+                                <tr>
+                                    <td>{{ grado_seccion }}</td>
+                                    {% for mesa in mesas %}
+                                    {% if mesa.sede_id == sede.id %}
+                                    <td>
+                                        <input type="radio" class="mesa-radio" name="mesa_numero_{{ grado_seccion }}"
+                                            value="{{ mesa.mesa_numero }}" data-grado-seccion="{{ grado_seccion }}"
+                                            data-sede-id="{{ sede.id }}">
+                                    </td>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </form>
+        {% endif %}
 
-            <h2 class="text-primary mt-5">Asignaciones Realizadas</h2>
+        <!-- Sección de Asignaciones Realizadas -->
+        <h2 class="asignaciones-header" style="color: var(--primary-color)">Asignaciones Realizadas</h2>
+        <div class="asignaciones-accordion">
             {% for sede in sedes %}
-            <h3>{{ sede.nombre }}</h3>
-            <table class="table table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Mesa</th>
-                        <th>Grado y Sección</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for asignacion in asignaciones %}
-                    {% if asignacion.sede_nombre == sede.nombre %}
-                    <tr>
-                        <td>{{ asignacion.mesa_numero }}</td>
-                        <td>{{ asignacion.grado }} - {{ asignacion.seccion }}</td>
-                        <td>
-                            <form method="post" action="{{ url_for('eliminar_asignacion', id=asignacion.id) }}"
-                                style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="asignacion-sede-card mb-3">
+                <div class="asignacion-sede-header"
+                    style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue));">
+                    <h3 class="mb-0">
+                        <a href="#" class="asignacion-sede-link" data-sede="{{ sede.nombre }}"
+                            style="color: var(--white-color);">
+                            {{ sede.nombre }}
+                            <span class="badge float-right"
+                                style="background-color: var(--highlight-color); color: var(--dark-blue);">
+                                {{ asignaciones|selectattr('sede_nombre', 'equalto', sede.nombre)|list|length }}
+                                asignaciones
+                            </span>
+                            <i class="fas fa-chevron-down float-right mr-2"></i>
+                        </a>
+                    </h3>
+                </div>
+                <div class="asignacion-sede-content" style="display: none;">
+                    <table class="table table-striped asignaciones-table">
+                        <thead>
+                            <tr>
+                                <th>Mesa</th>
+                                <th>Grado y Sección</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asignacion in asignaciones %}
+                            {% if asignacion.sede_nombre == sede.nombre %}
+                            <tr>
+                                <td>{{ asignacion.mesa_numero }}</td>
+                                <td>{{ asignacion.grado }} - {{ asignacion.seccion }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm btn-eliminar-asignacion"
+                                        data-id="{{ asignacion.id }}">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             {% endfor %}
         </div>
-    </div>
-</body>
 
-</html>
+        <!-- Resumen de estudiantes por mesa -->
+        <h2 class="resumen-header mt-5 mb-4" style="color: var(--primary-color)">
+            Total de Estudiantes por Mesa
+        </h2>
+        <div class="resumen-accordion">
+            {% for sede in sedes %}
+            <div class="resumen-sede-card mb-3">
+                <div class="resumen-sede-header"
+                    style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue));">
+                    <h3 class="mb-0">
+                        <a href="#" class="resumen-sede-link" data-sede="{{ sede.nombre }}"
+                            style="color: var(--white-color);">
+                            {{ sede.nombre }}
+                            <span class="badge float-right"
+                                style="background-color: var(--highlight-color); color: var(--dark-blue);">
+                                {{ mesas|selectattr('sede_id', 'equalto', sede.id)|list|length }} mesas
+                            </span>
+                            <i class="fas fa-chevron-down float-right mr-2"></i>
+                        </a>
+                    </h3>
+                </div>
+                <div class="resumen-sede-content" style="display: none;">
+                    <table class="table table-striped resumen-table">
+                        <thead>
+                            <tr>
+                                <th>Mesa</th>
+                                <th>Total Estudiantes</th>
+                                <th>Grados Asignados</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mesa in mesas %}
+                            {% if mesa.sede_id == sede.id %}
+                            {% set mesa_key = sede.nombre + '_' + mesa.mesa_numero|string %}
+                            {% set mesa_info = totales_por_mesa.get(mesa_key, {'total': 0, 'grados': []}) %}
+                            <tr>
+                                <td>Mesa {{ mesa.mesa_numero }}</td>
+                                <td>
+                                    <span class="badge badge-info">
+                                        {{ mesa_info.total }} estudiantes
+                                    </span>
+                                </td>
+                                <td>
+                                    {% for grado in mesa_info.grados %}
+                                    <span class="badge badge-secondary mr-1">{{ grado }}</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-info">
+                            <tr>
+                                <td><strong>Total en Sede</strong></td>
+                                <td colspan="2">
+                                    <strong>
+                                        {% set total_sede = namespace(count=0) %}
+                                        {% for key, info in totales_por_mesa.items() %}
+                                        {% if key.startswith(sede.nombre + '_') %}
+                                        {% set total_sede.count = total_sede.count + info.total %}
+                                        {% endif %}
+                                        {% endfor %}
+                                        {{ total_sede.count }} estudiantes
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        // Obtener el valor del input oculto y convertirlo a booleano
+        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+        if (configuracionFinalizada) {
+            // Deshabilitar todos los controles interactivos
+            $('.mesa-radio, .btn-eliminar-asignacion').prop('disabled', true);
+            $('.btn-eliminar-asignacion').hide();
+            // Mostrar mensaje
+            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
+        }
+
+        // Manejar la selección de mesa
+        $('.mesa-radio').change(function (e) {
+            if (configuracionFinalizada) {
+                e.preventDefault();
+                toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
+                return false;
+            }
+
+            e.stopPropagation();
+            var gradoSeccion = $(this).data('grado-seccion');
+            var mesaNumero = $(this).val();
+            var sedeId = $(this).data('sede-id');
+
+            $.ajax({
+                url: "{{ url_for('asignar_mesa.asignar_mesas') }}",
+                type: 'POST',
+                data: {
+                    grado_seccion: gradoSeccion,
+                    mesa_numero: mesaNumero,
+                    sede_id: sedeId
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success('Mesa asignada exitosamente');
+                        location.reload();
+                    } else {
+                        toastr.error(response.message || 'Error al asignar mesa');
+                    }
+                },
+                error: function () {
+                    toastr.error('Error al realizar la asignación');
+                }
+            });
+        });
+
+        // Toggle para mostrar/ocultar contenido de sedes
+        $('.sede-link').off('click').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $this = $(this);
+            const $icon = $this.find('i');
+            const $container = $this.closest('.sede-item').find('.grados-container');
+
+            // Cerrar otros contenedores
+            $('.sede-item').not($this.closest('.sede-item')).each(function () {
+                const $otherIcon = $(this).find('.sede-link i');
+                const $otherContainer = $(this).find('.grados-container');
+
+                $otherIcon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+                $otherContainer.slideUp();
+            });
+
+            // Toggle actual
+            $container.slideToggle({
+                duration: 300,
+                complete: function () {
+                    $icon.toggleClass('fa-chevron-right fa-chevron-down');
+                }
+            });
+        });
+
+        // Toggle para asignaciones
+        $('.asignacion-sede-link').off('click').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $this = $(this);
+            const $icon = $this.find('i');
+            const $content = $this.closest('.asignacion-sede-header')
+                .next('.asignacion-sede-content');
+
+            $content.slideToggle({
+                duration: 300,
+                complete: function () {
+                    $icon.toggleClass('fa-chevron-down fa-chevron-up');
+                }
+            });
+        });
+
+        // Toggle para resumen
+        $('.resumen-sede-link').off('click').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $this = $(this);
+            const $icon = $this.find('i');
+            const $content = $this.closest('.resumen-sede-header')
+                .next('.resumen-sede-content');
+
+            $content.slideToggle({
+                duration: 300,
+                complete: function () {
+                    $icon.toggleClass('fa-chevron-down fa-chevron-up');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,617 @@
+/* Variables globales con los colores exactos de la Registraduría */
+:root {
+    --primary-color: #004884;
+    /* Azul principal de la Registraduría */
+    --secondary-color: #CD1719;
+    /* Rojo institucional */
+    --background-color: #F6F8F9;
+    /* Fondo gris muy claro */
+    --text-color: #4B4B4B;
+    /* Gris texto */
+    --white-color: #FFFFFF;
+    /* Blanco */
+    --highlight-color: #FDB913;
+    /* Amarillo/Dorado institucional */
+    --accent-color: #31B44C;
+    /* Verde institucional */
+    --dark-blue: #00325B;
+    /* Azul oscuro para hover */
+    --light-gray: #E6EFFD;
+    /* Gris claro para fondos alternos */
+    --chart-primary: rgba(0, 72, 132, 0.8);
+    --chart-secondary: rgba(179, 20, 22, 0.8);
+    --chart-highlight: rgba(255, 198, 41, 0.8);
+    --chart-dark: rgba(0, 45, 82, 0.8);
+    --chart-light: rgba(240, 240, 240, 0.8);
+
+    --chart-border-primary: rgba(0, 72, 132, 1);
+    --chart-border-secondary: rgba(179, 20, 22, 1);
+    --chart-border-highlight: rgba(255, 198, 41, 1);
+    --chart-border-dark: rgba(0, 45, 82, 1);
+    --chart-border-light: rgba(240, 240, 240, 1);
+}
+
+/* Estilos básicos */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--white-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+}
+
+/* Headers y títulos */
+header {
+    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    color: var(--white-color);
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+}
+
+/* Botones */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-blue);
+    border-color: var(--dark-blue);
+}
+
+/* Tablas */
+.table th {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+/* Estilos específicos para estudiantes */
+.estudiante-row {
+    transition: all 0.3s ease;
+}
+
+.estudiante-row:hover {
+    background-color: #f8f9fa;
+}
+
+.estudiante-input {
+    max-width: 150px;
+}
+
+/* Estilos para asignación de mesas */
+.sede-list {
+    list-style: none;
+    padding: 0;
+}
+
+.sede-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 1.2em;
+    display: block;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.sede-link:hover {
+    color: var(--dark-blue);
+    background-color: var(--light-gray);
+    text-decoration: none;
+}
+
+.grados-container {
+    margin-left: 20px;
+    padding: 15px;
+    border-left: 3px solid var(--secondary-color);
+}
+
+.mesa-radio {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+}
+
+.asignaciones-table {
+    margin-top: 20px;
+}
+
+.asignaciones-header {
+    color: var(--primary-color);
+    margin: 30px 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+/* Animaciones para mostrar/ocultar grados */
+.grados-container {
+    display: none;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para las asignaciones acordeón */
+.asignacion-sede-card {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.asignacion-sede-header {
+    background-color: var(--primary-color);
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.asignacion-sede-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    display: block;
+    position: relative;
+    padding: 5px;
+}
+
+.asignacion-sede-link:hover {
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.asignacion-sede-content {
+    padding: 15px;
+    background-color: white;
+}
+
+.asignacion-sede-link i {
+    transition: transform 0.3s ease;
+}
+
+.asignacion-sede-link.active i {
+    transform: rotate(180deg);
+}
+
+/* Estilos para el resumen de estudiantes */
+.resumen-header {
+    color: var(--primary-color);
+    margin: 30px 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.resumen-sede-card {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.resumen-sede-header {
+    background-color: var(--primary-color);
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.resumen-sede-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    display: block;
+    position: relative;
+    padding: 5px;
+}
+
+.resumen-sede-link:hover {
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.resumen-sede-content {
+    padding: 15px;
+    background-color: white;
+}
+
+.resumen-table .badge {
+    font-size: 0.9em;
+}
+
+.resumen-table tfoot {
+    background-color: #e3f2fd;
+}
+
+/* Estilos para badges */
+.badge {
+    background-color: var(--highlight-color);
+    color: var(--dark-blue);
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+/* Estilos para tablas */
+.table thead th {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border-bottom: none;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 72, 132, 0.05);
+}
+
+/* Estilos para botones de acción */
+.btn-danger {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-danger:hover {
+    background-color: #b31416;
+    border-color: #b31416;
+}
+
+/* Estilos para alertas */
+.alert {
+    border-radius: 4px;
+    border: none;
+}
+
+.alert-success {
+    background-color: var(--accent-color);
+    color: var(--white-color);
+}
+
+.alert-warning {
+    background-color: var(--highlight-color);
+    color: var(--dark-blue);
+}
+
+.alert-danger {
+    background-color: var(--secondary-color);
+    color: var(--white-color);
+}
+
+/* Estilos para el menú principal */
+.menu-item {
+    color: var(--text-color) !important;
+    border: 1px solid var(--light-gray);
+    transition: all 0.3s ease;
+    margin-bottom: 5px;
+}
+
+.menu-item:hover {
+    background-color: var(--primary-color) !important;
+    color: var(--white-color) !important;
+    border-color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+.dashboard-item {
+    background-color: var(--primary-color) !important;
+    color: var(--white-color) !important;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.dashboard-item:hover {
+    background-color: var(--dark-blue) !important;
+    transform: translateX(5px);
+}
+
+/* Estilos para elementos deshabilitados */
+.menu-item[disabled] {
+    background-color: var(--light-gray) !important;
+    color: var(--text-color) !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Animación para los elementos del menú */
+.list-group-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.list-group-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0;
+    background-color: var(--highlight-color);
+    transition: width 0.3s ease;
+}
+
+.list-group-item:hover::after {
+    width: 100%;
+}
+
+/* Estilos para la página de administración de sedes */
+.card-header {
+    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    color: var(--white-color);
+}
+
+.mesa-item .badge {
+    background-color: var(--highlight-color);
+    color: var(--dark-blue);
+    transition: all 0.3s ease;
+}
+
+.mesa-item .badge:hover {
+    background-color: var(--dark-blue);
+    color: var(--white-color);
+}
+
+.btn-danger {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-danger:hover {
+    background-color: #b31416;
+    border-color: #b31416;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 72, 132, 0.25);
+}
+
+/* Estilos para formularios */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 72, 132, 0.25);
+}
+
+/* Estilos para tablas */
+.table thead th {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border-bottom: none;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 72, 132, 0.05);
+}
+
+/* Estilos para botones */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-blue);
+    border-color: var(--dark-blue);
+}
+
+.btn-secondary {
+    background-color: var(--dark-blue);
+    border-color: var(--dark-blue);
+    color: var(--white-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-danger {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-danger:hover {
+    background-color: #b31416;
+    border-color: #b31416;
+}
+
+/* Estilos para las estadísticas */
+.card-header {
+    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    color: var(--white-color);
+}
+
+.list-group-item:hover {
+    background-color: var(--background-color);
+    border-left: 3px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.badge {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.toggle-grados:hover {
+    text-decoration: none;
+}
+
+.toggle-grados .badge {
+    background-color: var(--highlight-color);
+    color: var(--dark-blue);
+    transition: all 0.3s ease;
+}
+
+.toggle-grados:hover .badge {
+    background-color: var(--dark-blue);
+    color: var(--white-color);
+}
+
+.list-group-item .badge {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.list-group-item:hover .badge {
+    background-color: var(--dark-blue);
+}
+
+/* Estilos para asignación de mesas */
+.sede-header {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.sede-link {
+    color: var(--white-color);
+    text-decoration: none;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.sede-link:hover {
+    color: var(--highlight-color);
+}
+
+.asignacion-sede-header,
+.resumen-sede-header {
+    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.badge {
+    background-color: var(--highlight-color);
+    color: var(--dark-blue);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.btn-eliminar-asignacion {
+    background-color: var(--secondary-color);
+    color: var(--white-color);
+    border: none;
+}
+
+.btn-eliminar-asignacion:hover {
+    background-color: #b31416;
+}
+
+.table thead th {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border-bottom: none;
+}
+
+.table-info {
+    background-color: var(--light-gray);
+}
+
+.badge-info {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.badge-secondary {
+    background-color: var(--dark-blue);
+    color: var(--white-color);
+}
+
+/* Estilos para el dashboard y gráficos */
+.sede-header {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.sede-header:hover {
+    background-color: var(--dark-blue) !important;
+}
+
+.badge {
+    background-color: var(--highlight-color);
+    color: var(--dark-blue);
+}
+
+.btn-finalizar {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-finalizar:hover {
+    background-color: var(--dark-blue);
+}
+
+.btn-finalizar:disabled {
+    background-color: var(--light-gray);
+    cursor: not-allowed;
+}
+
+canvas {
+    min-height: 300px;
+}
+
+.card {
+    border: 1px solid var(--light-gray);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    color: var(--white-color);
+    border-bottom: none;
+}
+
+/* Estilos específicos para gráficos del dashboard */
+.dashboard-chart {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px;
+    width: 100%;
+}
+
+.chart-legend {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--dark-blue);
+}
+
+.chart-tooltip {
+    background-color: var(--white-color);
+    border: 1px solid var(--light-gray);
+    border-radius: 4px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ... otros estilos que necesites ... */

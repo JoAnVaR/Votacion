@@ -1,125 +1,406 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Administrar Sedes y Mesas</title>
-    <!-- Incluir Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Incluir CSS personalizado -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
+{% block title %}Administrar Sedes y Mesas{% endblock %}
+
+{% block content %}
+<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+    <h1>Administrar Sedes y Mesas</h1>
+</header>
+
+<div class="mt-5">
+    {% if config.configuracion_finalizada %}
+    <div class="alert alert-warning">
+        <i class="fas fa-lock"></i> La configuración del sistema está bloqueada. No se pueden realizar modificaciones.
+    </div>
+    {% endif %}
+
+    <!-- Formulario para agregar una nueva sede -->
+    <form id="formSede" method="post" action="{{ url_for('sede.agregar_sede') }}" class="mb-4" {% if
+        config.configuracion_finalizada %}style="display: none;" {% endif %}>
+        <h2 style="color: var(--primary-color)">Agregar Sede</h2>
+        <div class="form-group">
+            <label for="nombre_sede">Nombre de la Sede:</label>
+            <input type="text" id="nombre_sede" name="nombre_sede" class="form-control mb-2" required>
+        </div>
+
+        <div class="form-group">
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion" class="form-control mb-2" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar Sede</button>
+    </form>
+
+    <!-- Formulario para agregar una nueva mesa -->
+    <form id="formMesa" method="post" action="{{ url_for('sede.agregar_mesas') }}" class="mb-4" {% if
+        config.configuracion_finalizada %}style="display: none;" {% endif %}>
+        <h2 style="color: var(--primary-color)">Agregar Mesa a una Sede</h2>
+        <div class="form-group">
+            <label for="sede_id">Seleccionar Sede:</label>
+            <select id="sede_id" name="sede_id" class="form-control mb-2" required>
+                <option value="">Seleccione una sede</option>
+                {% for sede in sedes %}
+                <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="mesa_numero">Número de Mesa:</label>
+            <input type="number" id="mesa_numero" name="mesa_numero" class="form-control mb-2" required readonly>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar Mesa</button>
+    </form>
+
+    <!-- Mostrar sedes y mesas agrupadas -->
+    <h2 style="color: var(--primary-color)">Sedes y sus Mesas</h2>
+    <div id="listaSedes">
+        {% if sedes %}
+        <div class="row">
+            {% for sede in sedes %}
+            <div class="col-12 mb-3">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center"
+                        style="background-color: var(--primary-color); color: var(--white-color);">
+                        <span>{{ sede.nombre }}</span>
+                        {% if sede.mesas|length == 0 and not config.configuracion_finalizada %}
+                        <button class="btn btn-danger btn-sm borrar-sede" data-sede-id="{{ sede.id }}"
+                            style="padding: 0.25rem 0.5rem; background-color: var(--secondary-color); border-color: var(--secondary-color);">
+                            <small>×</small>
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap" id="mesas-sede-{{ sede.id }}">
+                            {% for mesa in sede.mesas|sort(attribute='mesa_numero') %}
+                            <div class="mesa-item m-1">
+                                <span class="badge p-2"
+                                    style="background-color: var(--highlight-color); color: var(--dark-blue);">
+                                    Mesa {{ mesa.mesa_numero }}
+                                    {% if loop.last and not config.configuracion_finalizada %}
+                                    <button class="btn btn-danger btn-sm ml-1 borrar-mesa" data-sede-id="{{ sede.id }}"
+                                        data-mesa-id="{{ mesa.id }}"
+                                        style="padding: 0.1rem 0.4rem; background-color: var(--secondary-color); border-color: var(--secondary-color);">
+                                        <small>×</small>
+                                    </button>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        // Configuración global de Toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
+        // Función global para mostrar mensajes
+        function mostrarMensaje(mensaje, tipo) {
+            switch (tipo) {
+                case 'success':
+                    toastr.success(mensaje);
+                    break;
+                case 'error':
+                case 'danger':
+                    toastr.error(mensaje);
+                    break;
+                case 'warning':
+                    toastr.warning(mensaje);
+                    break;
+                case 'info':
+                    toastr.info(mensaje);
+                    break;
+            }
+        }
+
+        // Función para obtener número de mesa
         function obtenerNumeroMesaDisponible(sedeId) {
-            $.get('/mesas_existentes/' + sedeId, function (data) {
-                var numerosExistentes = data;
-                var numeroMesa = 1;
-                while (numerosExistentes.includes(numeroMesa)) {
-                    numeroMesa++;
+            console.log('Obteniendo número para sede:', sedeId);
+
+            // Usar la URL completa
+            $.ajax({
+                url: "{{ url_for('sede.mesas_existentes', sede_id=0) }}".replace('0', sedeId),
+                type: 'GET',
+                success: function (response) {
+                    console.log('Respuesta del servidor:', response);
+                    if (response.siguiente_numero) {
+                        console.log('Estableciendo número de mesa a:', response.siguiente_numero);
+                        $('#mesa_numero').val(response.siguiente_numero);
+                    } else {
+                        console.log('No se recibió siguiente_numero en la respuesta');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al obtener número de mesa:', error);
+                    console.error('Respuesta completa:', xhr.responseText);
                 }
-                $('#mesa_numero').val(numeroMesa);
             });
         }
 
-        $(document).ready(function () {
-            // Asignar número de mesa al seleccionar una sede
-            $('#sede_id').change(function () {
-                var sedeId = $(this).val();
-                obtenerNumeroMesaDisponible(sedeId);
-            });
+        // Evento change del select
+        $('#sede_id').on('change', function () {
+            var sedeId = $(this).val();
+            console.log('Sede seleccionada:', sedeId);
 
-            // Asignar número de mesa inicial al cargar la página
-            if ($('#sede_id').val()) {
-                obtenerNumeroMesaDisponible($('#sede_id').val());
+            if (sedeId) {
+                obtenerNumeroMesaDisponible(sedeId);
+            } else {
+                $('#mesa_numero').val('');
+                console.log('Se limpió el número de mesa');
             }
         });
-    </script>
-</head>
 
-<body>
-    <div class="container mt-5">
-        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
-            <h1>Administrar Sedes y Mesas</h1>
-        </header>
-        <div class="mt-5">
-            <!-- Mostrar mensajes flash -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <div class="alert-container mt-4">
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% endwith %}
+        // Verificar si hay una sede seleccionada al cargar
+        var sedeInicial = $('#sede_id').val();
+        console.log('Sede inicial:', sedeInicial);
+        if (sedeInicial) {
+            obtenerNumeroMesaDisponible(sedeInicial);
+        }
 
-            <!-- Formulario para agregar una nueva sede -->
-            <form method="post" action="{{ url_for('agregar_sede') }}" class="mb-4">
-                <h2 class="text-primary">Agregar Sede</h2>
-                <div class="form-group">
-                    <label for="nombre_sede">Nombre de la Sede:</label>
-                    <input type="text" id="nombre_sede" name="nombre_sede" class="form-control mb-2" required>
-                </div>
+        // Manejar el envío del formulario
+        $('#formMesa').on('submit', function (e) {
+            e.preventDefault();
 
-                <div class="form-group">
-                    <label for="direccion">Dirección:</label>
-                    <input type="text" id="direccion" name="direccion" class="form-control mb-2" required>
-                </div>
+            var sedeId = $('#sede_id').val();
+            var mesaNumero = $('#mesa_numero').val();
 
-                <button type="submit" class="btn btn-primary">Agregar Sede</button>
-            </form>
+            // Validar que tengamos los datos necesarios
+            if (!sedeId || !mesaNumero) {
+                mostrarMensaje('Por favor, seleccione una sede y espere a que se genere el número de mesa', 'danger');
+                return;
+            }
 
-            <!-- Formulario para agregar una nueva mesa -->
-            <form method="post" action="{{ url_for('agregar_mesas') }}" class="mb-4">
-                <h2 class="text-primary">Agregar Mesa a una Sede</h2>
-                <div class="form-group">
-                    <label for="sede_id">Seleccionar Sede:</label>
-                    <select id="sede_id" name="sede_id" class="form-control mb-2" required>
-                        {% for sede in sedes %}
-                        <option value="{{ sede.id }}">{{ sede.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+            console.log('Enviando datos:', {
+                sede_id: sedeId,
+                mesa_numero: mesaNumero
+            });
 
-                <div class="form-group">
-                    <label for="mesa_numero">Número de Mesa:</label>
-                    <input type="number" id="mesa_numero" name="mesa_numero" class="form-control mb-2" required
-                        readonly>
-                </div>
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: {
+                    sede_id: sedeId,
+                    mesa_numero: mesaNumero
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // Obtener todas las mesas actuales
+                        var $mesasContainer = $(`#mesas-sede-${sedeId}`);
+                        var $mesasItems = $mesasContainer.find('.mesa-item');
 
-                <button type="submit" class="btn btn-primary">Agregar Mesa</button>
-            </form>
+                        // Remover el botón de borrar de la mesa anterior
+                        $mesasItems.find('.borrar-mesa').remove();
 
-            <!-- Mostrar sedes y mesas agrupadas -->
-            <h2 class="text-primary">Sedes y sus Mesas</h2>
-            {% if sedes %}
-            {% for sede in sedes %}
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    ID {{ sede.id }} - {{ sede.nombre }}
-                </div>
-                <ul class="list-group list-group-flush">
-                    {% for mesa in sede.mesas %}
-                    <li class="list-group-item">Mesa Número: {{ mesa.mesa_numero }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endfor %}
-            {% else %}
-            <p>No se han agregado sedes ni mesas todavía.</p>
-            {% endif %}
-        </div>
-    </div>
+                        // Agregar la nueva mesa
+                        var nuevaMesaHtml = `
+                        <div class="mesa-item m-1">
+                            <span class="badge badge-secondary p-2">
+                                Mesa ${response.mesa.mesa_numero}
+                                <button class="btn btn-danger btn-sm ml-1 borrar-mesa"
+                                        data-sede-id="${sedeId}"
+                                        data-mesa-id="${response.mesa.id}"
+                                        style="padding: 0.1rem 0.4rem;">
+                                            <small>×</small>
+                                        </button>
+                            </span>
+                        </div>`;
 
-    <!-- Incluir jQuery y Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-</body>
+                        $mesasContainer.append(nuevaMesaHtml);
 
-</html>
+                        // Remover el botón de borrar de la sede
+                        var $sedeHeader = $mesasContainer.closest('.card').find('.card-header');
+                        $sedeHeader.find('.borrar-sede').remove();
+
+                        // Actualizar el número de mesa
+                        obtenerNumeroMesaDisponible(sedeId);
+
+                        mostrarMensaje('Mesa agregada exitosamente', 'success');
+                    } else {
+                        mostrarMensaje(response.message || 'Error al agregar mesa', 'danger');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    mostrarMensaje('Error al agregar mesa: ' + error, 'danger');
+                }
+            });
+        });
+
+        // Manejar envío del formulario de sede
+        $('#formSede').submit(function (e) {
+            e.preventDefault();
+            console.log('Formulario enviado');
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (response) {
+                    console.log('Respuesta recibida:', response);
+                    if (response.success) {
+                        // Agregar nueva sede a la lista
+                        var nuevaSede = `
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                ID ${response.sede.id} - ${response.sede.nombre}
+                            </div>
+                            <ul class="list-group list-group-flush" id="mesas-sede-${response.sede.id}">
+                            </ul>
+                        </div>`;
+                        $('#listaSedes').append(nuevaSede);
+
+                        // Agregar opción al select de sedes
+                        $('#sede_id').append(`<option value="${response.sede.id}">${response.sede.nombre}</option>`);
+
+                        // Limpiar formulario
+                        $('#formSede')[0].reset();
+
+                        // Mostrar mensaje de éxito
+                        mostrarMensaje('Sede agregada exitosamente', 'success');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    mostrarMensaje('Error al agregar sede: ' + error, 'danger');
+                }
+            });
+        });
+
+        // Manejar el borrado de mesas
+        $(document).on('click', '.borrar-mesa', function (e) {
+            e.preventDefault();
+            var sedeId = $(this).data('sede-id');
+            var mesaId = $(this).data('mesa-id');
+            var $mesaItem = $(this).closest('.mesa-item');
+
+            if (confirm('¿Está seguro de que desea eliminar esta mesa?')) {
+                $.ajax({
+                    url: "{{ url_for('sede.borrar_mesa', mesa_id=0) }}".replace('0', mesaId),
+                    type: 'DELETE',
+                    success: function (response) {
+                        if (response.success) {
+                            // Eliminar la mesa actual
+                            $mesaItem.remove();
+
+                            // Encontrar la nueva última mesa
+                            var $mesasContainer = $(`#mesas-sede-${sedeId}`);
+                            var $ultimaMesa = $mesasContainer.find('.mesa-item:last');
+
+                            if ($ultimaMesa.length > 0) {
+                                // Obtener el número de mesa del texto
+                                var mesaNumeroMatch = $ultimaMesa.find('.badge').text().match(/Mesa (\d+)/);
+                                if (mesaNumeroMatch) {
+                                    var mesaNumero = mesaNumeroMatch[1];
+
+                                    // Hacer una petición para obtener el ID de la última mesa
+                                    $.ajax({
+                                        url: "{{ url_for('sede.obtener_mesa_id') }}",
+                                        type: 'GET',
+                                        data: {
+                                            sede_id: sedeId,
+                                            mesa_numero: mesaNumero
+                                        },
+                                        success: function (mesaResponse) {
+                                            if (mesaResponse.mesa_id) {
+                                                // Agregar el botón de borrar con el ID correcto
+                                                $ultimaMesa.find('.badge').append(`
+                                                <button class="btn btn-danger btn-sm ml-1 borrar-mesa"
+                                                        data-sede-id="${sedeId}"
+                                                        data-mesa-id="${mesaResponse.mesa_id}"
+                                                        style="padding: 0.1rem 0.4rem;">
+                                                            <small>×</small>
+                                                        </button>
+                                                    `);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+
+                            // Si no quedan mesas, agregar el botón de borrar sede
+                            if ($mesasContainer.children().length === 0) {
+                                var $sedeHeader = $mesasContainer.closest('.card').find('.card-header');
+                                $sedeHeader.append(`
+                                <button class="btn btn-danger btn-sm borrar-sede" 
+                                        data-sede-id="${sedeId}"
+                                        style="padding: 0.25rem 0.5rem;">
+                                            <small>×</small>
+                                        </button>
+                                    `);
+                            }
+
+                            mostrarMensaje('Mesa eliminada exitosamente', 'success');
+                            obtenerNumeroMesaDisponible(sedeId);
+                        } else {
+                            mostrarMensaje(response.message || 'Error al eliminar mesa', 'error');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        mostrarMensaje('Error al eliminar mesa: ' + error, 'error');
+                    }
+                });
+            }
+        });
+
+        // Manejar el borrado de sedes
+        $(document).on('click', '.borrar-sede', function (e) {
+            e.preventDefault();
+            var sedeId = $(this).data('sede-id');
+            var $sedeCard = $(this).closest('.col-12');
+
+            if (confirm('¿Está seguro de que desea eliminar esta sede?')) {
+                $.ajax({
+                    url: "{{ url_for('sede.borrar_sede', sede_id=0) }}".replace('0', sedeId),
+                    type: 'DELETE',
+                    success: function (response) {
+                        if (response.success) {
+                            // Eliminar la sede del listado
+                            $sedeCard.fadeOut(300, function () {
+                                $(this).remove();
+                            });
+
+                            // Eliminar la sede del select
+                            $(`#sede_id option[value="${sedeId}"]`).remove();
+
+                            mostrarMensaje('Sede eliminada exitosamente', 'success');
+                        } else {
+                            mostrarMensaje(response.message || 'Error al eliminar sede', 'error');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        mostrarMensaje('Error al eliminar sede: ' + error, 'error');
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+{% endblock %}

@@ -17,19 +17,18 @@ venv\Scripts\activate
 python app.py
 
 
-project/
-│
-├── app.py                # Archivo principal de la aplicación
-├── models.py             # Modelos de la base de datos
+proyecto/
+├── app.py
+├── config.py
+├── models.py           # Todos los modelos en un archivo
 ├── routes/
-│   ├── __init__.py       # Para hacer que 'routes' sea un paquete
-│   ├── jurados.py        # Rutas relacionadas con los jurados
-│   ├── candidatos.py     # Rutas relacionadas con los candidatos
-│   ├── testigos.py       # Rutas relacionadas con los testigos
-│   └── mesas.py          # Rutas relacionadas con las mesas
-├── utils/
-│   ├── __init__.py       # Para hacer que 'utils' sea un paquete
-│   └── helpers.py        # Funciones auxiliares y utilidades
-├── templates/            # Plantillas HTML
-├── static/               # Archivos estáticos (CSS, JS, Imágenes)
-└── uploads/              # Directorio para fotos de candidatos
+│   ├── __init__.py
+│   ├── estudiante_routes.py
+│   ├── profesor_routes.py
+│   ├── sede_routes.py
+│   ├── jurado_routes.py
+│   ├── candidato_routes.py
+│   └── testigo_routes.py
+└── utils/
+    ├── __init__.py
+    └── helpers.py

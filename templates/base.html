@@ -1,46 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Mi Aplicación{% endblock %}</title>
-    <!-- Incluir Bootstrap CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Incluir CSS personalizado -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
     <div class="container mt-5">
-        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
-            <h1>{% block header %}Bienvenido a Mi Aplicación{% endblock %}</h1>
-        </header>
-
-        <!-- Aquí se muestran los mensajes flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="alert-container mt-4">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            {% endfor %}
+        {% if config.configuracion_finalizada %}
+        <div class="alert alert-warning" id="sistema-bloqueado-alert">
+            <i class="fas fa-lock"></i> Configuración Inicial bloqueada. La configuración fue finalizada el {{
+            config.fecha_finalizacion.strftime('%d/%m/%Y %H:%M') }}.
         </div>
         {% endif %}
-        {% endwith %}
-
-        <div class="mt-4">
-            {% block content %}{% endblock %}
-        </div>
+        {% block content %}{% endblock %}
     </div>
-
-    <!-- Incluir jQuery y Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

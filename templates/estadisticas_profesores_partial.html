@@ -1,0 +1,56 @@
+<div class="card">
+    <div class="card-header"
+        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
+        <h3 class="mb-0">Estadísticas de Profesores</h3>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card" style="background-color: var(--background-color);">
+                    <div class="card-body text-center">
+                        <h4 style="color: var(--primary-color)">Total de Profesores</h4>
+                        <h2 class="display-4" style="color: var(--dark-blue)">{{ total_profesores }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <h4 style="color: var(--primary-color)" class="mb-3">Distribución por Sede</h4>
+                {% for sede, total in totales_por_sede %}
+                <div class="card mb-3">
+                    <div class="card-header" style="background-color: var(--primary-color); color: var(--white-color);">
+                        <h5 class="mb-0">
+                            <a href="{{ url_for('profesor.detalle_sede', sede=sede) }}"
+                                class="text-decoration-none d-block" style="color: var(--white-color);">
+                                {{ sede }}
+                                <span class="badge float-right"
+                                    style="background-color: var(--highlight-color); color: var(--dark-blue);">
+                                    {{ total }} profesores
+                                </span>
+                                <i class="fas fa-chevron-right float-right mr-2"></i>
+                            </a>
+                        </h5>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('.toggle-departamentos').off('click').on('click', function (e) {
+            e.preventDefault();
+            var $lista = $(this).closest('.card-header').next('.departamentos-lista');
+
+            // Cerrar todas las demás listas
+            $('.departamentos-lista').not($lista).slideUp();
+
+            // Toggle de la lista actual
+            $lista.slideToggle();
+        });
+    });
+</script>
