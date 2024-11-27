@@ -26,6 +26,7 @@
     {# Definimos la configuración como una variable de JavaScript #}
     <script>
         window.appConfig = JSON.parse('{{ config_json|safe }}');
+        console.log('Config:', window.appConfig);
     </script>
 
     <div class="container mt-5">

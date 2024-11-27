@@ -127,86 +127,78 @@
 
 {% block extra_js %}
 <script>
+    function verificarAccesoRuta(ruta, elemento, callback) {
+        $.ajax({
+            url: "{{ url_for('calendario.verificar_acceso') }}",
+            type: 'POST',
+            data: JSON.stringify({ ruta: ruta }),
+            contentType: 'application/json',
+            success: function (response) {
+                if (!response.permitido) {
+                    deshabilitarFormulario('#formProfesor', true);
+                    deshabilitarFormulario('#formCSV', true);
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
+                    if (callback) callback(false);
+                } else {
+                    if (callback) callback(true);
+                }
+            },
+            error: function () {
+                mostrarMensaje('Error al verificar acceso', 'error');
+            }
+        });
+    }
+
+    function deshabilitarFormulario(formId, deshabilitar) {
+        $(`${formId} input, ${formId} select, ${formId} button, ${formId} textarea`).prop('disabled', deshabilitar);
+        $(formId).css('opacity', deshabilitar ? '0.6' : '1');
+    }
+
+    function actualizarEstadisticas() {
+        $.ajax({
+            url: "{{ url_for('profesor.obtener_estadisticas') }}",
+            type: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    $('#estadisticas').html(response.html);
+                    $('.toggle-departamentos').off('click').on('click', function (e) {
+                        e.preventDefault();
+                        var $lista = $(this).closest('.card-header').next('.departamentos-lista');
+                        $('.departamentos-lista').not($lista).slideUp();
+                        $lista.slideToggle();
+                    });
+                } else {
+                    mostrarMensaje(response.message || 'Error al cargar estadísticas', 'error');
+                }
+            },
+            error: function (xhr, status, error) {
+                mostrarMensaje('Error al cargar estadísticas: ' + error, 'error');
+            }
+        });
+    }
+
     $(document).ready(function () {
+        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+        if (configuracionFinalizada) {
+            deshabilitarFormulario('#formProfesor', true);
+            deshabilitarFormulario('#formCSV', true);
+            mostrarMensaje('El sistema está bloqueado. No se pueden realizar modificaciones.', 'warning');
+        } else {
+            verificarAccesoRuta('profesor.registro_profesor');
+        }
+
         // Manejar el registro individual
         $('#formProfesor').on('submit', function (e) {
             e.preventDefault();
-            $.ajax({
-                url: "{{ url_for('profesor.registro_profesor') }}",
-                type: 'POST',
-                data: $(this).serialize(),
-                success: function (response) {
-                    if (response.success) {
-                        mostrarMensaje('Profesor registrado exitosamente', 'success');
-                        $('#formProfesor')[0].reset();
-                        actualizarEstadisticas();
-                    } else {
-                        mostrarMensaje(response.message || 'Error al registrar profesor', 'error');
-                    }
-                },
-                error: function () {
-                    mostrarMensaje('Error al registrar profesor', 'error');
-                }
-            });
-        });
+            var $form = $(this);
+            var $submitButton = $form.find('button[type="submit"]');
 
-        // Manejar la carga de CSV
-        $('#formCSV').on('submit', function (e) {
-            e.preventDefault();
-            var formData = new FormData(this);
+            $submitButton.prop('disabled', true);
 
-            $.ajax({
-                url: "{{ url_for('profesor.registro_profesor') }}",
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    if (response.success) {
-                        mostrarMensaje('Archivo CSV procesado exitosamente', 'success');
-                        $('#formCSV')[0].reset();
-                        actualizarEstadisticas();
-                    } else {
-                        mostrarMensaje(response.message || 'Error al procesar el archivo CSV', 'error');
-                    }
-                },
-                error: function () {
-                    mostrarMensaje('Error al procesar el archivo CSV', 'error');
-                }
-            });
-        });
-
-        // Función para actualizar estadísticas
-        function actualizarEstadisticas() {
-            $.ajax({
-                url: "{{ url_for('profesor.obtener_estadisticas') }}",
-                type: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        $('#estadisticas').html(response.html);
-                        // Reinicializar los toggles
-                        $('.toggle-departamentos').off('click').on('click', function (e) {
-                            e.preventDefault();
-                            var $lista = $(this).closest('.card-header').next('.departamentos-lista');
-                            $('.departamentos-lista').not($lista).slideUp();
-                            $lista.slideToggle();
-                        });
-                    } else {
-                        mostrarMensaje(response.message || 'Error al cargar estadísticas', 'error');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    mostrarMensaje('Error al cargar estadísticas: ' + error, 'error');
-                }
-            });
-        }
-
-        // Cargar estadísticas al iniciar
-        actualizarEstadisticas();
-
-        // Actualizar después de registrar
-        $('#formProfesor').on('submit', function (e) {
-            e.preventDefault();
             $.ajax({
                 url: "{{ url_for('profesor.registro_profesor') }}",
                 type: 'POST',
@@ -221,15 +213,21 @@
                     }
                 },
                 error: function (xhr) {
-                    mostrarMensaje('Error al registrar profesor', 'error');
+                    mostrarMensaje('Error al registrar profesor: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                },
+                complete: function () {
+                    $submitButton.prop('disabled', false);
                 }
             });
         });
 
-        // También actualizar después de cargar CSV
+        // Manejar la carga de CSV
         $('#formCSV').on('submit', function (e) {
             e.preventDefault();
             var formData = new FormData(this);
+            var $submitButton = $(this).find('button[type="submit"]');
+
+            $submitButton.prop('disabled', true);
 
             $.ajax({
                 url: "{{ url_for('profesor.registro_profesor') }}",
@@ -246,62 +244,17 @@
                         mostrarMensaje(response.message || 'Error al procesar el archivo CSV', 'error');
                     }
                 },
-                error: function () {
-                    mostrarMensaje('Error al procesar el archivo CSV', 'error');
+                error: function (xhr) {
+                    mostrarMensaje('Error al procesar el archivo CSV: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                },
+                complete: function () {
+                    $submitButton.prop('disabled', false);
                 }
             });
         });
-    });
 
-    function verificarAccesoRuta(ruta, elemento, callback) {
-        $.ajax({
-            url: "{{ url_for('calendario.verificar_acceso') }}",
-            type: 'POST',
-            data: JSON.stringify({ ruta: ruta }),
-            contentType: 'application/json',
-            success: function (response) {
-                if (!response.permitido) {
-                    // Primero deshabilitamos todo
-                    deshabilitarFormulario('#formProfesor', true);
-                    $('.btn').addClass('disabled')
-                        .attr('title', 'No disponible en este momento')
-                        .css('pointer-events', 'none')
-                        .css('opacity', '0.6');
-
-                    if (callback) callback(false);
-
-                    // Luego mostramos el mensaje y redirigimos
-                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
-                    setTimeout(function () {
-                        window.location.href = "{{ url_for('index') }}";
-                    }, 2000);
-                } else {
-                    if (callback) callback(true);
-                }
-            },
-            error: function () {
-                toastr.error('Error al verificar acceso');
-                if (callback) callback(false);
-            }
-        });
-    }
-
-    function deshabilitarFormulario(formId, deshabilitar) {
-        $(`${formId} input, ${formId} select, ${formId} button, ${formId} textarea`).prop('disabled', deshabilitar);
-        $(formId).css('opacity', deshabilitar ? '0.6' : '1');
-    }
-
-    $(document).ready(function () {
-        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
-
-        if (configuracionFinalizada) {
-            deshabilitarFormulario('#formProfesor', true);
-            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
-        } else {
-            verificarAccesoRuta('profesor.registro_profesor', '#formProfesor', function (permitido) {
-                deshabilitarFormulario('#formProfesor', !permitido);
-            });
-        }
+        // Cargar estadísticas al iniciar
+        actualizarEstadisticas();
     });
 </script>
 {% endblock %}

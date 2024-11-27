@@ -28,15 +28,3 @@ SISTEMA_BLOQUEADO = False
 CALENDARIO_BLOQUEADO = False
 FASE_ACTUAL = 1
 
-@app.context_processor
-def inject_config():
-    config = ConfiguracionSistema.get_config()
-    config_json = {
-        'configuracionFinalizada': config.configuracion_finalizada,
-        'calendarioBloqueado': config.calendario_bloqueado,
-        'fechaFinalizacion': config.fecha_finalizacion.strftime('%d/%m/%Y %H:%M') if config.fecha_finalizacion else None
-    }
-    return {
-        'config': config,
-        'config_json': config_json
-    }

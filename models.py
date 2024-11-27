@@ -268,3 +268,15 @@ class EventoCalendario(db.Model):
             if any(evento.fecha_inicio <= ahora <= evento.fecha_fin for evento in eventos):
                 return fase
         return 1  # Fase por defecto
+
+class Configuracion(db.Model):
+    __tablename__ = 'configuracion'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    configuracion_finalizada = db.Column(db.Boolean, default=False)
+    fecha_finalizacion = db.Column(db.DateTime, nullable=True)
+
+    @staticmethod
+    def sistema_bloqueado():
+        config = Configuracion.query.first()
+        return config is not None and config.configuracion_finalizada == True

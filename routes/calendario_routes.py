@@ -1,17 +1,20 @@
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
-from models import EventoCalendario
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app
+from models import EventoCalendario, Configuracion
 from extensions import db
 from datetime import datetime
 from utils.calendar_mappings import ACTIVITY_ROUTES
+from utils.decorators import verificar_acceso_ruta
 
 calendario_bp = Blueprint('calendario', __name__)
 
 @calendario_bp.route('/calendario-electoral')
 def calendario_electoral():
     eventos = EventoCalendario.query.order_by(EventoCalendario.fase, EventoCalendario.orden).all()
+    config = Configuracion.query.first()
+    sistema_bloqueado = config.configuracion_finalizada if config else False
     return render_template('calendario_electoral.html', 
                          eventos=eventos,
-                         sistema_bloqueado=EventoCalendario.sistema_bloqueado())
+                         sistema_bloqueado=sistema_bloqueado)
 
 @calendario_bp.route('/calendario/editar', methods=['POST'])
 def editar_calendario():
@@ -94,14 +97,35 @@ def guardar_calendario():
     return jsonify({'success': False, 'message': 'Método no permitido'}), 405
 
 @calendario_bp.route('/calendario/finalizar-calendario', methods=['POST'])
+@verificar_acceso_ruta('calendario.finalizar_calendario')
 def finalizar_calendario():
     try:
-        # Marcar todos los eventos como completados
+        config = Configuracion.query.first()
+        if not config:
+            config = Configuracion()
+            db.session.add(config)
+        
+        config.configuracion_finalizada = True
+        config.fecha_finalizacion = datetime.now()
+        
+        # Actualizar estados de eventos
         eventos = EventoCalendario.query.all()
+        hoy = datetime.now().date()
         for evento in eventos:
-            evento.estado = 'completado'
+            if hoy > evento.fecha_fin.date():
+                evento.estado = 'completado'
+            elif hoy >= evento.fecha_inicio.date() and hoy <= evento.fecha_fin.date():
+                evento.estado = 'en-curso'
+            else:
+                evento.estado = 'pendiente'
+        
         db.session.commit()
-        return jsonify({'success': True})
+        
+        return jsonify({
+            'success': True,
+            'calendario_bloqueado': True,
+            'message': 'Calendario electoral finalizado exitosamente'
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({

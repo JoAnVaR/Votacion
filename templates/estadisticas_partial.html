@@ -36,7 +36,7 @@
                         <div class="list-group list-group-flush">
                             {% for grado, seccion, sede_nombre, total in totales_por_grado_seccion %}
                             {% if sede == sede_nombre %}
-                            <a href="{{ url_for('estudiante.detalle_grado_seccion', grado=grado, seccion=seccion, sede=sede) }}"
+                            <a href="{{ url_for('estudiante.detalle_grado_seccion', grado=grado, seccion=seccion, sede=sede_nombre) }}"
                                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                                 <span>
                                     <i class="fas fa-graduation-cap mr-2" style="color: var(--primary-color);"></i>

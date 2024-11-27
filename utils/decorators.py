@@ -1,16 +1,28 @@
 from functools import wraps
 from flask import jsonify
-from models import EventoCalendario
+from models import Configuracion, EventoCalendario
 from datetime import datetime
+from utils.calendar_mappings import ACTIVITY_ROUTES
 
 def verificar_acceso_ruta(ruta=None):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if EventoCalendario.sistema_bloqueado():
+            config = Configuracion.query.first()
+            if config and config.configuracion_finalizada:
+                # Si el sistema está bloqueado, verificar si la ruta está permitida
+                for actividad, rutas in ACTIVITY_ROUTES.items():
+                    if ruta in rutas:
+                        evento = EventoCalendario.query.filter_by(titulo=actividad).first()
+                        if evento:
+                            ahora = datetime.now()
+                            fecha_inicio = evento.fecha_inicio.replace(hour=0, minute=0, second=0)
+                            fecha_fin = evento.fecha_fin.replace(hour=23, minute=59, second=59)
+                            if fecha_inicio <= ahora <= fecha_fin:
+                                return f(*args, **kwargs)
                 return jsonify({
                     'success': False,
-                    'message': 'El sistema está bloqueado'
+                    'message': 'Esta sección no está disponible en este momento'
                 }), 403
             return f(*args, **kwargs)
         return decorated_function
