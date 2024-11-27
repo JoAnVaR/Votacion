@@ -17,6 +17,26 @@ $(document).ready(function () {
         "showMethod": "fadeIn",
         "hideMethod": "fadeOut"
     };
+
+    // Verificar estado de configuración usando el objeto appConfig
+    if (typeof appConfig !== 'undefined' && appConfig.configuracionFinalizada) {
+        // Deshabilitar todos los botones de edición
+        $('.btn-editar, .btn-eliminar, .btn-agregar').prop('disabled', true);
+        // Ocultar formularios de registro
+        $('.form-registro').hide();
+        // Mostrar mensaje si no está visible
+        if (!$('#sistema-bloqueado-alert').is(':visible')) {
+            const alertHTML = `
+                <div class="alert alert-warning" id="sistema-bloqueado-alert">
+                    <i class="fas fa-lock"></i> Configuración Inicial bloqueada.
+                    ${appConfig.fechaFinalizacion ?
+                    `La configuración fue finalizada el ${appConfig.fechaFinalizacion}` :
+                    ''}
+                </div>
+            `;
+            $('.container').prepend(alertHTML);
+        }
+    }
 });
 
 // Función global para mostrar mensajes
@@ -249,24 +269,6 @@ const MesasManager = {
 // Inicialización cuando el documento está listo
 $(document).ready(function () {
     MesasManager.initEvents();
-});
-
-// Agregar a las funciones existentes
-function checkConfiguracionBloqueada() {
-    $.get('/check_configuracion_estado', function (response) {
-        if (response.bloqueada) {
-            // Deshabilitar todos los botones de edición
-            $('.btn-editar, .btn-eliminar, .btn-agregar').prop('disabled', true);
-            // Ocultar formularios de registro
-            $('.form-registro').hide();
-            // Mostrar mensaje de sistema bloqueado
-            $('#sistema-bloqueado-alert').show();
-        }
-    });
-}
-
-$(document).ready(function () {
-    checkConfiguracionBloqueada();
 });
 
 // Otras funciones globales que necesites...

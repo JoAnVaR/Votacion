@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from extensions import db
 from models import Candidato, Estudiante
 from werkzeug.utils import secure_filename
@@ -6,16 +6,9 @@ import os
 
 candidato_bp = Blueprint('candidato', __name__)
 
-# Configuración de uploads
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-# Crear directorio de uploads si no existe
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
 # Ruta para Registro de Candidatos
 @candidato_bp.route('/registro_candidato', methods=['GET', 'POST'])
@@ -30,7 +23,7 @@ def registro_candidato():
         if file and allowed_file(file.filename):
             # Renombrar el archivo con el número de documento del estudiante
             filename = secure_filename(f"{estudiante.numero_documento}.{file.filename.rsplit('.', 1)[1].lower()}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
 
             # Guardar el nuevo candidato en la base de datos
@@ -71,7 +64,7 @@ def eliminar_candidato(id):
     if candidato:
         # Eliminar el archivo de la foto
         if candidato.foto_path:
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], candidato.foto_path.split('/')[-1])
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], candidato.foto_path.split('/')[-1])
             if os.path.exists(file_path):
                 os.remove(file_path)
 

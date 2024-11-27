@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Calendario Electoral{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <header class="text-center py-4">
+        <h1>Calendario Electoral</h1>
+        <p class="lead">Cronograma del Proceso Electoral Estudiantil</p>
+    </header>
+
+    <form id="calendarioForm">
+        <div class="timeline-container mt-5">
+            {% for fase, nombre_fase in [
+            (1, 'Preparación y Registro'),
+            (2, 'Organización Electoral'),
+            (3, 'Proceso de Votación')
+            ] %}
+            <div class="timeline-phase card mb-4">
+                <div class="card-header fase-header">
+                    <h2>
+                        <i
+                            class="fas {% if fase == 1 %}fa-clipboard-list{% elif fase == 2 %}fa-users-cog{% else %}fa-vote-yea{% endif %}"></i>
+                        Fase {{ fase }}: {{ nombre_fase }}
+                    </h2>
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th width="40%">Actividad</th>
+                                    <th width="20%">Fecha Inicio</th>
+                                    <th width="20%">Fecha Fin</th>
+                                    <th width="20%">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for evento in eventos if evento.fase == fase %}
+                                <tr class="evento-row" data-evento-id="{{ evento.id }}">
+                                    <td>
+                                        <input type="text" class="form-control-plaintext evento-titulo"
+                                            name="titulo_{{ evento.id }}" value="{{ evento.titulo }}" {% if
+                                            sistema_bloqueado %}readonly{% endif %}>
+                                        <textarea class="form-control-plaintext evento-descripcion"
+                                            name="descripcion_{{ evento.id }}" rows="2" {% if sistema_bloqueado
+                                            %}readonly{% endif %}>{{ evento.descripcion }}</textarea>
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control-plaintext evento-fecha"
+                                            name="fecha_inicio_{{ evento.id }}"
+                                            value="{{ evento.fecha_inicio.strftime('%Y-%m-%d') }}" {% if
+                                            sistema_bloqueado %}readonly{% endif %}>
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control-plaintext evento-fecha"
+                                            name="fecha_fin_{{ evento.id }}"
+                                            value="{{ evento.fecha_fin.strftime('%Y-%m-%d') }}" {% if sistema_bloqueado
+                                            %}readonly{% endif %}>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ evento.estado }}">
+                                            {{ evento.estado|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not sistema_bloqueado %}
+        <div class="text-center mb-5">
+            <button type="submit" class="btn btn-lg btn-primary" id="btnGuardarTodo">
+                <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+            <button type="button" class="btn btn-lg btn-success ml-3" id="btnFinalizarCalendario">
+                <i class="fas fa-lock"></i> Finalizar Calendario Electoral
+            </button>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        // Verificar si el calendario está bloqueado
+        if (window.appConfig && window.appConfig.calendarioBloqueado) {
+            // Deshabilitar todos los campos
+            $('.evento-titulo, .evento-descripcion, .evento-fecha').prop('readonly', true);
+
+            // Remover eventos de clic
+            $('.form-control-plaintext').off('click');
+
+            // Mostrar mensaje del calendario bloqueado
+            if (!$('.calendario-bloqueado-mensaje').length) {
+                $('header').after(`
+                    <div class="alert alert-info calendario-bloqueado-mensaje">
+                        <i class="fas fa-lock"></i> El calendario electoral ha sido finalizado y no se pueden realizar más cambios.
+                    </div>
+                `);
+            }
+        } else {
+            // Si no está bloqueado, mantener la funcionalidad de edición
+            $('.form-control-plaintext').on('click', function () {
+                if (!$(this).prop('readonly')) {
+                    $(this).removeClass('form-control-plaintext').addClass('form-control');
+                }
+            });
+
+            $('.form-control-plaintext').on('blur', function () {
+                $(this).removeClass('form-control').addClass('form-control-plaintext');
+            });
+        }
+
+        // Manejar el guardado sin finalizar
+        $('#calendarioForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const eventos = [];
+            $('.evento-row').each(function () {
+                const id = $(this).data('evento-id');
+                eventos.push({
+                    id: id,
+                    titulo: $(`input[name="titulo_${id}"]`).val(),
+                    descripcion: $(`textarea[name="descripcion_${id}"]`).val(),
+                    fecha_inicio: $(`input[name="fecha_inicio_${id}"]`).val(),
+                    fecha_fin: $(`input[name="fecha_fin_${id}"]`).val()
+                });
+            });
+
+            $.ajax({
+                url: "{{ url_for('calendario.guardar_calendario') }}",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ eventos: eventos, finalizar: false }),
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: '¡Guardado!',
+                            text: 'Los cambios han sido guardados exitosamente',
+                            icon: 'success',
+                            confirmButtonColor: '#28a745'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Ocurrió un error al guardar el calendario', 'error');
+                }
+            });
+        });
+
+        // Manejar la finalización del calendario
+        $('#btnFinalizarCalendario').on('click', function () {
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: "Una vez finalizado el calendario, no podrá realizar más cambios en las fechas y eventos",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: 'Sí, finalizar calendario',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ url_for('calendario.finalizar_calendario') }}",
+                        type: 'POST',
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: '¡Calendario Finalizado!',
+                                    text: 'El calendario electoral ha sido bloqueado exitosamente',
+                                    icon: 'success',
+                                    confirmButtonColor: '#28a745'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'Ocurrió un error al finalizar el calendario', 'error');
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fase-header {
+        background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+        color: white;
+    }
+
+    .fase-header i {
+        margin-right: 10px;
+    }
+
+    .form-control-plaintext {
+        cursor: pointer;
+        padding: 0.375rem 0;
+    }
+
+    .form-control-plaintext:hover {
+        background-color: #f8f9fa;
+    }
+
+    .evento-descripcion {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+    }
+
+    .badge-pendiente {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .badge-en-curso {
+        background-color: #17a2b8;
+        color: #fff;
+    }
+
+    .badge-completado {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .table th {
+        background-color: #004884;
+        color: white;
+    }
+
+    #btnGuardarTodo {
+        padding: 1rem 2rem;
+        font-size: 1.25rem;
+    }
+
+    /* Estilos para campos bloqueados */
+    .form-control-plaintext[readonly] {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    /* Mensaje de bloqueo */
+    #calendario-bloqueado-alert {
+        margin-bottom: 20px;
+        background-color: #e9ecef;
+        border-left: 4px solid #004884;
+    }
+
+    #calendario-bloqueado-alert i {
+        margin-right: 8px;
+        color: #004884;
+    }
+</style>
+{% endblock %}

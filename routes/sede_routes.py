@@ -1,22 +1,20 @@
 import sys
 from pathlib import Path
-from utils.decorators import check_configuracion_abierta
-
+from utils.decorators import verificar_acceso_ruta
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from models import Sede, Mesa, Estudiante
+from extensions import db
 
 # Agregar el directorio raíz al PYTHONPATH
 root_path = str(Path(__file__).parent.parent)
 if root_path not in sys.path:
     sys.path.append(root_path)
 
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from models import Sede, Mesa, Estudiante
-from extensions import db
-
 sede_bp = Blueprint('sede', __name__)
 
 # Ruta para agregar sede
-@sede_bp.route('/agregar_sede', methods=['GET', 'POST'])
-@check_configuracion_abierta
+@sede_bp.route('/sede/agregar', methods=['GET', 'POST'])
+@verificar_acceso_ruta()
 def agregar_sede():
     if request.method == 'POST':
         nombre_sede = request.form['nombre_sede']
@@ -37,7 +35,7 @@ def agregar_sede():
 
 # Ruta para agregar mesas
 @sede_bp.route('/agregar_mesas', methods=['POST'])
-@check_configuracion_abierta
+@verificar_acceso_ruta()
 def agregar_mesas():
     try:
         print("=== Inicio de agregar_mesas ===")
@@ -125,17 +123,40 @@ def mesas_existentes(sede_id):
 def before_request():
     print(f"Ruta llamada: {request.path}")
 
-@sede_bp.route('/borrar_mesa/<int:mesa_id>', methods=['DELETE'])
-@check_configuracion_abierta
+@sede_bp.route('/borrar_mesa/<int:mesa_id>', methods=['POST'])
 def borrar_mesa(mesa_id):
     try:
+        print(f"=== Intentando borrar mesa {mesa_id} ===")
+        print(f"Headers recibidos: {dict(request.headers)}")
+        
         mesa = Mesa.query.get_or_404(mesa_id)
+        print(f"Mesa encontrada: {mesa}")
+        
+        # Verificar si la mesa tiene estudiantes asignados
+        estudiantes = Estudiante.query.filter_by(mesa_id=mesa_id).first()
+        if estudiantes:
+            print(f"Error: Mesa {mesa_id} tiene estudiantes asignados")
+            return jsonify({
+                'success': False,
+                'message': 'No se puede eliminar la mesa porque tiene estudiantes asignados'
+            }), 400
+            
         db.session.delete(mesa)
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Mesa eliminada exitosamente'})
+        print(f"Mesa {mesa_id} eliminada exitosamente")
+        return jsonify({
+            'success': True,
+            'message': 'Mesa eliminada exitosamente'
+        })
     except Exception as e:
+        print(f"Error al borrar mesa {mesa_id}: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
 
 @sede_bp.route('/obtener_mesa_id', methods=['GET'])
 def obtener_mesa_id():
@@ -168,8 +189,8 @@ def obtener_mesa_id():
             'message': str(e)
         }), 500
 
-@sede_bp.route('/borrar_sede/<int:sede_id>', methods=['DELETE'])
-@check_configuracion_abierta
+@sede_bp.route('/borrar_sede/<int:sede_id>', methods=['POST', 'DELETE'])
+@verificar_acceso_ruta()
 def borrar_sede(sede_id):
     try:
         print(f"Intentando borrar sede {sede_id}")

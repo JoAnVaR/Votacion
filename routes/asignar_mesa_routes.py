@@ -2,13 +2,13 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models import AsignacionMesa, Estudiante, Sede, Mesa
 from sqlalchemy import text
 from extensions import db
-from utils.decorators import check_configuracion_abierta
+from utils.decorators import verificar_acceso_ruta
 
 asignar_mesa_bp = Blueprint('asignar_mesa', __name__)
 
 # Ruta para asignar mesas
 @asignar_mesa_bp.route('/asignar_mesas', methods=['GET', 'POST'])
-@check_configuracion_abierta
+@verificar_acceso_ruta('asignar_mesa.asignar_mesas')
 def asignar_mesas():
     if request.method == 'POST':
         try:
@@ -142,7 +142,7 @@ def asignar_mesas():
 
 # Ruta eliminar asignacion mesa
 @asignar_mesa_bp.route('/eliminar_asignacion/<int:id>', methods=['POST'])
-@check_configuracion_abierta
+@verificar_acceso_ruta('asignar_mesa.eliminar_asignacion')
 def eliminar_asignacion(id):
     try:
         asignacion = AsignacionMesa.query.get_or_404(id)

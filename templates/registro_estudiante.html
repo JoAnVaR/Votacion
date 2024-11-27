@@ -3,7 +3,7 @@
 {% block title %}Registro de Estudiantes{% endblock %}
 
 {% block content %}
-<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+<header class="text-center py-4" style="border-radius: 6px 6px 0 0;" class="fas fa-user-graduate">
     <h1>Registro de Estudiantes</h1>
 </header>
 
@@ -12,32 +12,71 @@
     <form id="formEstudiante" action="{{ url_for('estudiante.registro_estudiante') }}" method="post" class="mb-4">
         <h2 style="color: var(--primary-color)">Registrar Estudiante</h2>
         <div class="form-group">
-            <label for="numero_documento">Número de Documento:</label>
-            <input type="text" id="numero_documento" name="numero_documento" class="form-control mb-2" required>
+            <label for="numero_documento">
+                <i class="fas fa-id-card"></i> Número de Documento:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                </div>
+                <input type="text" id="numero_documento" name="numero_documento" class="form-control"
+                    placeholder="Ingrese el número de documento" required>
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" class="form-control mb-2" required>
+            <label for="nombre">
+                <i class="fas fa-user"></i> Nombre:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-font"></i></span>
+                </div>
+                <input type="text" id="nombre" name="nombre" class="form-control"
+                    placeholder="Ingrese el nombre completo" required>
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="grado">Grado:</label>
-            <input type="text" id="grado" name="grado" class="form-control mb-2" required>
+            <label for="grado">
+                <i class="fas fa-graduation-cap"></i> Grado:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
+                </div>
+                <input type="text" id="grado" name="grado" class="form-control" placeholder="Ingrese el grado" required>
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="seccion">Sección:</label>
-            <input type="text" id="seccion" name="seccion" class="form-control mb-2" required>
+            <label for="seccion">
+                <i class="fas fa-users"></i> Sección:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-door-open"></i></span>
+                </div>
+                <input type="text" id="seccion" name="seccion" class="form-control" placeholder="Ingrese la sección"
+                    required>
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="sede">Sede:</label>
-            <select id="sede_id" name="sede_id" class="form-control mb-2" required>
-                {% for sede in sedes %}
-                <option value="{{ sede.id }}">{{ sede.nombre }}</option>
-                {% endfor %}
-            </select>
+            <label for="sede">
+                <i class="fas fa-building"></i> Sede:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                </div>
+                <select id="sede_id" name="sede_id" class="form-control" required>
+                    <option value="">Seleccione una sede</option>
+                    {% for sede in sedes %}
+                    <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-primary"
@@ -86,6 +125,154 @@
         <!-- Será actualizado vía AJAX -->
     </div>
 </div>
+
+<input type="hidden" id="configuracionFinalizada" value="{{ config.configuracion_finalizada|string|lower }}">
+
+<script>
+    function verificarAccesoRuta(ruta, elemento, callback) {
+        $.ajax({
+            url: "{{ url_for('calendario.verificar_acceso') }}",
+            type: 'POST',
+            data: JSON.stringify({ ruta: ruta }),
+            contentType: 'application/json',
+            success: function (response) {
+                if (!response.permitido) {
+                    // Primero deshabilitamos todo
+                    deshabilitarFormulario('#formEstudiante', true);
+                    deshabilitarFormulario('#formCSV', true);
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
+
+                    if (callback) callback(false);
+
+                    // Luego mostramos el mensaje y redirigimos
+                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                    setTimeout(function () {
+                        window.location.href = "{{ url_for('index') }}";
+                    }, 2000);
+                } else {
+                    if (callback) callback(true);
+                }
+            },
+            error: function () {
+                toastr.error('Error al verificar acceso');
+                if (callback) callback(false);
+            }
+        });
+    }
+
+    function deshabilitarFormulario(formId, deshabilitar) {
+        $(`${formId} input, ${formId} select, ${formId} button, ${formId} textarea`).prop('disabled', deshabilitar);
+        $(formId).css('opacity', deshabilitar ? '0.6' : '1');
+    }
+
+    $(document).ready(function () {
+        // Configuración de Toastr
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000"
+        };
+
+        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+        if (configuracionFinalizada) {
+            deshabilitarFormulario('#formEstudiante', true);
+            deshabilitarFormulario('#formCSV', true);
+            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
+        } else {
+            verificarAccesoRuta('estudiante.registro_estudiante', '#formEstudiante', function (permitido) {
+                deshabilitarFormulario('#formEstudiante', !permitido);
+                deshabilitarFormulario('#formCSV', !permitido);
+            });
+        }
+
+        // Manejar el envío del formulario individual
+        $('#formEstudiante').on('submit', function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success('Estudiante registrado exitosamente');
+                        $('#formEstudiante')[0].reset();
+                        actualizarEstadisticas();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr) {
+                    toastr.error('Error al registrar estudiante');
+                }
+            });
+        });
+
+        // Manejar la carga del archivo CSV
+        $('#formCSV').on('submit', function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $('#formCSV')[0].reset();
+                        actualizarEstadisticas();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr) {
+                    toastr.error('Error al procesar el archivo CSV');
+                }
+            });
+        });
+
+        // Función para actualizar estadísticas
+        function actualizarEstadisticas() {
+            $.ajax({
+                url: "{{ url_for('estudiante.obtener_estadisticas') }}",
+                type: 'GET',
+                success: function (response) {
+                    if (response.html) {
+                        $('#estadisticas').html(response.html);
+                        // Reinicializar los toggles después de actualizar
+                        $('.toggle-grados').off('click').on('click', function (e) {
+                            e.preventDefault();
+                            $(this).next('.grados-lista').slideToggle();
+                        });
+                    } else {
+                        toastr.error('Error al cargar estadísticas');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error('Error al cargar estadísticas: ' + error);
+                }
+            });
+        }
+
+        // Cargar estadísticas al iniciar la página
+        actualizarEstadisticas();
+
+        // Toggle para mostrar/ocultar grados
+        $('.toggle-grados').on('click', function (e) {
+            e.preventDefault();
+            $(this).next('.grados-lista').slideToggle();
+        });
+    });
+</script>
 {% endblock %}
 
 {% block extra_js %}

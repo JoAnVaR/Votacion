@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify
-from models import Sede, Estudiante, Profesor, Mesa, AsignacionMesa, ConfiguracionSistema
+from models import Sede, Estudiante, Profesor, Mesa, AsignacionMesa, EventoCalendario
 from sqlalchemy import func, exists, and_, select
 from extensions import db
 from datetime import datetime
@@ -174,14 +174,11 @@ def finalizar_configuracion():
                 'message': 'No se puede finalizar la configuración mientras haya errores pendientes'
             })
 
-        # Crear o actualizar la configuración del sistema
-        config = ConfiguracionSistema.query.first()
-        if not config:
-            config = ConfiguracionSistema()
-            db.session.add(config)
+        # Verificar si todos los eventos de la fase 1 han terminado
+        eventos_fase1 = EventoCalendario.query.filter_by(fase=1).all()
+        for evento in eventos_fase1:
+            evento.estado = 'completado'
         
-        config.configuracion_finalizada = True
-        config.fecha_finalizacion = datetime.now()
         db.session.commit()
 
         return jsonify({

@@ -9,6 +9,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
     <!-- JavaScript -->
@@ -22,15 +23,23 @@
 </head>
 
 <body>
+    {# Definimos la configuración como una variable de JavaScript #}
+    <script>
+        window.appConfig = JSON.parse('{{ config_json|safe }}');
+    </script>
+
     <div class="container mt-5">
-        {% if config.configuracion_finalizada %}
+        {% if config.configuracion_finalizada and request.endpoint != 'calendario.calendario_electoral' %}
         <div class="alert alert-warning" id="sistema-bloqueado-alert">
-            <i class="fas fa-lock"></i> Configuración Inicial bloqueada. La configuración fue finalizada el {{
-            config.fecha_finalizacion.strftime('%d/%m/%Y %H:%M') }}.
+            <i class="fas fa-lock"></i> Configuración Inicial bloqueada.
+            {% if config.fecha_finalizacion %}
+            La configuración fue finalizada el {{ config.fecha_finalizacion.strftime('%d/%m/%Y %H:%M') }}.
+            {% endif %}
         </div>
         {% endif %}
         {% block content %}{% endblock %}
     </div>
+
     {% block extra_js %}{% endblock %}
 </body>
 

@@ -3,12 +3,12 @@ from models import Profesor, Sede
 import csv
 import io
 from extensions import db
-from utils.decorators import check_configuracion_abierta
+from utils.decorators import verificar_acceso_ruta
 
 profesor_bp = Blueprint('profesor', __name__)
 
-@profesor_bp.route('/registro_profesor', methods=['GET', 'POST'])
-@check_configuracion_abierta
+@profesor_bp.route('/registro-profesor', methods=['GET', 'POST'])
+@verificar_acceso_ruta('profesor.registro_profesor')
 def registro_profesor():
     if request.method == 'POST':
         try:
@@ -200,7 +200,7 @@ def eliminar_profesor(id):
         }), 500
 
 @profesor_bp.route('/modificar_profesor/<int:id>', methods=['GET', 'POST'])
-@check_configuracion_abierta
+@verificar_acceso_ruta('profesor.modificar_profesor')
 def modificar_profesor(id):
     profesor = Profesor.query.get_or_404(id)
     
@@ -309,7 +309,7 @@ def detalle_sede(sede):
         }), 500
 
 @profesor_bp.route('/actualizar_profesor', methods=['POST'])
-@check_configuracion_abierta
+@verificar_acceso_ruta('profesor.actualizar_profesor')
 def actualizar_profesor():
     try:
         profesor_id = request.form['profesor_id']
@@ -339,7 +339,7 @@ def actualizar_profesor():
         }), 500
 
 @profesor_bp.route('/borrar_profesor', methods=['POST'])
-@check_configuracion_abierta
+@verificar_acceso_ruta('profesor.borrar_profesor')
 def borrar_profesor():
     try:
         profesor_id = request.form['profesor_id']

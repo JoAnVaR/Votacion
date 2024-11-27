@@ -22,34 +22,53 @@
             {% for profesor in profesores %}
             <tr>
                 <td>
-                    <input type="text" name="numero_documento" value="{{ profesor.numero_documento }}"
-                        class="form-control form-control-sm" required form="form-{{ profesor.id }}">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                        </div>
+                        <input type="text" name="numero_documento" value="{{ profesor.numero_documento }}"
+                            class="form-control" required form="form-{{ profesor.id }}">
+                    </div>
                 </td>
                 <td>
-                    <input type="text" name="nombre" value="{{ profesor.nombre }}" class="form-control form-control-sm"
-                        required form="form-{{ profesor.id }}">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        </div>
+                        <input type="text" name="nombre" value="{{ profesor.nombre }}" class="form-control" required
+                            form="form-{{ profesor.id }}">
+                    </div>
                 </td>
                 <td>
-                    <input type="text" name="departamento" value="{{ profesor.departamento }}"
-                        class="form-control form-control-sm" required form="form-{{ profesor.id }}">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-building"></i></span>
+                        </div>
+                        <input type="text" name="departamento" value="{{ profesor.departamento }}" class="form-control"
+                            required form="form-{{ profesor.id }}">
+                    </div>
                 </td>
                 <td>
-                    <input type="text" name="titulo" value="{{ profesor.titulo }}" class="form-control form-control-sm"
-                        required form="form-{{ profesor.id }}">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
+                        </div>
+                        <input type="text" name="titulo" value="{{ profesor.titulo }}" class="form-control" required
+                            form="form-{{ profesor.id }}">
+                    </div>
                 </td>
                 <td>
                     <form id="form-{{ profesor.id }}" class="form-modificar d-inline">
                         <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
-                        <button type="submit" class="btn btn-sm"
-                            style="background-color: var(--primary-color); color: var(--white-color);">
-                            Modificar
+                        <button type="submit" class="btn btn-sm">
+                            <i class="fas fa-save"></i> Modificar
+
                         </button>
                     </form>
                     <form class="form-eliminar d-inline">
                         <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
-                        <button type="submit" class="btn btn-sm"
-                            style="background-color: var(--secondary-color); color: var(--white-color);">
-                            Eliminar
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class=" fas fa-trash"></i>
                         </button>
                     </form>
                 </td>
@@ -128,6 +147,61 @@
                 });
             }
         });
+    });
+    function verificarAccesoRuta(ruta, elemento, callback) {
+        $.ajax({
+            url: "{{ url_for('calendario.verificar_acceso') }}",
+            type: 'POST',
+            data: JSON.stringify({ ruta: ruta }),
+            contentType: 'application/json',
+            success: function (response) {
+                if (!response.permitido) {
+                    // Primero deshabilitamos todo
+                    deshabilitarFormularios(true);
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
+
+                    if (callback) callback(false);
+
+                    // Luego mostramos el mensaje y redirigimos
+                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                    setTimeout(function () {
+                        window.location.href = "{{ url_for('index') }}";
+                    }, 2000);
+                } else {
+                    if (callback) callback(true);
+                }
+            },
+            error: function () {
+                toastr.error('Error al verificar acceso');
+                if (callback) callback(false);
+            }
+        });
+    }
+
+    function deshabilitarFormularios(deshabilitar) {
+        $('.form-modificar button, .form-eliminar button').prop('disabled', deshabilitar);
+        $('input[name="numero_documento"], input[name="nombre"]').prop('disabled', deshabilitar);
+        if (deshabilitar) {
+            $('.form-modificar, .form-eliminar').css('opacity', '0.6');
+        } else {
+            $('.form-modificar, .form-eliminar').css('opacity', '1');
+        }
+    }
+
+    $(document).ready(function () {
+        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+        if (configuracionFinalizada) {
+            deshabilitarFormularios(true);
+            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
+        } else {
+            verificarAccesoRuta('profesor.registro_profesor', '.form-modificar', function (permitido) {
+                deshabilitarFormularios(!permitido);
+            });
+        }
     });
 </script>
 {% endblock %}

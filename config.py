@@ -1,18 +1,42 @@
-from flask import Flask
-from models import ConfiguracionSistema
+import os
+from datetime import timedelta
 
-def create_app():
-    app = Flask(__name__)
-    
-    # Configuración
-    app.config['SECRET_KEY'] = 'tu_clave_secreta'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///votacion.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['UPLOAD_FOLDER'] = 'static/uploads'
-    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-    
-    @app.context_processor
-    def inject_config():
-        return {'config': ConfiguracionSistema.get_config()}
-    
-    return app
+# Configuración base
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+
+# Configuración de la base de datos
+SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'instance', 'votacion.db')
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+# Configuración de seguridad
+SECRET_KEY = 'tu_clave_secreta_aqui'  # Cambiar en producción
+SESSION_COOKIE_SECURE = False  # Cambiar a True en producción
+PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+
+# Configuración de archivos
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max-limit
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+# Configuración del sistema
+ITEMS_PER_PAGE = 10
+MAX_ESTUDIANTES_POR_MESA = 30
+CONFIGURACION_FINALIZADA = False
+
+# Estados del sistema
+SISTEMA_BLOQUEADO = False
+CALENDARIO_BLOQUEADO = False
+FASE_ACTUAL = 1
+
+@app.context_processor
+def inject_config():
+    config = ConfiguracionSistema.get_config()
+    config_json = {
+        'configuracionFinalizada': config.configuracion_finalizada,
+        'calendarioBloqueado': config.calendario_bloqueado,
+        'fechaFinalizacion': config.fecha_finalizacion.strftime('%d/%m/%Y %H:%M') if config.fecha_finalizacion else None
+    }
+    return {
+        'config': config,
+        'config_json': config_json
+    }

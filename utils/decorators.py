@@ -1,13 +1,36 @@
 from functools import wraps
-from flask import flash, redirect, url_for
-from models import ConfiguracionSistema
+from flask import jsonify
+from models import EventoCalendario
+from datetime import datetime
 
-def check_configuracion_abierta(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        config = ConfiguracionSistema.get_config()
-        if config.configuracion_finalizada:
-            flash('La configuración del sistema está bloqueada.', 'warning')
-            return redirect(url_for('index'))
-        return f(*args, **kwargs)
-    return decorated_function
+def verificar_acceso_ruta(ruta=None):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if EventoCalendario.sistema_bloqueado():
+                return jsonify({
+                    'success': False,
+                    'message': 'El sistema está bloqueado'
+                }), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+def fase_requerida(fase_numero):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            eventos = EventoCalendario.query.filter_by(fase=fase_numero).all()
+            ahora = datetime.now()
+            fase_activa = any(
+                evento.fecha_inicio <= ahora <= evento.fecha_fin
+                for evento in eventos
+            )
+            if not fase_activa:
+                return jsonify({
+                    'success': False,
+                    'message': f'La fase {fase_numero} no está activa'
+                }), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator

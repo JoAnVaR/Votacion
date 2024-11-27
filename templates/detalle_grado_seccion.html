@@ -7,6 +7,8 @@
     <h1>Grado {{ grado }} - {{ seccion }} - Sede {{ sede }}</h1>
 </header>
 
+<input type="hidden" id="configuracionFinalizada" value="{{ config.configuracion_finalizada|string|lower }}">
+
 <div class="mt-5">
     <table class="table table-striped">
         <thead>
@@ -20,26 +22,34 @@
             {% for estudiante in estudiantes %}
             <tr>
                 <td>
-                    <input type="text" name="numero_documento" value="{{ estudiante.numero_documento }}"
-                        class="form-control form-control-sm" required form="form-{{ estudiante.id }}">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                        </div>
+                        <input type="text" name="numero_documento" value="{{ estudiante.numero_documento }}"
+                            class="form-control" required form="form-{{ estudiante.id }}">
+                    </div>
                 </td>
                 <td>
-                    <input type="text" name="nombre" value="{{ estudiante.nombre }}"
-                        class="form-control form-control-sm" required form="form-{{ estudiante.id }}">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        </div>
+                        <input type="text" name="nombre" value="{{ estudiante.nombre }}" class="form-control" required
+                            form="form-{{ estudiante.id }}">
+                    </div>
                 </td>
                 <td>
                     <form id="form-{{ estudiante.id }}" class="form-modificar d-inline">
                         <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
-                        <button type="submit" class="btn btn-sm"
-                            style="background-color: var(--primary-color); color: var(--white-color);">
-                            Modificar
+                        <button type="submit" class="btn btn-sm">
+                            <i class="fas fa-save"></i> Modificar
                         </button>
                     </form>
                     <form class="form-eliminar d-inline">
                         <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
-                        <button type="submit" class="btn btn-sm"
-                            style="background-color: var(--secondary-color); color: var(--white-color);">
-                            Eliminar
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </form>
                 </td>
@@ -57,7 +67,29 @@
 
 {% block extra_js %}
 <script>
+
+    function deshabilitarFormularios(deshabilitar) {
+        $('.form-modificar button, .form-eliminar button').prop('disabled', deshabilitar);
+        $('input[name="numero_documento"], input[name="nombre"]').prop('disabled', deshabilitar);
+        if (deshabilitar) {
+            $('.form-modificar, .form-eliminar').css('opacity', '0.6');
+        } else {
+            $('.form-modificar, .form-eliminar').css('opacity', '1');
+        }
+    }
+
     $(document).ready(function () {
+        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+        if (configuracionFinalizada) {
+            deshabilitarFormularios(true);
+            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
+        } else {
+            verificarAccesoRuta('estudiante.registro_estudiante', '.form-modificar', function (permitido) {
+                deshabilitarFormularios(!permitido);
+            });
+        }
+
         // Manejar modificación de estudiante
         $('.form-modificar').on('submit', function (e) {
             e.preventDefault();
@@ -117,5 +149,43 @@
             }
         });
     });
+
+    function verificarAccesoRuta(ruta, elemento, callback) {
+        $.ajax({
+            url: "{{ url_for('calendario.verificar_acceso') }}",
+            type: 'POST',
+            data: JSON.stringify({ ruta: ruta }),
+            contentType: 'application/json',
+            success: function (response) {
+                if (!response.permitido) {
+                    // Primero deshabilitamos todos los elementos
+                    deshabilitarFormularios(true);
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
+
+                    if (callback) callback(false);
+
+                    // Luego mostramos el mensaje y redirigimos
+                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                    setTimeout(function () {
+                        window.location.href = "{{ url_for('index') }}";
+                    }, 2000);
+                } else {
+                    $(elemento).removeClass('disabled')
+                        .removeAttr('title')
+                        .css('pointer-events', 'auto')
+                        .css('opacity', '1');
+                    if (callback) callback(true);
+                }
+            },
+            error: function () {
+                toastr.error('Error al verificar acceso');
+                if (callback) callback(false);
+            }
+        });
+    }
+
 </script>
 {% endblock %}

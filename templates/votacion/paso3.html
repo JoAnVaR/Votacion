@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Votación - Paso 3{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2>Confirmar Voto</h2>
+                </div>
+                <div class="card-body">
+                    <h4>Has seleccionado a:</h4>
+                    <div class="text-center mb-4">
+                        {% if candidato.foto_path %}
+                        <img src="{{ url_for('static', filename=candidato.foto_path) }}" class="img-fluid rounded mb-3"
+                            style="max-height: 200px;" alt="Foto candidato">
+                        {% endif %}
+                        <h3>{{ candidato.nombre }}</h3>
+                    </div>
+                    <form method="POST" class="text-center">
+                        <button type="submit" class="btn btn-success mr-2">Confirmar Voto</button>
+                        <a href="{{ url_for('votacion.paso2') }}" class="btn btn-secondary">Volver</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

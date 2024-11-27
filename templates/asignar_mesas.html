@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Agregar input oculto al inicio del contenido -->
-<input type="hidden" id="configuracionFinalizada" value="{{ config.configuracion_finalizada|string|lower }}">
 
 <div class="container mt-5">
     <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
@@ -10,6 +8,8 @@
     </header>
 
     <div class="mt-5">
+
+
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}
@@ -36,16 +36,14 @@
                         </a>
                     </div>
                     <div id="grados-{{ sede.id }}" class="grados-container" style="display: none;">
-                        <table class="table table-striped">
+                        <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="background-color: var(--primary-color); color: var(--white-color);">
-                                        Grado y Sección
-                                    </th>
+                                    <th>Grado y Sección</th>
                                     {% for mesa in mesas %}
                                     {% if mesa.sede_id == sede.id %}
-                                    <th style="background-color: var(--primary-color); color: var(--white-color);">
-                                        Mesa {{ mesa.mesa_numero }}
+                                    <th class="text-center">
+                                        <i class="fas fa-chair"></i> Mesa {{ mesa.mesa_numero }}
                                     </th>
                                     {% endif %}
                                     {% endfor %}
@@ -55,10 +53,12 @@
                                 {% for grado_seccion, sede_id in grados_secciones %}
                                 {% if sede_id == sede.id %}
                                 <tr>
-                                    <td>{{ grado_seccion }}</td>
+                                    <td>
+                                        <i class="fas fa-graduation-cap"></i> {{ grado_seccion }}
+                                    </td>
                                     {% for mesa in mesas %}
                                     {% if mesa.sede_id == sede.id %}
-                                    <td>
+                                    <td class="text-center">
                                         <input type="radio" class="mesa-radio" name="mesa_numero_{{ grado_seccion }}"
                                             value="{{ mesa.mesa_numero }}" data-grado-seccion="{{ grado_seccion }}"
                                             data-sede-id="{{ sede.id }}">
@@ -88,16 +88,10 @@
                         <a href="#" class="asignacion-sede-link" data-sede="{{ sede.nombre }}"
                             style="color: var(--white-color);">
                             {{ sede.nombre }}
-                            <span class="badge float-right"
-                                style="background-color: var(--highlight-color); color: var(--dark-blue);">
-                                {{ asignaciones|selectattr('sede_nombre', 'equalto', sede.nombre)|list|length }}
-                                asignaciones
-                            </span>
-                            <i class="fas fa-chevron-down float-right mr-2"></i>
                         </a>
                     </h3>
                 </div>
-                <div class="asignacion-sede-content" style="display: none;">
+                <div class="asignacion-sede-content">
                     <table class="table table-striped asignaciones-table">
                         <thead>
                             <tr>
@@ -207,26 +201,44 @@
 
 {% block extra_js %}
 <script>
-    $(document).ready(function () {
-        // Obtener el valor del input oculto y convertirlo a booleano
-        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+    function verificarAccesoRuta(ruta, elemento, callback) {
+        $.ajax({
+            url: "{{ url_for('calendario.verificar_acceso') }}",
+            type: 'POST',
+            data: JSON.stringify({ ruta: ruta }),
+            contentType: 'application/json',
+            success: function (response) {
+                if (!response.permitido) {
+                    // Primero deshabilitamos todo
+                    $('.mesa-radio, .btn-eliminar-asignacion').prop('disabled', true);
+                    $('.btn-eliminar-asignacion').hide();
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
 
-        if (configuracionFinalizada) {
-            // Deshabilitar todos los controles interactivos
-            $('.mesa-radio, .btn-eliminar-asignacion').prop('disabled', true);
-            $('.btn-eliminar-asignacion').hide();
-            // Mostrar mensaje
-            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
-        }
+                    if (callback) callback(false);
+
+                    // Luego mostramos el mensaje y redirigimos
+                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                    setTimeout(function () {
+                        window.location.href = "{{ url_for('index') }}";
+                    }, 2000);
+                } else {
+                    if (callback) callback(true);
+                }
+            },
+            error: function () {
+                toastr.error('Error al verificar acceso');
+                if (callback) callback(false);
+            }
+        });
+    }
+
+    $(document).ready(function () {
 
         // Manejar la selección de mesa
         $('.mesa-radio').change(function (e) {
-            if (configuracionFinalizada) {
-                e.preventDefault();
-                toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
-                return false;
-            }
-
             e.stopPropagation();
             var gradoSeccion = $(this).data('grado-seccion');
             var mesaNumero = $(this).val();
@@ -248,8 +260,12 @@
                         toastr.error(response.message || 'Error al asignar mesa');
                     }
                 },
-                error: function () {
-                    toastr.error('Error al realizar la asignación');
+                error: function (xhr) {
+                    if (xhr.status === 403) {
+                        toastr.warning('No está permitido asignar mesas en este momento según el calendario electoral');
+                    } else {
+                        toastr.error('Error al realizar la asignación');
+                    }
                 }
             });
         });

@@ -3,6 +3,7 @@
 {% block title %}Administrar Sedes y Mesas{% endblock %}
 
 {% block content %}
+
 <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
     <h1>Administrar Sedes y Mesas</h1>
 </header>
@@ -17,40 +18,79 @@
     <!-- Formulario para agregar una nueva sede -->
     <form id="formSede" method="post" action="{{ url_for('sede.agregar_sede') }}" class="mb-4" {% if
         config.configuracion_finalizada %}style="display: none;" {% endif %}>
-        <h2 style="color: var(--primary-color)">Agregar Sede</h2>
+        <h2 style="color: var(--primary-color)">
+            Agregar Sede
+        </h2>
         <div class="form-group">
-            <label for="nombre_sede">Nombre de la Sede:</label>
-            <input type="text" id="nombre_sede" name="nombre_sede" class="form-control mb-2" required>
+            <label for="nombre_sede">
+                Nombre de la Sede:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                </div>
+                <input type="text" id="nombre_sede" name="nombre_sede" class="form-control"
+                    placeholder="Ingrese el nombre de la sede" required>
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="direccion">Dirección:</label>
-            <input type="text" id="direccion" name="direccion" class="form-control mb-2" required>
+            <label for="direccion">
+                <i class="fas fa-map-marker-alt"></i> Dirección:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-location-arrow"></i></span>
+                </div>
+                <input type="text" id="direccion" name="direccion" class="form-control"
+                    placeholder="Ingrese la dirección" required>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Agregar Sede</button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Agregar Sede
+        </button>
     </form>
 
     <!-- Formulario para agregar una nueva mesa -->
     <form id="formMesa" method="post" action="{{ url_for('sede.agregar_mesas') }}" class="mb-4" {% if
         config.configuracion_finalizada %}style="display: none;" {% endif %}>
-        <h2 style="color: var(--primary-color)">Agregar Mesa a una Sede</h2>
+        <h2 style="color: var(--primary-color)">
+            <i class="fas fa-chair"></i> Agregar Mesa a una Sede
+        </h2>
         <div class="form-group">
-            <label for="sede_id">Seleccionar Sede:</label>
-            <select id="sede_id" name="sede_id" class="form-control mb-2" required>
-                <option value="">Seleccione una sede</option>
-                {% for sede in sedes %}
-                <option value="{{ sede.id }}">{{ sede.nombre }}</option>
-                {% endfor %}
-            </select>
+            <label for="sede_id">
+                <i class="fas fa-building"></i> Seleccionar Sede:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-list"></i></span>
+                </div>
+                <select id="sede_id" name="sede_id" class="form-control" required>
+                    <option value="">Seleccione una sede</option>
+                    {% for sede in sedes %}
+                    <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="mesa_numero">Número de Mesa:</label>
-            <input type="number" id="mesa_numero" name="mesa_numero" class="form-control mb-2" required readonly>
+            <label for="mesa_numero">
+                <i class="fas fa-hashtag"></i> Número de Mesa:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-sort-numeric-up"></i></span>
+                </div>
+                <input type="number" id="mesa_numero" name="mesa_numero" class="form-control"
+                    placeholder="Número automático" required readonly>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Agregar Mesa</button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Agregar Mesa
+        </button>
     </form>
 
     <!-- Mostrar sedes y mesas agrupadas -->
@@ -227,7 +267,7 @@
                                         data-sede-id="${sedeId}"
                                         data-mesa-id="${response.mesa.id}"
                                         style="padding: 0.1rem 0.4rem;">
-                                            <small>×</small>
+                                            <small>��</small>
                                         </button>
                             </span>
                         </div>`;
@@ -303,59 +343,13 @@
             if (confirm('¿Está seguro de que desea eliminar esta mesa?')) {
                 $.ajax({
                     url: "{{ url_for('sede.borrar_mesa', mesa_id=0) }}".replace('0', mesaId),
-                    type: 'DELETE',
+                    type: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
                     success: function (response) {
                         if (response.success) {
-                            // Eliminar la mesa actual
                             $mesaItem.remove();
-
-                            // Encontrar la nueva última mesa
-                            var $mesasContainer = $(`#mesas-sede-${sedeId}`);
-                            var $ultimaMesa = $mesasContainer.find('.mesa-item:last');
-
-                            if ($ultimaMesa.length > 0) {
-                                // Obtener el número de mesa del texto
-                                var mesaNumeroMatch = $ultimaMesa.find('.badge').text().match(/Mesa (\d+)/);
-                                if (mesaNumeroMatch) {
-                                    var mesaNumero = mesaNumeroMatch[1];
-
-                                    // Hacer una petición para obtener el ID de la última mesa
-                                    $.ajax({
-                                        url: "{{ url_for('sede.obtener_mesa_id') }}",
-                                        type: 'GET',
-                                        data: {
-                                            sede_id: sedeId,
-                                            mesa_numero: mesaNumero
-                                        },
-                                        success: function (mesaResponse) {
-                                            if (mesaResponse.mesa_id) {
-                                                // Agregar el botón de borrar con el ID correcto
-                                                $ultimaMesa.find('.badge').append(`
-                                                <button class="btn btn-danger btn-sm ml-1 borrar-mesa"
-                                                        data-sede-id="${sedeId}"
-                                                        data-mesa-id="${mesaResponse.mesa_id}"
-                                                        style="padding: 0.1rem 0.4rem;">
-                                                            <small>×</small>
-                                                        </button>
-                                                    `);
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-
-                            // Si no quedan mesas, agregar el botón de borrar sede
-                            if ($mesasContainer.children().length === 0) {
-                                var $sedeHeader = $mesasContainer.closest('.card').find('.card-header');
-                                $sedeHeader.append(`
-                                <button class="btn btn-danger btn-sm borrar-sede" 
-                                        data-sede-id="${sedeId}"
-                                        style="padding: 0.25rem 0.5rem;">
-                                            <small>×</small>
-                                        </button>
-                                    `);
-                            }
-
                             mostrarMensaje('Mesa eliminada exitosamente', 'success');
                             obtenerNumeroMesaDisponible(sedeId);
                         } else {
@@ -363,7 +357,17 @@
                         }
                     },
                     error: function (xhr, status, error) {
-                        mostrarMensaje('Error al eliminar mesa: ' + error, 'error');
+                        if (xhr.status === 403) {
+                            mostrarMensaje('No está permitido eliminar mesas en este momento según el calendario electoral', 'warning');
+                        } else {
+                            console.error('Error detallado:', {
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                responseText: xhr.responseText,
+                                error: error
+                            });
+                            mostrarMensaje('Error al eliminar mesa: ' + error, 'error');
+                        }
                     }
                 });
             }
@@ -378,17 +382,16 @@
             if (confirm('¿Está seguro de que desea eliminar esta sede?')) {
                 $.ajax({
                     url: "{{ url_for('sede.borrar_sede', sede_id=0) }}".replace('0', sedeId),
-                    type: 'DELETE',
+                    type: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
                     success: function (response) {
                         if (response.success) {
-                            // Eliminar la sede del listado
                             $sedeCard.fadeOut(300, function () {
                                 $(this).remove();
                             });
-
-                            // Eliminar la sede del select
                             $(`#sede_id option[value="${sedeId}"]`).remove();
-
                             mostrarMensaje('Sede eliminada exitosamente', 'success');
                         } else {
                             mostrarMensaje(response.message || 'Error al eliminar sede', 'error');
@@ -402,5 +405,85 @@
         });
 
     });
+
+    function verificarAccesoRuta(ruta, elemento, callback) {
+        $.ajax({
+            url: "{{ url_for('calendario.verificar_acceso') }}",
+            type: 'POST',
+            data: JSON.stringify({ ruta: ruta }),
+            contentType: 'application/json',
+            success: function (response) {
+                if (!response.permitido) {
+                    // Primero deshabilitamos todo
+                    deshabilitarFormularios(true);
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
+
+                    if (callback) callback(false);
+
+                    // Luego mostramos el mensaje y redirigimos
+                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                    setTimeout(function () {
+                        window.location.href = "{{ url_for('index') }}";
+                    }, 2000);
+                } else {
+                    if (callback) callback(true);
+                }
+            },
+            error: function () {
+                toastr.error('Error al verificar acceso');
+                if (callback) callback(false);
+            }
+        });
+    }
+
+    function deshabilitarFormularios(deshabilitar) {
+        $('#formMesa input, #formMesa button, #formSede input, #formSede button').prop('disabled', deshabilitar);
+        $('.borrar-sede').prop('disabled', deshabilitar);
+        if (deshabilitar) {
+            $('#formMesa, #formSede').css('opacity', '0.6');
+            $('.borrar-sede').css('opacity', '0.6');
+        } else {
+            $('#formMesa, #formSede').css('opacity', '1');
+            $('.borrar-sede').css('opacity', '1');
+        }
+    }
+
+
 </script>
 {% endblock %}
+
+<style>
+    .input-group-text {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 72, 132, 0.25);
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--dark-blue);
+        border-color: var(--dark-blue);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    label {
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+</style>
