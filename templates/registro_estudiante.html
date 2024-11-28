@@ -258,6 +258,25 @@
 
         // Cargar estadísticas al iniciar
         actualizarEstadisticas();
+
+        $(document).ready(function () {
+            verificarAccesoRuta('estudiante.registro_estudiante', null, function (permitido) {
+                if (!permitido) {
+                    // Primero deshabilitamos todo
+                    $('input, button, select').prop('disabled', true);
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
+
+                    // Luego mostramos el mensaje y redirigimos
+                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                    setTimeout(function () {
+                        window.location.href = "{{ url_for('index') }}";
+                    }, 2000);
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

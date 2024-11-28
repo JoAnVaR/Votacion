@@ -29,7 +29,8 @@ ACTIVITY_ROUTES = {
     'Inscripción de Candidatos': [
         'candidato.registro_candidato',
         'candidato.lista_candidatos',
-        'candidato.editar_candidato'
+        'candidato.editar_candidato',
+        'candidato.eliminar_candidato'
     ],
     'Jornada de Votación': [
         'votacion.paso1',

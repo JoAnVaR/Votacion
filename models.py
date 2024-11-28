@@ -208,8 +208,8 @@ class EventoCalendario(db.Model):
             {
                 'titulo': 'Conformación de Mesas de Votación',
                 'descripcion': 'Asignación de estudiantes a mesas de votación según sede y grado',
-                'fase': 2,
-                'orden': 1,
+                'fase': 1,
+                'orden': 4,
                 'fecha_inicio': fecha_base + timedelta(days=9),
                 'fecha_fin': fecha_base + timedelta(days=11),
                 'estado': 'pendiente'
@@ -227,7 +227,7 @@ class EventoCalendario(db.Model):
                 'titulo': 'Inscripción de Candidatos',
                 'descripcion': 'Registro de estudiantes candidatos a personería estudiantil',
                 'fase': 2,
-                'orden': 3,
+                'orden': 1,
                 'fecha_inicio': fecha_base + timedelta(days=15),
                 'fecha_fin': fecha_base + timedelta(days=17),
                 'estado': 'pendiente'
