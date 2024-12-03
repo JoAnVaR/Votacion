@@ -4,8 +4,8 @@
     /* Azul principal de la Registraduría */
     --secondary-color: #CD1719;
     /* Rojo institucional */
-    --background-color: #F6F8F9;
-    /* Fondo gris muy claro */
+    --background-color: #E5E5E5;
+    /* Gris más suave */
     --text-color: #4B4B4B;
     /* Gris texto */
     --white-color: #FFFFFF;
@@ -29,12 +29,49 @@
     --chart-border-highlight: rgba(255, 198, 41, 1);
     --chart-border-dark: rgba(0, 45, 82, 1);
     --chart-border-light: rgba(240, 240, 240, 1);
+
+    /* Variables para tema oscuro */
+    --dark-mode-background: #1a1a1a;
+    --dark-mode-text: #ffffff;
+    --dark-mode-card: #2d2d2d;
+    --dark-mode-input: #333333;
+    --dark-mode-border: #404040;
+
+    --container-background: #F8F9FA;
+    /* Fondo menos blanco para contenedores */
+}
+
+/* Agregar clase para tema oscuro */
+body.dark-theme {
+    background-color: var(--dark-mode-background);
+    color: var(--dark-mode-text);
+}
+
+body.dark-theme .container,
+body.dark-theme .card {
+    background-color: var(--dark-mode-card);
+    border-color: var(--dark-mode-border);
+}
+
+body.dark-theme .form-control {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+body.dark-theme .table {
+    color: var(--dark-mode-text);
+}
+
+body.dark-theme .table td {
+    border-color: var(--dark-mode-border);
 }
 
 /* Estilos básicos */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background-color);
+    background: linear-gradient(135deg, #E5E5E5, #F6F8F9);
+    min-height: 100vh;
     margin: 0;
     padding: 0;
     color: var(--text-color);
@@ -45,9 +82,11 @@ body {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    background-color: var(--white-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 6px;
+    background-color: var(--container-background);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 /* Headers y títulos */
@@ -707,4 +746,264 @@ label {
 
 .mesa-radio:hover {
     border-color: var(--dark-blue);
+}
+
+/* Estilos para tema oscuro */
+body.dark-theme {
+    background-color: var(--dark-mode-background);
+    color: var(--dark-mode-text);
+}
+
+/* Tablas en modo oscuro */
+body.dark-theme .table {
+    color: var(--dark-mode-text);
+}
+
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .table thead th {
+    background-color: var(--dark-mode-card);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+/* Formularios en modo oscuro */
+body.dark-theme .form-control {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+body.dark-theme .input-group-text {
+    background-color: var(--dark-mode-card);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+/* Botones en modo oscuro */
+body.dark-theme .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+body.dark-theme .btn-danger {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Headers en modo oscuro */
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4 {
+    color: var(--dark-mode-text);
+}
+
+/* Labels en modo oscuro */
+body.dark-theme label {
+    color: var(--dark-mode-text);
+}
+
+/* Custom file input en modo oscuro */
+body.dark-theme .custom-file-label {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+body.dark-theme .custom-file-label::after {
+    background-color: var(--dark-mode-card);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+/* Controles de tema */
+.theme-controls .btn {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    margin: 2px;
+    border-radius: 4px;
+}
+
+body.dark-theme .theme-controls .btn {
+    background-color: var(--dark-mode-card);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+/* Estilos adicionales para modo oscuro */
+body.dark-theme {
+    background-color: var(--dark-mode-background);
+    color: var(--dark-mode-text);
+}
+
+/* Contenedores y cards en modo oscuro */
+body.dark-theme .container,
+body.dark-theme .card,
+body.dark-theme .list-group-item {
+    background-color: var(--dark-mode-card);
+    border-color: var(--dark-mode-border);
+    color: var(--dark-mode-text);
+}
+
+/* Estadísticas en modo oscuro */
+body.dark-theme #estadisticas .card {
+    background-color: var(--dark-mode-card);
+    border-color: var(--dark-mode-border);
+}
+
+body.dark-theme #estadisticas .card-header {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+    border-bottom-color: var(--dark-mode-border);
+}
+
+body.dark-theme #estadisticas .list-group-item {
+    background-color: var(--dark-mode-input);
+    border-color: var(--dark-mode-border);
+    color: var(--dark-mode-text);
+}
+
+/* Inputs y grupos de inputs en modo oscuro */
+body.dark-theme .input-group-text {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+/* Enlaces en modo oscuro */
+body.dark-theme a {
+    color: var(--primary-color);
+}
+
+body.dark-theme a:hover {
+    color: var(--highlight-color);
+}
+
+/* Títulos coloreados en modo oscuro */
+body.dark-theme h2[style*="color: var(--primary-color)"],
+body.dark-theme h3[style*="color: var(--secondary-color)"] {
+    color: var(--dark-mode-text) !important;
+}
+
+/* Tablas en modo oscuro */
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .table-striped tbody tr:nth-of-type(even) {
+    background-color: var(--dark-mode-card);
+}
+
+/* Botones en modo oscuro */
+body.dark-theme .btn {
+    border-color: var(--dark-mode-border);
+}
+
+body.dark-theme .btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+body.dark-theme .btn-danger {
+    background-color: var(--secondary-color);
+    color: var(--white-color);
+}
+
+/* Estilos para modo oscuro - Fondos y textos */
+body.dark-theme .asignacion-sede-content,
+body.dark-theme .resumen-sede-content,
+body.dark-theme .grados-container {
+    background-color: var(--dark-mode-card);
+    color: var(--dark-mode-text);
+}
+
+/* Headers y encabezados en modo oscuro */
+body.dark-theme .asignacion-sede-header,
+body.dark-theme .resumen-sede-header,
+body.dark-theme .sede-header {
+    background: var(--dark-mode-card);
+    color: var(--dark-mode-text);
+}
+
+/* Enlaces en modo oscuro */
+body.dark-theme .sede-link,
+body.dark-theme .asignacion-sede-link {
+    color: var(--dark-mode-text);
+}
+
+body.dark-theme .sede-link:hover,
+body.dark-theme .asignacion-sede-link:hover {
+    color: var(--highlight-color);
+}
+
+/* Tablas en modo oscuro */
+body.dark-theme th[style*="background-color: var(--primary-color)"] {
+    background-color: var(--dark-mode-card) !important;
+    color: var(--dark-mode-text) !important;
+}
+
+/* Labels en modo oscuro */
+body.dark-theme label[style*="color: var(--primary-color)"] {
+    color: var(--dark-mode-text) !important;
+}
+
+/* Badges en modo oscuro */
+body.dark-theme .badge {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+}
+
+/* Input groups en modo oscuro */
+body.dark-theme .input-group-text {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+/* Estilos para el pie de tabla en modo oscuro */
+body.dark-theme .table tfoot,
+body.dark-theme .table-info {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+}
+
+body.dark-theme .table tfoot tr td,
+body.dark-theme .table tfoot tr td strong {
+    color: var(--dark-mode-text);
+    border-color: var(--dark-mode-border);
+}
+
+/* Estilos para badges en modo oscuro */
+body.dark-theme .badge-info,
+body.dark-theme .badge-secondary {
+    background-color: var(--dark-mode-input);
+    color: var(--dark-mode-text);
+    border: 1px solid var(--dark-mode-border);
+}
+
+/* Estilos para el resumen de estudiantes por mesa */
+body.dark-theme .resumen-header,
+body.dark-theme .asignaciones-header {
+    color: var(--dark-mode-text) !important;
+}
+
+body.dark-theme .table-info {
+    background-color: var(--dark-mode-card);
+}
+
+/* Ajustar las cards y elementos de fondo */
+.card,
+.list-group-item,
+.table {
+    background-color: var(--container-background);
+}
+
+.disabled-element {
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    background-color: #f8f9fa !important;
 }

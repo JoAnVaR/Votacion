@@ -215,7 +215,14 @@
                     }
                 },
                 error: function (xhr) {
-                    mostrarMensaje('Error al registrar estudiante: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                    if (xhr.status === 403) {
+                        toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                        setTimeout(function () {
+                            window.location.href = "{{ url_for('index') }}";
+                        }, 2000);
+                    } else {
+                        mostrarMensaje('Error al registrar estudiante: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                    }
                 },
                 complete: function () {
                     $submitButton.prop('disabled', false);

@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import jsonify, request
+from flask import jsonify, request, flash, redirect, url_for
 from models import Configuracion, EventoCalendario
 from datetime import datetime
 from utils.calendar_mappings import ACTIVITY_ROUTES
@@ -10,15 +10,29 @@ def verificar_acceso_ruta(ruta=None):
         def decorated_function(*args, **kwargs):
             config = Configuracion.query.first()
             if config and config.configuracion_finalizada:
-                # Si es una solicitud AJAX, devolver respuesta JSON
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # Verificar si la ruta está permitida según el calendario
+                for actividad, rutas in ACTIVITY_ROUTES.items():
+                    if ruta in rutas:
+                        evento = EventoCalendario.query.filter_by(titulo=actividad).first()
+                        if evento:
+                            ahora = datetime.now()
+                            fecha_inicio = evento.fecha_inicio.replace(hour=0, minute=0, second=0)
+                            fecha_fin = evento.fecha_fin.replace(hour=23, minute=59, second=59)
+                            
+                            if fecha_inicio <= ahora <= fecha_fin:
+                                return f(*args, **kwargs)
+                
+                # Si no está permitido
+                if request.method == 'POST':
                     return jsonify({
                         'success': False,
                         'message': 'Esta sección no está disponible en este momento'
                     }), 403
                 
-                # Para solicitudes normales, permitir el acceso pero con elementos deshabilitados
-                return f(*args, **kwargs)
+                # Para solicitudes GET, redirigir al index
+                #flash('Esta sección no está disponible en este momento según el calendario electoral.', 'warning')
+                #return redirect(url_for('index'))
+            
             return f(*args, **kwargs)
         return decorated_function
     return decorator

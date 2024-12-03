@@ -155,7 +155,6 @@ def verificar_acceso():
     data = request.get_json()
     ruta = data.get('ruta')
     
-    # Buscar la actividad correspondiente
     for actividad, rutas in ACTIVITY_ROUTES.items():
         if ruta in rutas:
             evento = EventoCalendario.query.filter_by(titulo=actividad).first()

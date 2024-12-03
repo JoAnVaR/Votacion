@@ -120,32 +120,40 @@ const MesasManager = {
         gradosDiv.slideToggle();
     },
 
-    seleccionarMesa: function (gradoSeccion, mesaNumero, sedeId) {
-        if (confirm(`¿Desea asignar la mesa ${mesaNumero} al grado ${gradoSeccion}?`)) {
-            const form = $('#asignarMesaForm');
-            form.find('[name="grado_seccion"]').val(`${gradoSeccion}|${sedeId}`);
-            form.find('[name="mesa_numero"]').val(mesaNumero);
-            form.submit();
-        }
-    },
-
     eliminarAsignacion: function (id) {
         if (confirm('¿Está seguro de que desea eliminar esta asignación?')) {
             $.ajax({
                 url: `/eliminar_asignacion/${id}`,
                 type: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function (response) {
                     if (response.success) {
-                        // Actualizar solo las secciones necesarias
                         $.get('/asignar_mesas', function (data) {
-                            // Actualizar la sección de asignaciones
-                            $('.asignaciones-accordion').html($(data).find('.asignaciones-accordion').html());
+                            var sedeId = response.sede_id;
+
+                            // Actualizar la lista de grados de la sede específica
+                            var $newGradosContainer = $(data).find(`#grados-${sedeId}`);
+                            $(`#grados-${sedeId}`).html($newGradosContainer.html());
+
+                            // Actualizar la tabla de asignaciones
+                            var $newAsignaciones = $(data).find(`.asignacion-sede-card[data-sede-id="${sedeId}"] .asignaciones-table tbody`);
+                            $(`.asignacion-sede-card[data-sede-id="${sedeId}"] .asignaciones-table tbody`).html($newAsignaciones.html());
+
                             // Actualizar la sección de resumen
                             $('.resumen-accordion').html($(data).find('.resumen-accordion').html());
-                            // Actualizar la lista de grados disponibles
-                            $('.sede-list').html($(data).find('.sede-list').html());
 
-                            // Reinicializar los eventos
+                            // Actualizar la sección de selección de sede
+                            var $newSedeList = $(data).find('.sede-list');
+                            $('.sede-list').html($newSedeList.html());
+
+                            // Mantener visible el contenedor de grados si estaba visible
+                            if ($(`#grados-${sedeId}`).is(':visible')) {
+                                $(`#grados-${sedeId}`).show();
+                            }
+
+                            // Reinicializar eventos
                             MesasManager.initEvents();
 
                             mostrarMensaje('Asignación eliminada correctamente', 'success');
@@ -154,7 +162,7 @@ const MesasManager = {
                         mostrarMensaje('Error al eliminar la asignación', 'error');
                     }
                 },
-                error: function () {
+                error: function (xhr) {
                     mostrarMensaje('Error al eliminar la asignación', 'error');
                 }
             });
@@ -166,13 +174,17 @@ const MesasManager = {
         const $content = $link.closest('.asignacion-sede-card').find('.asignacion-sede-content');
         const $icon = $link.find('i');
 
+        // Prevenir que el evento se propague
+        event.preventDefault();
+        event.stopPropagation();
+
         // Cierra otros paneles
         $('.asignacion-sede-content').not($content).slideUp();
         $('.asignacion-sede-link').not($link).removeClass('active');
         $('.asignacion-sede-link i').not($icon).removeClass('fa-chevron-up').addClass('fa-chevron-down');
 
         // Toggle del panel actual
-        $content.slideToggle();
+        $content.stop(true, true).slideToggle();  // Agregamos stop() para prevenir animaciones en cola
         $link.toggleClass('active');
         $icon.toggleClass('fa-chevron-down fa-chevron-up');
     },
@@ -182,86 +194,108 @@ const MesasManager = {
         const $content = $link.closest('.resumen-sede-card').find('.resumen-sede-content');
         const $icon = $link.find('i');
 
+        // Prevenir que el evento se propague
+        event.preventDefault();
+        event.stopPropagation();
+
         // Cierra otros paneles
         $('.resumen-sede-content').not($content).slideUp();
         $('.resumen-sede-link').not($link).removeClass('active');
         $('.resumen-sede-link i').not($icon).removeClass('fa-chevron-up').addClass('fa-chevron-down');
 
         // Toggle del panel actual
-        $content.slideToggle();
+        $content.stop(true, true).slideToggle();  // Agregamos stop() para prevenir animaciones en cola
         $link.toggleClass('active');
         $icon.toggleClass('fa-chevron-down fa-chevron-up');
     },
 
-    asignarMesa: function (gradoSeccion, mesaNumero, sedeId) {
-        if (confirm(`¿Desea asignar la mesa ${mesaNumero} al grado ${gradoSeccion}?`)) {
+    initEvents: function () {
+        // Eventos para los radio buttons
+        $('.mesa-radio').off('change').on('change', function (e) {
+            e.stopPropagation();
+            var gradoSeccion = $(this).data('grado-seccion');
+            var mesaNumero = $(this).val();
+            var sedeId = $(this).data('sede-id');
+            var $row = $(this).closest('tr');
+            var $gradosContainer = $(`#grados-${sedeId}`);
+            var $sedeItem = $gradosContainer.closest('.sede-item');
+
+            // Deshabilitar todos los radio buttons en la fila
+            $row.find('input[type="radio"]').prop('disabled', true);
+
             $.ajax({
                 url: '/asignar_mesas',
                 type: 'POST',
                 data: {
-                    grado_seccion: `${gradoSeccion}|${sedeId}`,
-                    mesa_numero: mesaNumero
+                    grado_seccion: gradoSeccion,
+                    mesa_numero: mesaNumero,
+                    sede_id: sedeId
                 },
                 success: function (response) {
                     if (response.success) {
-                        // Actualizar solo las secciones necesarias
                         $.get('/asignar_mesas', function (data) {
                             // Actualizar la sección de asignaciones
                             $('.asignaciones-accordion').html($(data).find('.asignaciones-accordion').html());
                             // Actualizar la sección de resumen
                             $('.resumen-accordion').html($(data).find('.resumen-accordion').html());
-                            // Actualizar la lista de grados disponibles
-                            $('.sede-list').html($(data).find('.sede-list').html());
 
-                            // Reinicializar los eventos
+                            // Verificar si hay más grados sin asignar en esta sede
+                            var $newGradosContainer = $(data).find(`#grados-${sedeId}`);
+                            var hayMasGrados = $newGradosContainer.find('tr').length > 0;
+
+                            if (hayMasGrados) {
+                                // Si hay más grados, actualizar solo el contenedor de grados
+                                $gradosContainer.html($newGradosContainer.html());
+                            } else {
+                                // Si no hay más grados, ocultar y eliminar el contenedor de grados
+                                $gradosContainer.slideUp(400, function () {
+                                    $sedeItem.remove();
+                                });
+                            }
+
+                            // Reinicializar eventos
                             MesasManager.initEvents();
 
                             mostrarMensaje('Asignación realizada correctamente', 'success');
                         });
                     } else {
                         mostrarMensaje('Error al realizar la asignación', 'error');
+                        // Reactivar los radio buttons si hay error
+                        $row.find('input[type="radio"]').prop('disabled', false);
                     }
                 },
                 error: function () {
                     mostrarMensaje('Error al realizar la asignación', 'error');
+                    // Reactivar los radio buttons si hay error
+                    $row.find('input[type="radio"]').prop('disabled', false);
                 }
             });
-        }
-    },
+        });
 
-    initEvents: function () {
-        // Eventos para el acordeón de asignaciones
-        $('.asignacion-sede-link').on('click', function (e) {
+        // Eventos para los enlaces de sede
+        $('.sede-link').off('click').on('click', function (e) {
             e.preventDefault();
+            e.stopPropagation();
+            MesasManager.toggleGrados($(this).data('sede-id'));
+        });
+
+        // Eventos para los botones de eliminar
+        $('.btn-eliminar-asignacion').off('click').on('click', function () {
+            MesasManager.eliminarAsignacion($(this).data('id'));
+        });
+
+        // Eventos para los enlaces de asignaciones
+        $('.asignacion-sede-link').off('click').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             MesasManager.toggleAsignaciones(this);
         });
 
-        // Eventos para el acordeón de resumen
-        $('.resumen-sede-link').on('click', function (e) {
+        // Eventos para los enlaces de resumen
+        $('.resumen-sede-link').off('click').on('click', function (e) {
             e.preventDefault();
+            e.stopPropagation();
             MesasManager.toggleResumen(this);
-        });
-
-        // Eventos para los radio buttons
-        $('.mesa-radio').on('change', function () {
-            const $this = $(this);
-            const gradoSeccion = $this.data('grado-seccion');
-            const mesaNumero = $this.val();
-            const sedeId = $this.data('sede-id');
-            MesasManager.asignarMesa(gradoSeccion, mesaNumero, sedeId);
-        });
-
-        // Eventos para eliminar asignaciones
-        $('.btn-eliminar-asignacion').on('click', function () {
-            const id = $(this).data('id');
-            MesasManager.eliminarAsignacion(id);
-        });
-
-        // Eventos para mostrar/ocultar grados
-        $('.sede-link').on('click', function (e) {
-            e.preventDefault();
-            const sedeId = $(this).data('sede-id');
-            MesasManager.toggleGrados(sedeId);
         });
     }
 };
@@ -272,3 +306,21 @@ $(document).ready(function () {
 });
 
 // Otras funciones globales que necesites...
+
+function deshabilitarFormulario(selector, deshabilitar) {
+    const $elemento = $(selector);
+
+    // Deshabilitar inputs y botones
+    $elemento.find('input, button, select, .sede-link, .asignacion-sede-link').prop('disabled', deshabilitar);
+
+    if (deshabilitar) {
+        $elemento.addClass('form-disabled');
+        // Agregar clase visual de deshabilitado
+        $elemento.css('opacity', '0.7');
+        $elemento.find('.mesa-radio').css('pointer-events', 'none');
+    } else {
+        $elemento.removeClass('form-disabled');
+        $elemento.css('opacity', '1');
+        $elemento.find('.mesa-radio').css('pointer-events', 'auto');
+    }
+}

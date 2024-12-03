@@ -3,6 +3,7 @@ from models import AsignacionMesa, Estudiante, Sede, Mesa
 from sqlalchemy import text
 from extensions import db
 from utils.decorators import verificar_acceso_ruta
+from sqlalchemy.sql import exists, and_
 
 asignar_mesa_bp = Blueprint('asignar_mesa', __name__)
 
@@ -22,22 +23,9 @@ def asignar_mesas():
                     'message': 'Faltan datos requeridos'
                 })
 
-            # Separar grado y sección
             grado, seccion = grado_seccion.split(' - ')
 
-            # Buscar la mesa
-            mesa = Mesa.query.filter_by(
-                sede_id=sede_id,
-                mesa_numero=mesa_numero
-            ).first()
-
-            if not mesa:
-                return jsonify({
-                    'success': False,
-                    'message': 'Mesa no encontrada'
-                })
-
-            # Verificar si ya existe una asignación para este grado y sección
+            # Verificar asignación existente
             asignacion_existente = AsignacionMesa.query.filter_by(
                 grado=grado,
                 seccion=seccion,
@@ -45,25 +33,39 @@ def asignar_mesas():
             ).first()
 
             if asignacion_existente:
-                # Actualizar la asignación existente
-                asignacion_existente.mesa_id = mesa.id
-                asignacion_existente.mesa_numero = mesa_numero
-            else:
-                # Crear nueva asignación
-                nueva_asignacion = AsignacionMesa(
-                    grado=grado,
-                    seccion=seccion,
-                    mesa_id=mesa.id,
-                    mesa_numero=mesa_numero,
-                    sede_id=sede_id
-                )
-                db.session.add(nueva_asignacion)
+                return jsonify({
+                    'success': False,
+                    'message': 'Este grado y sección ya tiene una mesa asignada'
+                })
 
+            # Crear nueva asignación
+            nueva_asignacion = AsignacionMesa(
+                grado=grado,
+                seccion=seccion,
+                mesa_id=mesa_numero,
+                mesa_numero=mesa_numero,
+                sede_id=sede_id
+            )
+            
+            db.session.add(nueva_asignacion)
             db.session.commit()
+
+            # Calcular total de estudiantes
+            total_estudiantes = Estudiante.query.filter_by(
+                grado=grado,
+                seccion=seccion,
+                sede_id=sede_id
+            ).count()
 
             return jsonify({
                 'success': True,
-                'message': 'Asignación realizada exitosamente'
+                'message': 'Mesa asignada exitosamente',
+                'data': {
+                    'asignacion_id': nueva_asignacion.id,
+                    'grado_seccion': f"{grado} - {seccion}",
+                    'mesa_numero': mesa_numero,
+                    'sede_id': sede_id
+                }
             })
 
         except Exception as e:
@@ -73,31 +75,54 @@ def asignar_mesas():
                 'message': f'Error al realizar la asignación: {str(e)}'
             })
 
-    grados_asignados = db.session.query(
-        AsignacionMesa.grado, AsignacionMesa.seccion, AsignacionMesa.sede_id
-    ).distinct().all()
+    # Obtener asignaciones existentes usando una subconsulta
+    asignaciones_subquery = db.session.query(
+        AsignacionMesa.grado,
+        AsignacionMesa.seccion,
+        AsignacionMesa.sede_id
+    ).subquery()
 
+    # Obtener grados y secciones no asignados
     grados_secciones = db.session.query(
-        (Estudiante.grado + ' - ' + Estudiante.seccion).label('grado_seccion'),
+        Estudiante.grado,
+        Estudiante.seccion,
         Estudiante.sede_id
+    ).filter(
+        ~exists().where(
+            and_(
+                asignaciones_subquery.c.grado == Estudiante.grado,
+                asignaciones_subquery.c.seccion == Estudiante.seccion,
+                asignaciones_subquery.c.sede_id == Estudiante.sede_id
+            )
+        )
     ).distinct().all()
 
     grados_secciones = [
-        gs for gs in grados_secciones
-        if (gs.grado_seccion.split(' - ')[0], gs.grado_seccion.split(' - ')[1], gs.sede_id) not in grados_asignados
+        {
+            'grado_seccion': f"{gs.grado} - {gs.seccion}",
+            'sede_id': gs.sede_id
+        }
+        for gs in grados_secciones
     ]
 
     sedes = Sede.query.all()
     mesas = Mesa.query.all()
 
     # Filtrar sedes que tienen grados disponibles
-    sedes_con_grados = [s for s in sedes if any(gs.sede_id == s.id for gs in grados_secciones)]
+    sedes_con_grados = [s for s in sedes if any(gs['sede_id'] == s.id for gs in grados_secciones)]
     
     # Obtener asignaciones con total de estudiantes
     asignaciones = []
-    totales_por_mesa = {}  # Diccionario para almacenar totales por mesa
+    totales_por_mesa = {}
 
-    for asignacion in AsignacionMesa.query.all():
+    # Obtener todas las asignaciones y ordenarlas
+    todas_asignaciones = AsignacionMesa.query.order_by(
+        AsignacionMesa.mesa_numero,
+        AsignacionMesa.grado,
+        AsignacionMesa.seccion
+    ).all()
+
+    for asignacion in todas_asignaciones:
         sede = Sede.query.get(asignacion.sede_id)
         
         # Contar estudiantes para esta asignación
@@ -142,26 +167,30 @@ def asignar_mesas():
 
 # Ruta eliminar asignacion mesa
 @asignar_mesa_bp.route('/eliminar_asignacion/<int:id>', methods=['POST'])
-@verificar_acceso_ruta('asignar_mesa.eliminar_asignacion')
+@verificar_acceso_ruta('asignar_mesa.asignar_mesas')
 def eliminar_asignacion(id):
     try:
         asignacion = AsignacionMesa.query.get_or_404(id)
+        
+        # Guardar los datos antes de eliminar
+        grado = asignacion.grado
+        seccion = asignacion.seccion
+        sede_id = asignacion.sede_id
+        
+        # Eliminar la asignación
         db.session.delete(asignacion)
         db.session.commit()
         
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': True})
-        
-        flash('Asignación eliminada correctamente', 'success')
-        return redirect(url_for('asignar_mesa.asignar_mesas'))
+        return jsonify({
+            'success': True,
+            'grado': grado,
+            'seccion': seccion,
+            'sede_id': sede_id
+        })
         
     except Exception as e:
         db.session.rollback()
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({
-                'success': False,
-                'message': str(e)
-            })
-        
-        flash('Error al eliminar la asignación', 'error')
-        return redirect(url_for('asignar_mesa.asignar_mesas'))
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 400

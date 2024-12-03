@@ -9,12 +9,17 @@ ACTIVITY_ROUTES = {
     'Registro de Estudiantes': [
         'estudiante.registro_estudiante',
         'estudiante.lista_estudiantes',
-        'estudiante.editar_estudiante'
+        'estudiante.editar_estudiante',
+        'estudiante.modificar_estudiante',
+        'estudiante.eliminar_estudiante',
+        'estudiante.detalle_grado_seccion'
     ],
     'Registro de Profesores': [
         'profesor.registro_profesor',
         'profesor.lista_profesores',
-        'profesor.editar_profesor'
+        'profesor.editar_profesor',
+        'profesor.actualizar_profesor',
+        'profesor.borrar_profesor'
     ],
     'Conformación de Mesas de Votación': [
         'asignar_mesa.asignar_mesas',

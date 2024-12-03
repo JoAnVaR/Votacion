@@ -14,9 +14,15 @@ sede_bp = Blueprint('sede', __name__)
 
 # Ruta para agregar sede
 @sede_bp.route('/sede/agregar', methods=['GET', 'POST'])
-@verificar_acceso_ruta()
-def agregar_sede():
+@verificar_acceso_ruta('sede.agregar_sede')
+def agregar_sede(bloqueado=False):
     if request.method == 'POST':
+        if bloqueado:
+            return jsonify({
+                'success': False,
+                'message': 'La edición está bloqueada en este momento'
+            }), 403
+            
         nombre_sede = request.form['nombre_sede']
         direccion = request.form['direccion']
         nueva_sede = Sede(nombre=nombre_sede, direccion=direccion)
@@ -31,11 +37,11 @@ def agregar_sede():
         })
     sedes = Sede.query.all()
     mesas = Mesa.query.all()
-    return render_template('administrar_sedes_mesas.html', sedes=sedes, mesas=mesas)
+    return render_template('administrar_sedes_mesas.html', sedes=sedes, mesas=mesas, bloqueado=bloqueado)
 
 # Ruta para agregar mesas
 @sede_bp.route('/agregar_mesas', methods=['POST'])
-@verificar_acceso_ruta()
+@verificar_acceso_ruta('sede.agregar_mesas')
 def agregar_mesas():
     try:
         print("=== Inicio de agregar_mesas ===")
@@ -224,3 +230,10 @@ def borrar_sede(sede_id):
             'success': False,
             'message': str(e)
         }), 500
+
+@sede_bp.route('/<int:sede_id>/mesas')
+def obtener_mesas_sede(sede_id):
+    sede = Sede.query.get_or_404(sede_id)
+    mesas = Mesa.query.filter_by(sede_id=sede_id).all()
+    html = render_template('_mesas_partial.html', mesas=mesas, sede=sede)
+    return jsonify({'html': html})

@@ -5,7 +5,7 @@ class Estudiante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero_documento = db.Column(db.String(20), unique=True, nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
-    grado = db.Column(db.String(20), nullable=False)
+    grado = db.Column(db.Integer, nullable=False)
     seccion = db.Column(db.String(10), nullable=False)
     sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
     mesa_id = db.Column(db.Integer, db.ForeignKey('mesa.id'), nullable=True)
@@ -280,3 +280,11 @@ class Configuracion(db.Model):
     def sistema_bloqueado():
         config = Configuracion.query.first()
         return config is not None and config.configuracion_finalizada == True
+
+class ConfiguracionSorteo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jurados_por_mesa = db.Column(db.Integer, nullable=False, default=3)
+    porcentaje_remanentes = db.Column(db.Integer, nullable=False, default=12)
+    grados_seleccionados = db.Column(db.String(100), nullable=False)  # Almacenados como string separado por comas
+    fase_actual = db.Column(db.Integer, nullable=False, default=1)
+    fecha_actualizacion = db.Column(db.DateTime, default=datetime.now)

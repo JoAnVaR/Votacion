@@ -30,18 +30,87 @@
     </script>
 
     <div class="container mt-5">
-        {% if config.configuracion_finalizada and request.endpoint != 'calendario.calendario_electoral' %}
-        <div class="alert alert-warning" id="sistema-bloqueado-alert">
-            <i class="fas fa-lock"></i> Configuración Inicial bloqueada.
-            {% if config.fecha_finalizacion %}
-            La configuración fue finalizada el {{ config.fecha_finalizacion.strftime('%d/%m/%Y %H:%M') }}.
-            {% endif %}
+
+        <div class="theme-controls" style="position: fixed; top: 80px; right: 20px; z-index: 1000;">
+            <div class="btn-group">
+                <button class="btn btn-sm" id="toggleTheme" title="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="btn btn-sm" id="decreaseFont" title="Reducir texto">
+                    <i class="fas fa-minus"></i> A
+                </button>
+                <button class="btn btn-sm" id="increaseFont" title="Aumentar texto">
+                    <i class="fas fa-plus"></i> A
+                </button>
+                <button class="btn btn-sm" id="resetSettings" title="Restablecer ajustes">
+                    <i class="fas fa-undo"></i>
+                </button>
+            </div>
         </div>
-        {% endif %}
         {% block content %}{% endblock %}
     </div>
 
     {% block extra_js %}{% endblock %}
+
+    <script>
+        // Agregar al final del archivo, antes de cerrar el body
+        document.addEventListener('DOMContentLoaded', function () {
+            // Recuperar preferencias guardadas
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            const fontSize = localStorage.getItem('fontSize') || 16;
+
+            // Aplicar tema inicial
+            if (isDarkMode) {
+                document.body.classList.add('dark-theme');
+                document.getElementById('toggleTheme').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            // Aplicar tamaño de fuente inicial
+            document.body.style.fontSize = fontSize + 'px';
+
+            // Manejador de tema
+            document.getElementById('toggleTheme').addEventListener('click', function () {
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                localStorage.setItem('darkMode', isDark);
+                this.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            });
+
+            // Manejadores de tamaño de fuente
+            document.getElementById('increaseFont').addEventListener('click', function () {
+                const currentSize = parseInt(getComputedStyle(document.body).fontSize);
+                const newSize = currentSize + 2;
+                if (newSize <= 24) {
+                    document.body.style.fontSize = newSize + 'px';
+                    localStorage.setItem('fontSize', newSize);
+                }
+            });
+
+            document.getElementById('decreaseFont').addEventListener('click', function () {
+                const currentSize = parseInt(getComputedStyle(document.body).fontSize);
+                const newSize = currentSize - 2;
+                if (newSize >= 12) {
+                    document.body.style.fontSize = newSize + 'px';
+                    localStorage.setItem('fontSize', newSize);
+                }
+            });
+
+            document.getElementById('resetSettings').addEventListener('click', function () {
+                if (confirm('¿Desea restablecer todos los ajustes a sus valores predeterminados?')) {
+                    // Restablecer tema
+                    document.body.classList.remove('dark-theme');
+                    document.getElementById('toggleTheme').innerHTML = '<i class="fas fa-moon"></i>';
+                    localStorage.setItem('darkMode', 'false');
+
+                    // Restablecer tamaño de fuente
+                    document.body.style.fontSize = '16px';
+                    localStorage.setItem('fontSize', '16');
+
+                    toastr.success('Ajustes restablecidos correctamente');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

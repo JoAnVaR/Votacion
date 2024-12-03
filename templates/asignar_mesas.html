@@ -50,17 +50,17 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for grado_seccion, sede_id in grados_secciones %}
-                                {% if sede_id == sede.id %}
+                                {% for grado_seccion in grados_secciones %}
+                                {% if grado_seccion.sede_id == sede.id %}
                                 <tr>
-                                    <td>
-                                        <i class="fas fa-graduation-cap"></i> {{ grado_seccion }}
-                                    </td>
+                                    <td>{{ grado_seccion.grado_seccion }}</td>
                                     {% for mesa in mesas %}
                                     {% if mesa.sede_id == sede.id %}
                                     <td class="text-center">
-                                        <input type="radio" class="mesa-radio" name="mesa_numero_{{ grado_seccion }}"
-                                            value="{{ mesa.mesa_numero }}" data-grado-seccion="{{ grado_seccion }}"
+                                        <input type="radio" class="mesa-radio"
+                                            name="mesa_numero_{{ grado_seccion.grado_seccion }}"
+                                            value="{{ mesa.mesa_numero }}"
+                                            data-grado-seccion="{{ grado_seccion.grado_seccion }}"
                                             data-sede-id="{{ sede.id }}">
                                     </td>
                                     {% endif %}
@@ -81,13 +81,14 @@
         <h2 class="asignaciones-header" style="color: var(--primary-color)">Asignaciones Realizadas</h2>
         <div class="asignaciones-accordion">
             {% for sede in sedes %}
-            <div class="asignacion-sede-card mb-3">
+            <div class="asignacion-sede-card mb-3" data-sede-id="{{ sede.id }}">
                 <div class="asignacion-sede-header"
                     style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue));">
                     <h3 class="mb-0">
                         <a href="#" class="asignacion-sede-link" data-sede="{{ sede.nombre }}"
                             style="color: var(--white-color);">
                             {{ sede.nombre }}
+                            <i class="fas fa-chevron-down"></i>
                         </a>
                     </h3>
                 </div>
@@ -209,21 +210,18 @@
             contentType: 'application/json',
             success: function (response) {
                 if (!response.permitido) {
-                    // Primero deshabilitamos todo
-                    $('.mesa-radio, .btn-eliminar-asignacion').prop('disabled', true);
-                    $('.btn-eliminar-asignacion').hide();
-                    $('.btn').addClass('disabled')
-                        .attr('title', 'No disponible en este momento')
-                        .css('pointer-events', 'none')
-                        .css('opacity', '0.6');
+                    // Deshabilitar formularios
+                    deshabilitarFormulario('.sede-list', true);
+                    deshabilitarFormulario('.asignaciones-accordion', true);
 
-                    if (callback) callback(false);
-
-                    // Luego mostramos el mensaje y redirigimos
-                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
-                    setTimeout(function () {
-                        window.location.href = "{{ url_for('index') }}";
-                    }, 2000);
+                    // Mostrar mensaje y redireccionar
+                    toastr.options = {
+                        "timeOut": "2000",
+                        "onHidden": function () {
+                            window.location.href = "{{ url_for('index') }}";
+                        }
+                    };
+                    toastr.warning('Esta actividad no está disponible en la fecha actual según el calendario electoral.');
                 } else {
                     if (callback) callback(true);
                 }
@@ -235,121 +233,26 @@
         });
     }
 
+    function deshabilitarFormulario(selector, deshabilitar) {
+        const $elemento = $(selector);
+        $elemento.find('input, button, select, .sede-link, .asignacion-sede-link').prop('disabled', deshabilitar);
+
+        if (deshabilitar) {
+            $elemento.addClass('form-disabled');
+            $elemento.css('opacity', '0.7');
+            $elemento.find('.mesa-radio').css('pointer-events', 'none');
+        } else {
+            $elemento.removeClass('form-disabled');
+            $elemento.css('opacity', '1');
+            $elemento.find('.mesa-radio').css('pointer-events', 'auto');
+        }
+    }
+
     $(document).ready(function () {
-
-        // Manejar la selección de mesa
-        $('.mesa-radio').change(function (e) {
-            e.stopPropagation();
-            var gradoSeccion = $(this).data('grado-seccion');
-            var mesaNumero = $(this).val();
-            var sedeId = $(this).data('sede-id');
-
-            $.ajax({
-                url: "{{ url_for('asignar_mesa.asignar_mesas') }}",
-                type: 'POST',
-                data: {
-                    grado_seccion: gradoSeccion,
-                    mesa_numero: mesaNumero,
-                    sede_id: sedeId
-                },
-                success: function (response) {
-                    if (response.success) {
-                        toastr.success('Mesa asignada exitosamente');
-                        location.reload();
-                    } else {
-                        toastr.error(response.message || 'Error al asignar mesa');
-                    }
-                },
-                error: function (xhr) {
-                    if (xhr.status === 403) {
-                        toastr.warning('No está permitido asignar mesas en este momento según el calendario electoral');
-                    } else {
-                        toastr.error('Error al realizar la asignación');
-                    }
-                }
-            });
-        });
-
-        // Toggle para mostrar/ocultar contenido de sedes
-        $('.sede-link').off('click').on('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const $this = $(this);
-            const $icon = $this.find('i');
-            const $container = $this.closest('.sede-item').find('.grados-container');
-
-            // Cerrar otros contenedores
-            $('.sede-item').not($this.closest('.sede-item')).each(function () {
-                const $otherIcon = $(this).find('.sede-link i');
-                const $otherContainer = $(this).find('.grados-container');
-
-                $otherIcon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
-                $otherContainer.slideUp();
-            });
-
-            // Toggle actual
-            $container.slideToggle({
-                duration: 300,
-                complete: function () {
-                    $icon.toggleClass('fa-chevron-right fa-chevron-down');
-                }
-            });
-        });
-
-        // Toggle para asignaciones
-        $('.asignacion-sede-link').off('click').on('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const $this = $(this);
-            const $icon = $this.find('i');
-            const $content = $this.closest('.asignacion-sede-header')
-                .next('.asignacion-sede-content');
-
-            $content.slideToggle({
-                duration: 300,
-                complete: function () {
-                    $icon.toggleClass('fa-chevron-down fa-chevron-up');
-                }
-            });
-        });
-
-        // Toggle para resumen
-        $('.resumen-sede-link').off('click').on('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const $this = $(this);
-            const $icon = $this.find('i');
-            const $content = $this.closest('.resumen-sede-header')
-                .next('.resumen-sede-content');
-
-            $content.slideToggle({
-                duration: 300,
-                complete: function () {
-                    $icon.toggleClass('fa-chevron-down fa-chevron-up');
-                }
-            });
-        });
-
-        $(document).ready(function () {
-            verificarAccesoRuta('asignar_mesa.asignar_mesas', null, function (permitido) {
-                if (!permitido) {
-                    // Primero deshabilitamos todo
-                    $('.mesa-radio, .btn-eliminar-asignacion').prop('disabled', true);
-                    $('.btn').addClass('disabled')
-                        .attr('title', 'No disponible en este momento')
-                        .css('pointer-events', 'none')
-                        .css('opacity', '0.6');
-
-                    // Luego mostramos el mensaje y redirigimos
-                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
-                    setTimeout(function () {
-                        window.location.href = "{{ url_for('index') }}";
-                    }, 2000);
-                }
-            });
+        verificarAccesoRuta('asignar_mesa.asignar_mesas', null, function (permitido) {
+            if (permitido) {
+                MesasManager.initEvents();
+            }
         });
     });
 </script>

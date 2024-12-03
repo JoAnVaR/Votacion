@@ -9,11 +9,6 @@
 </header>
 
 <div class="mt-5">
-    {% if config.configuracion_finalizada %}
-    <div class="alert alert-warning">
-        <i class="fas fa-lock"></i> La configuración del sistema está bloqueada. No se pueden realizar modificaciones.
-    </div>
-    {% endif %}
 
     <!-- Formulario para agregar una nueva sede -->
     <form id="formSede" method="post" action="{{ url_for('sede.agregar_sede') }}" class="mb-4" {% if
@@ -456,14 +451,11 @@
     }
 
     function deshabilitarFormularios(deshabilitar) {
-        $('#formMesa input, #formMesa button, #formSede input, #formSede button').prop('disabled', deshabilitar);
-        $('.borrar-sede').prop('disabled', deshabilitar);
+        const elementos = $('#formMesa, #formSede, #listaSedes .card, .borrar-sede');
         if (deshabilitar) {
-            $('#formMesa, #formSede').css('opacity', '0.6');
-            $('.borrar-sede').css('opacity', '0.6');
+            elementos.addClass('disabled-element');
         } else {
-            $('#formMesa, #formSede').css('opacity', '1');
-            $('.borrar-sede').css('opacity', '1');
+            elementos.removeClass('disabled-element');
         }
     }
 

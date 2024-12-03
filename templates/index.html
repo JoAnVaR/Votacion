@@ -3,107 +3,128 @@
 {% block title %}Sistema de Votación{% endblock %}
 
 {% block content %}
-<script>
-    function verificarAccesoRuta(ruta, elemento) {
-        $.ajax({
-            url: "{{ url_for('calendario.verificar_acceso') }}",
-            type: 'POST',
-            data: JSON.stringify({ ruta: ruta }),
-            contentType: 'application/json',
-            success: function (response) {
-                if (!response.permitido) {
-                    $(elemento).addClass('disabled')
-                        .attr('title', 'No disponible en este momento')
-                        .css('pointer-events', 'none')
-                        .css('opacity', '0.6');
-                } else {
-                    $(elemento).removeClass('disabled')
-                        .removeAttr('title')
-                        .css('pointer-events', 'auto')
-                        .css('opacity', '1');
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert"
+        style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+        <i class="fas fa-lock me-2"></i>
+        <strong>{{ message }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <script>
+        function verificarAccesoRuta(ruta, elemento) {
+            $.ajax({
+                url: "{{ url_for('calendario.verificar_acceso') }}",
+                type: 'POST',
+                data: JSON.stringify({ ruta: ruta }),
+                contentType: 'application/json',
+                success: function (response) {
+                    if (!response.permitido) {
+                        $(elemento).addClass('disabled')
+                            .attr('title', 'No disponible en este momento')
+                            .css('pointer-events', 'none')
+                            .css('opacity', '0.6');
+                    } else {
+                        $(elemento).removeClass('disabled')
+                            .removeAttr('title')
+                            .css('pointer-events', 'auto')
+                            .css('opacity', '1');
+                    }
                 }
-            }
+            });
+        }
+
+        $(document).ready(function () {
+            // Verificar cada enlace de la fase 1
+            verificarAccesoRuta('sede.agregar_sede', '[href="{{ url_for("sede.agregar_sede") }}"]');
+            verificarAccesoRuta('estudiante.registro_estudiante', '[href="{{ url_for("estudiante.registro_estudiante") }}"]');
+            verificarAccesoRuta('profesor.registro_profesor', '[href="{{ url_for("profesor.registro_profesor") }}"]');
+            verificarAccesoRuta('asignar_mesa.asignar_mesas', '[href="{{ url_for("asignar_mesa.asignar_mesas") }}"]');
+            verificarAccesoRuta('candidato.registro_candidato', '[href="{{ url_for("candidato.registro_candidato") }}"]');
+            verificarAccesoRuta('jurado.sorteo_jurados', '[href="{{ url_for("jurado.sorteo_jurados") }}"]');
+
         });
-    }
+    </script>
 
-    $(document).ready(function () {
-        // Verificar cada enlace de la fase 1
-        verificarAccesoRuta('sede.agregar_sede', '[href="{{ url_for("sede.agregar_sede") }}"]');
-        verificarAccesoRuta('estudiante.registro_estudiante', '[href="{{ url_for("estudiante.registro_estudiante") }}"]');
-        verificarAccesoRuta('profesor.registro_profesor', '[href="{{ url_for("profesor.registro_profesor") }}"]');
-        verificarAccesoRuta('asignar_mesa.asignar_mesas', '[href="{{ url_for("asignar_mesa.asignar_mesas") }}"]');
-        verificarAccesoRuta('candidato.registro_candidato', '[href="{{ url_for("candidato.registro_candidato") }}"]');
-    });
-</script>
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+        <h1>Bienvenido al Sistema de Votación</h1>
+        <a href="{{ url_for('calendario.calendario_electoral') }}" class="btn btn-primary mt-3">
+            <i class="fas fa-calendar-alt"></i> Ver Calendario Electoral
+        </a>
+    </header>
+    <div class="mt-5 text-center">
+        <h2 style="color: var(--primary-color)">Seleccione una Opción</h2>
+        <div class="list-group mx-auto" style="max-width: 400px;">
+            <!-- Fase 1: Configuración Inicial -->
+            <div class="mb-4">
+                <h3 style="color: var(--secondary-color)">Configuración Inicial</h3>
+                <a href="{{ url_for('sede.agregar_sede') }}"
+                    class="list-group-item list-group-item-action menu-item fase-1">
+                    <i class="fas fa-building"></i> Administrar Sedes y Mesas
+                </a>
+                <a href="{{ url_for('estudiante.registro_estudiante') }}"
+                    class="list-group-item list-group-item-action menu-item fase-1">
+                    <i class="fas fa-user-graduate"></i> Registrar Estudiante
+                </a>
+                <a href="{{ url_for('profesor.registro_profesor') }}"
+                    class="list-group-item list-group-item-action menu-item fase-1">
+                    <i class="fas fa-chalkboard-teacher"></i> Registrar Profesor
+                </a>
+                <a href="{{ url_for('asignar_mesa.asignar_mesas') }}"
+                    class="list-group-item list-group-item-action menu-item fase-1">
+                    <i class="fas fa-table"></i> Asignar Mesas a Grados
+                </a>
+                <a href="{{ url_for('estadisticas.dashboard') }}"
+                    class="list-group-item list-group-item-action menu-item fase-1">
+                    <i class="fas fa-chart-bar"></i> Dashboard de Estadísticas
+                </a>
+            </div>
 
-<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
-    <h1>Bienvenido al Sistema de Votación</h1>
-    <a href="{{ url_for('calendario.calendario_electoral') }}" class="btn btn-primary mt-3">
-        <i class="fas fa-calendar-alt"></i> Ver Calendario Electoral
-    </a>
-</header>
-<div class="mt-5 text-center">
-    <h2 style="color: var(--primary-color)">Seleccione una Opción</h2>
-    <div class="list-group mx-auto" style="max-width: 400px;">
-        <!-- Fase 1: Configuración Inicial -->
-        <div class="mb-4">
-            <h3 style="color: var(--secondary-color)">Configuración Inicial</h3>
-            <a href="{{ url_for('sede.agregar_sede') }}"
-                class="list-group-item list-group-item-action menu-item fase-1">
-                <i class="fas fa-building"></i> Administrar Sedes y Mesas
-            </a>
-            <a href="{{ url_for('estudiante.registro_estudiante') }}"
-                class="list-group-item list-group-item-action menu-item fase-1">
-                <i class="fas fa-user-graduate"></i> Registrar Estudiante
-            </a>
-            <a href="{{ url_for('profesor.registro_profesor') }}"
-                class="list-group-item list-group-item-action menu-item fase-1">
-                <i class="fas fa-chalkboard-teacher"></i> Registrar Profesor
-            </a>
-            <a href="{{ url_for('asignar_mesa.asignar_mesas') }}"
-                class="list-group-item list-group-item-action menu-item fase-1">
-                <i class="fas fa-table"></i> Asignar Mesas a Grados
-            </a>
-            <a href="{{ url_for('estadisticas.dashboard') }}"
-                class="list-group-item list-group-item-action menu-item fase-1">
-                <i class="fas fa-chart-bar"></i> Dashboard de Estadísticas
-            </a>
-        </div>
+            <!-- Fase 2: Preparación Electoral -->
+            <div class="mb-4">
+                <h3 style="color: var(--secondary-color)">Preparación Electoral</h3>
+                <a href="{{ url_for('candidato.registro_candidato') }}"
+                    class="list-group-item list-group-item-action menu-item fase-2">
+                    <i class="fas fa-user-tie"></i> Inscripción de Candidatos
+                </a>
+                <a href="{{ url_for('jurado.sorteo_jurados') }}"
+                    class="list-group-item list-group-item-action menu-item fase-2">
+                    <i class="fas fa-gavel"></i> Sorteo de Jurados
+                </a>
+                <a href="{{ url_for('testigo.asignar_testigos') }}"
+                    class="list-group-item list-group-item-action menu-item fase-2" {% if not
+                    config.CONFIGURACION_FINALIZADA %}disabled{% endif %}>
+                    <i class="fas fa-eye"></i> Inscripción de Testigos
+                </a>
+            </div>
 
-        <!-- Fase 2: Preparación Electoral -->
-        <div class="mb-4">
-            <h3 style="color: var(--secondary-color)">Preparación Electoral</h3>
-            <a href="{{ url_for('candidato.registro_candidato') }}"
-                class="list-group-item list-group-item-action menu-item fase-2">
-                <i class="fas fa-user-tie"></i> Inscripción de Candidatos
-            </a>
-            <a href="{{ url_for('jurado.sorteo_jurados') }}"
-                class="list-group-item list-group-item-action menu-item fase-2" {% if not
-                config.CONFIGURACION_FINALIZADA %}disabled{% endif %}>
-                <i class="fas fa-gavel"></i> Sorteo de Jurados
-            </a>
-            <a href="{{ url_for('testigo.asignar_testigos') }}"
-                class="list-group-item list-group-item-action menu-item fase-2" {% if not
-                config.CONFIGURACION_FINALIZADA %}disabled{% endif %}>
-                <i class="fas fa-eye"></i> Inscripción de Testigos
-            </a>
-        </div>
-
-        <!-- Fase 3: Proceso de Votación -->
-        <div class="mb-4">
-            <h3 style="color: var(--secondary-color)">Proceso de Votación</h3>
-            <a href="{{ url_for('votacion.paso1') }}" class="list-group-item list-group-item-action menu-item fase-3" {%
-                if not config.PREPARACION_FINALIZADA %}disabled{% endif %}>
-                <i class="fas fa-id-card"></i> Paso 1: Verificación de Identidad
-            </a>
-            <a href="{{ url_for('votacion.paso2') }}" class="list-group-item list-group-item-action menu-item fase-3" {%
-                if not config.PREPARACION_FINALIZADA %}disabled{% endif %}>
-                <i class="fas fa-vote-yea"></i> Paso 2: Selección de Candidatos
-            </a>
-            <a href="{{ url_for('votacion.paso3') }}" class="list-group-item list-group-item-action menu-item fase-3" {%
-                if not config.PREPARACION_FINALIZADA %}disabled{% endif %}>
-                <i class="fas fa-check-double"></i> Paso 3: Confirmación del Voto
-            </a>
+            <!-- Fase 3: Proceso de Votación -->
+            <div class="mb-4">
+                <h3 style="color: var(--secondary-color)">Proceso de Votación</h3>
+                <a href="{{ url_for('votacion.paso1') }}"
+                    class="list-group-item list-group-item-action menu-item fase-3" {% if not
+                    config.PREPARACION_FINALIZADA %}disabled{% endif %}>
+                    <i class="fas fa-id-card"></i> Paso 1: Verificación de Identidad
+                </a>
+                <a href="{{ url_for('votacion.paso2') }}"
+                    class="list-group-item list-group-item-action menu-item fase-3" {% if not
+                    config.PREPARACION_FINALIZADA %}disabled{% endif %}>
+                    <i class="fas fa-vote-yea"></i> Paso 2: Selección de Candidatos
+                </a>
+                <a href="{{ url_for('votacion.paso3') }}"
+                    class="list-group-item list-group-item-action menu-item fase-3" {% if not
+                    config.PREPARACION_FINALIZADA %}disabled{% endif %}>
+                    <i class="fas fa-check-double"></i> Paso 3: Confirmación del Voto
+                </a>
+            </div>
         </div>
     </div>
 </div>

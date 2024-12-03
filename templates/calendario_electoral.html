@@ -72,6 +72,7 @@
                                         {% elif hoy.date() >= evento.fecha_inicio.date() and hoy.date() <=
                                             evento.fecha_fin.date() %} <span class="badge badge-en-curso">En
                                             Curso</span>
+                                            {% set sistema_bloqueado = false %}
                                             {% else %}
                                             <span class="badge badge-pendiente">Pendiente</span>
                                             {% endif %}
