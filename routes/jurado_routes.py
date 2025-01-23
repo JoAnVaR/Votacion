@@ -519,12 +519,37 @@ def reemplazo_jurados():
                         numero_documento=profesor_reemplazo.numero_documento,
                         nombre=profesor_reemplazo.nombre,
                         tipo_persona='Profesor',
-                        sorteo=4,  # Indicar que es un reemplazo
+                        sorteo=4,  # Sorteo de reemplazos
                         mesa_id=jurado.mesa_id,
                         sede_id=jurado.sede_id,
                         activo=True
                     )
-                else:
+                    db.session.add(nuevo_jurado)
+                    db.session.flush()  # Para obtener el ID del nuevo jurado
+
+                    # Actualizar el jurado original
+                    jurado.activo = False
+                    db.session.add(jurado)
+
+                    # Crear el registro de reemplazo
+                    reemplazo = ReemplazoJurado(
+                        jurado_original_id=jurado.id,
+                        jurado_reemplazo_id=nuevo_jurado.id,
+                        mesa_id=jurado.mesa_id,
+                        razon=razon,
+                        fecha=datetime.now()
+                    )
+                    db.session.add(reemplazo)
+                    
+                    # Asegurarnos de que todo se guarde
+                    db.session.commit()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'Reemplazo registrado correctamente'
+                    })
+
+                elif jurado.tipo_persona == 'Estudiante':
                     # Si es estudiante, usar remanente como antes
                     remanente = Jurado.query.filter(
                         Jurado.sorteo == 3,
@@ -541,29 +566,66 @@ def reemplazo_jurados():
                             'message': 'No hay remanentes disponibles'
                         }), 400
                     
-                    nuevo_jurado = remanente
+                    
+                    
+                    nuevo_jurado = Jurado(
+                    numero_documento=remanente.numero_documento,
+                    nombre=remanente.nombre,
+                    tipo_persona=remanente.tipo_persona,
+                    sorteo=4,  # Indicar que es un reemplazo
+                    mesa_id=jurado.mesa_id,
+                    sede_id=jurado.sede_id,
+                    activo=True
+                    )
 
-                # Realizar el reemplazo
-                jurado.activo = False
-                db.session.add(nuevo_jurado)
-                db.session.flush()  # Para obtener el ID del nuevo jurado
+                    # Realizar el reemplazo
+                    
+                    db.session.add(nuevo_jurado)
+                    db.session.flush()  # Para obtener el ID del nuevo jurado
+
+                    remanente.activo = False
+                    print(f"Marcando jurado {remanente.id} como inactivo")  # Mensaje de depuración
+                    db.session.add(remanente)
+
+                    # Actualizar el jurado original
+                    jurado.activo = False
+                    db.session.add(jurado)
+
+                    reemplazo = ReemplazoJurado(
+                        jurado_original_id=jurado.id,
+                        jurado_reemplazo_id=nuevo_jurado.id,
+                        mesa_id=jurado.mesa_id,
+                        razon=razon,
+                        fecha=datetime.now()
+                    )
+                    db.session.add(reemplazo)
+                    db.session.commit()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'Reemplazo registrado correctamente'
+                    })
+
+            elif tipo_accion == 'exoneracion':
+                # Lógica para exonerar
+                jurado.activo = False  # Marcar como inactivo
+                db.session.add(jurado)
+                db.session.commit()
 
                 reemplazo = ReemplazoJurado(
-                    jurado_original_id=jurado.id,
-                    jurado_reemplazo_id=nuevo_jurado.id,
-                    mesa_id=jurado.mesa_id,
-                    razon=razon,
-                    fecha=datetime.now()
-                )
+                        jurado_original_id=jurado.id,
+                        jurado_reemplazo_id='',
+                        mesa_id=jurado.mesa_id,
+                        razon=razon,
+                        fecha=datetime.now()
+                    )
                 db.session.add(reemplazo)
                 db.session.commit()
 
-                return jsonify({
+            return jsonify({
                     'success': True,
-                    'message': 'Reemplazo registrado correctamente'
+                    'message': 'Jurado exonerado correctamente'
                 })
-
-            # ... resto del código para exoneración ...
 
         except Exception as e:
             return jsonify({

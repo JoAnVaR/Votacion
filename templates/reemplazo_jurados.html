@@ -108,7 +108,8 @@
 
     <!-- Información de remanentes -->
     <div class="alert alert-info">
-        <strong>Remanentes disponibles:</strong> {{ remanentes_disponibles }} de {{ total_remanentes }}
+        <strong>Remanentes disponibles para estudiantes:</strong> {{ remanentes_disponibles }} de {{ total_remanentes }}
+        <p><strong>Los profesores se seleccionan de entre los no designados</strong></p>
     </div>
 
     <!-- Buscador -->
@@ -281,7 +282,7 @@
                             {% if reemplazo.reemplazo %}
                             {{ reemplazo.reemplazo.nombre }}
                             {% else %}
-                            <span class="text-warning">Exonerado</span>
+                            <span class="text-warning">Exonerado sin reemplazo</span>
                             {% endif %}
                         </td>
                         <td>
