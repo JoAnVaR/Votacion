@@ -3,344 +3,445 @@
 {% block title %}Registro de Candidatos{% endblock %}
 
 {% block content %}
-<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
-    <h1>Registro de Candidatos</h1>
-</header>
+<!-- Agregar la librería SweetAlert2 al inicio -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
 
-<div class="mt-5">
-    <!-- Formulario de registro -->
-    <form id="formCandidato" class="mb-4">
-        <h2 style="color: var(--primary-color)">Registrar Candidato</h2>
+<div class="container mt-5">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+        <h1>Registro de Candidatos</h1>
+    </header>
 
-        <div class="form-group">
-            <label for="searchEstudiante">
-                <i class="fas fa-search"></i> Buscar Estudiante:
-            </label>
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text"><i class="fas fa-user-graduate"></i></span>
+    <div class="mt-5">
+        <!-- Formulario de registro -->
+        <form id="formCandidato" class="mb-4">
+            <h2 style="color: var(--primary-color)">Registrar Candidato</h2>
+
+            <div class="form-group">
+                <label for="searchEstudiante">
+                    <i class="fas fa-search"></i> Buscar Estudiante:
+                </label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-user-graduate"></i></span>
+                    </div>
+                    <input type="text" id="searchEstudiante" class="form-control"
+                        placeholder="Buscar por nombre o documento">
                 </div>
-                <input type="text" id="searchEstudiante" class="form-control"
-                    placeholder="Buscar por nombre o documento">
             </div>
-        </div>
 
-        <div class="form-group">
-            <div id="estudiantesTable" class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th style="background-color: var(--primary-color); color: var(--white-color);">Nombre</th>
-                            <th style="background-color: var(--primary-color); color: var(--white-color);">Documento
-                            </th>
-                            <th style="background-color: var(--primary-color); color: var(--white-color);">Grado</th>
-                            <th style="background-color: var(--primary-color); color: var(--white-color);">Seleccionar
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="estudiantesTableBody">
-                        {% for estudiante in estudiantes %}
-                        <tr>
-                            <td>{{ estudiante.nombre }}</td>
-                            <td>{{ estudiante.numero_documento }}</td>
-                            <td>{{ estudiante.grado }}-{{ estudiante.seccion }}</td>
-                            <td>
-                                <input type="radio" name="id_estudiante" value="{{ estudiante.id }}"
-                                    class="candidato-radio" required>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="form-group">
+                <div id="estudiantesTable" class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="background-color: var(--primary-color); color: var(--white-color);">Nombre
+                                </th>
+                                <th style="background-color: var(--primary-color); color: var(--white-color);">Documento
+                                </th>
+                                <th style="background-color: var(--primary-color); color: var(--white-color);">Grado
+                                </th>
+                                <th style="background-color: var(--primary-color); color: var(--white-color);">
+                                    Seleccionar
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="estudiantesTableBody">
+                            {% for estudiante in estudiantes %}
+                            <tr>
+                                <td>{{ estudiante.nombre }}</td>
+                                <td>{{ estudiante.numero_documento }}</td>
+                                <td>{{ estudiante.grado }}-{{ estudiante.seccion }}</td>
+                                <td>
+                                    <input type="radio" name="id_estudiante" value="{{ estudiante.id }}"
+                                        class="candidato-radio" required>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <label for="propuesta">
-                <i class="fas fa-file-alt"></i> Propuesta:
-            </label>
-            <textarea id="propuesta" name="propuesta" class="form-control" required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="foto">
-                <i class="fas fa-camera"></i> Foto 3x4:
-            </label>
-            <div class="custom-file">
-                <input type="file" class="custom-file-input" id="foto" name="foto" accept="image/*" required>
-                <label class="custom-file-label" for="foto">Seleccionar archivo</label>
+            <div class="form-group">
+                <label for="propuesta">
+                    <i class="fas fa-file-alt"></i> Propuesta:
+                </label>
+                <textarea id="propuesta" name="propuesta" class="form-control" required></textarea>
             </div>
-            <div class="mt-2">
-                <img id="previewFoto" src="#" alt="Vista previa de la foto"
-                    style="display: none; max-width: 200px; max-height: 266px; border: 2px solid var(--primary-color); border-radius: 4px;">
+
+            <div class="form-group">
+                <label for="foto">
+                    <i class="fas fa-camera"></i> Foto 3x4:
+                </label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="foto" name="foto" accept="image/*" required>
+                    <label class="custom-file-label" for="foto">Seleccionar archivo</label>
+                </div>
+                <div class="mt-2">
+                    <img id="previewFoto" src="#" alt="Vista previa de la foto"
+                        style="display: none; max-width: 200px; max-height: 266px; border: 2px solid var(--primary-color); border-radius: 4px;">
+                </div>
             </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Registrar Candidato
+            </button>
+        </form>
+
+        <!-- Lista de candidatos -->
+        <h2 style="color: var(--primary-color)" class="mt-5">
+            <i class="fas fa-list"></i> Candidatos Registrados
+        </h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nombre</th>
+                        <th>Documento</th>
+                        <th>Grado</th>
+                        <th>Propuesta</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="candidatosTableBody">
+                    {% for candidato in candidatos %}
+                    <tr>
+                        <td>
+                            <img src="{{ url_for('static', filename=candidato.foto_path) }}"
+                                alt="Foto de {{ candidato.nombre }}" class="candidate-photo">
+                        </td>
+                        <td>{{ candidato.nombre }}</td>
+                        <td>{{ candidato.numero_documento }}</td>
+                        <td>{{ candidato.grado }}-{{ candidato.seccion }}</td>
+                        <td>{{ candidato.propuesta }}</td>
+                        <td>
+                            <form action="{{ url_for('candidato.eliminar_candidato', id=candidato.id) }}" method="POST"
+                                style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save"></i> Registrar Candidato
-        </button>
-    </form>
-
-    <!-- Lista de candidatos -->
-    <h2 style="color: var(--primary-color)" class="mt-5">
-        <i class="fas fa-list"></i> Candidatos Registrados
-    </h2>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Foto</th>
-                    <th>Nombre</th>
-                    <th>Documento</th>
-                    <th>Grado</th>
-                    <th>Propuesta</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="candidatosTableBody">
-                {% for candidato in candidatos %}
-                <tr>
-                    <td>
-                        <img src="{{ url_for('static', filename=candidato.foto_path) }}"
-                            alt="Foto de {{ candidato.nombre }}" class="candidate-photo">
-                    </td>
-                    <td>{{ candidato.nombre }}</td>
-                    <td>{{ candidato.numero_documento }}</td>
-                    <td>{{ candidato.grado }}-{{ candidato.seccion }}</td>
-                    <td>{{ candidato.propuesta }}</td>
-                    <td>
-                        <form action="{{ url_for('candidato.eliminar_candidato', id=candidato.id) }}" method="POST"
-                            style="display: inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
-</div>
 
-<script>
-    function verificarAccesoRuta(ruta, elemento, callback) {
-        console.log('Verificando acceso para ruta:', ruta);
-        $.ajax({
-            url: "{{ url_for('calendario.verificar_acceso') }}",
-            type: 'POST',
-            data: JSON.stringify({ ruta: ruta }),
-            contentType: 'application/json',
-            success: function (response) {
-                console.log('Respuesta completa de verificación:', response);
-                if (!response.permitido) {
-                    console.log('Acceso denegado. Razón:', response.mensaje || 'No especificada');
-                    $('input, button, select, textarea').prop('disabled', true);
-                    $('.btn').addClass('disabled')
-                        .attr('title', 'No disponible en este momento')
-                        .css('pointer-events', 'none')
-                        .css('opacity', '0.6');
+    <script>
+        // Función para mostrar mensajes con SweetAlert2
+        function mostrarMensaje(mensaje, tipo) {
+            Swal.fire({
+                title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+                text: mensaje,
+                icon: tipo,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
 
-                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral. ' +
-                        (response.mensaje || ''));
-                    setTimeout(function () {
-                        window.location.href = "{{ url_for('index') }}";
-                    }, 2000);
-                } else {
-                    console.log('Acceso permitido');
-                    if (callback) callback(true);
+        // Función para verificar acceso
+        function verificarAccesoRuta(ruta, elemento, callback) {
+            console.log('Verificando acceso para ruta:', ruta);
+
+            // Mostrar indicador de carga
+            Swal.fire({
+                title: 'Verificando acceso...',
+                text: 'Por favor espere',
+                icon: 'info',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
-            },
-            error: function (xhr) {
-                console.log('Error en verificación:', xhr.responseJSON || xhr);
-                toastr.error('Error al verificar acceso');
-                if (callback) callback(false);
-            }
-        });
-    }
+            });
 
-    $(document).ready(function () {
-        verificarAccesoRuta('candidato.registro_candidato', null, function (permitido) {
-            if (!permitido) {
-                $('input, button, select, textarea').prop('disabled', true);
-                $('.btn').addClass('disabled')
-                    .attr('title', 'No disponible en este momento')
-                    .css('pointer-events', 'none')
-                    .css('opacity', '0.6');
-
-                toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
-                setTimeout(function () {
-                    window.location.href = "{{ url_for('index') }}";
-                }, 2000);
-            }
-        });
-
-        // Prevenir comportamiento por defecto del radio button
-        $('.candidato-radio').on('change', function (e) {
-            // Solo prevenir el envío del formulario
-            e.preventDefault();
-        });
-
-        // Manejar la vista previa de la foto
-        $('#foto').on('change', function () {
-            var file = this.files[0];
-            if (!file) return;
-
-            var fileType = file.type;
-            var match = ["image/jpeg", "image/png", "image/jpg"];
-
-            if (!match.includes(fileType)) {
-                toastr.error('Por favor, seleccione un archivo de imagen válido (JPEG/JPG/PNG)');
-                $(this).val('');
-                return;
-            }
-
-            if (file.size > 5242880) { // 5MB
-                toastr.error('El archivo es demasiado grande. El tamaño máximo es 5MB');
-                $(this).val('');
-                return;
-            }
-
-            // Actualizar el label con el nombre del archivo
-            var fileName = $(this).val().split('\\').pop();
-            $(this).next('.custom-file-label').html(fileName);
-
-            // Mostrar vista previa
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                $('#previewFoto').attr('src', e.target.result).show();
-            }
-            reader.readAsDataURL(file);
-        });
-
-        // Manejar el envío del formulario
-        $('#formCandidato').on('submit', function (e) {
-            e.preventDefault();
-
-            if (!$('#foto')[0].files[0]) {
-                toastr.error('Por favor, seleccione una foto');
-                return;
-            }
-
-            var formData = new FormData(this);
-
-            // Primera petición para verificar acceso
             $.ajax({
                 url: "{{ url_for('calendario.verificar_acceso') }}",
                 type: 'POST',
-                data: JSON.stringify({ ruta: 'candidato.registro_candidato' }),
+                data: JSON.stringify({ ruta: ruta }),
                 contentType: 'application/json',
                 success: function (response) {
-                    if (response.permitido) {
-                        // Segunda petición para enviar el formulario
-                        $.ajax({
-                            url: "{{ url_for('candidato.registro_candidato') }}",
-                            type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            success: function (response) {
-                                if (response.success) {
-                                    toastr.success(response.message);
-                                    setTimeout(function () {
-                                        window.location.reload();
-                                    }, 2000);
-                                } else {
-                                    toastr.error(response.message || 'Error al registrar candidato');
-                                }
-                            },
-                            error: function (xhr) {
-                                console.error('Error:', xhr);
-                                toastr.error('Error al registrar el candidato: ' +
-                                    (xhr.responseJSON?.message || 'Error desconocido'));
+                    Swal.close(); // Cerrar el indicador de carga
+
+                    if (!response.permitido) {
+                        $('input, button, select, textarea').prop('disabled', true);
+                        $('.btn').addClass('disabled')
+                            .attr('title', 'No disponible en este momento')
+                            .css('pointer-events', 'none')
+                            .css('opacity', '0.6');
+
+                        Swal.fire({
+                            title: 'Acceso no disponible',
+                            text: 'Esta sección no está disponible en este momento según el calendario electoral',
+                            icon: 'warning',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didClose: () => {
+                                window.location.href = "{{ url_for('index') }}";
                             }
                         });
                     } else {
-                        toastr.error('No tienes permiso para realizar esta acción');
+                        if (callback) callback(true);
                     }
                 },
                 error: function (xhr) {
-                    toastr.error('Error al verificar acceso');
+                    Swal.close(); // Cerrar el indicador de carga
+
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error al verificar acceso: ' + (xhr.responseJSON?.message || 'Error desconocido'),
+                        icon: 'error',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    if (callback) callback(false);
                 }
             });
-        });
+        }
 
-        // Función de búsqueda mejorada
-        $('#searchEstudiante').on('keyup', function () {
-            var value = $(this).val().toLowerCase().trim();
-
-            // Si el campo está vacío, ocultar solo la tabla de búsqueda
-            if (value === '') {
-                $("#estudiantesTable table").hide();
-                return;
-            }
-
-            // Si hay texto, mostrar la tabla y filtrar las filas
-            $("#estudiantesTable table").show();
-            $("#estudiantesTableBody tr").filter(function () {
-                var nombre = $(this).find('td:eq(0)').text().toLowerCase();
-                var documento = $(this).find('td:eq(1)').text().toLowerCase();
-                var gradoSeccion = $(this).find('td:eq(2)').text().toLowerCase();
-                var matchNombre = nombre.indexOf(value) > -1;
-                var matchDocumento = documento.indexOf(value) > -1;
-                var matchGradoSeccion = gradoSeccion.indexOf(value) > -1;
-                $(this).toggle(matchNombre || matchDocumento || matchGradoSeccion);
+        $(document).ready(function () {
+            // Verificar acceso al cargar la página
+            verificarAccesoRuta('candidato.registro_candidato', null, function (permitido) {
+                if (!permitido) {
+                    console.log('Acceso denegado al cargar la página');
+                }
             });
-        });
 
-        // Manejar la eliminación de candidatos
-        $('.btn-danger').on('click', function (e) {
-            e.preventDefault();
-            var form = $(this).closest('form');
+            // Prevenir comportamiento por defecto del radio button
+            $('.candidato-radio').on('change', function (e) {
+                // Solo prevenir el envío del formulario
+                e.preventDefault();
+            });
 
-            if (confirm('¿Está seguro de que desea eliminar este candidato?')) {
+            // Manejar la vista previa de la foto
+            $('#foto').on('change', function () {
+                var file = this.files[0];
+                if (!file) return;
+
+                var fileType = file.type;
+                var match = ["image/jpeg", "image/png", "image/jpg"];
+
+                if (!match.includes(fileType)) {
+                    mostrarMensaje('Por favor, seleccione un archivo de imagen válido (JPEG/JPG/PNG)', 'error');
+                    $(this).val('');
+                    return;
+                }
+
+                if (file.size > 5242880) { // 5MB
+                    mostrarMensaje('El archivo es demasiado grande. El tamaño máximo es 5MB', 'error');
+                    $(this).val('');
+                    return;
+                }
+
+                // Actualizar el label con el nombre del archivo
+                var fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').html(fileName);
+
+                // Mostrar vista previa
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#previewFoto').attr('src', e.target.result).show();
+                }
+                reader.readAsDataURL(file);
+            });
+
+            // Manejar el envío del formulario
+            $('#formCandidato').on('submit', function (e) {
+                e.preventDefault();
+
+                if (!$('#foto')[0].files[0]) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Por favor, seleccione una foto',
+                        icon: 'error',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+
+                var formData = new FormData(this);
+
+                // Primera petición para verificar acceso
                 $.ajax({
-                    url: form.attr('action'),
+                    url: "{{ url_for('calendario.verificar_acceso') }}",
                     type: 'POST',
-                    dataType: 'json',
+                    data: JSON.stringify({ ruta: 'candidato.registro_candidato' }),
+                    contentType: 'application/json',
                     success: function (response) {
-                        if (response.success) {
-                            toastr.success(response.message);
-                            setTimeout(function () {
-                                window.location.reload();
-                            }, 2000);
+                        if (response.permitido) {
+                            // Segunda petición para enviar el formulario
+                            $.ajax({
+                                url: "{{ url_for('candidato.registro_candidato') }}",
+                                type: 'POST',
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function (response) {
+                                    if (response.success) {
+                                        Swal.fire({
+                                            title: 'Éxito',
+                                            text: response.message,
+                                            icon: 'success',
+                                            toast: true,
+                                            position: 'top-end',
+                                            showConfirmButton: false,
+                                            timer: 3000,
+                                            timerProgressBar: true,
+                                            didClose: () => {
+                                                window.location.reload();
+                                            }
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: response.message || 'Error al registrar candidato',
+                                            icon: 'error',
+                                            toast: true,
+                                            position: 'top-end',
+                                            showConfirmButton: false,
+                                            timer: 3000,
+                                            timerProgressBar: true
+                                        });
+                                    }
+                                },
+                                error: function (xhr) {
+                                    console.error('Error:', xhr);
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: 'Error al registrar el candidato: ' +
+                                            (xhr.responseJSON?.message || 'Error desconocido'),
+                                        icon: 'error',
+                                        toast: true,
+                                        position: 'top-end',
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true
+                                    });
+                                }
+                            });
                         } else {
-                            toastr.error(response.message || 'Error al eliminar candidato');
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'No tienes permiso para realizar esta acción',
+                                icon: 'error',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true
+                            });
                         }
                     },
                     error: function (xhr) {
-                        console.error('Error:', xhr);
-                        toastr.error('Error al eliminar el candidato: ' +
-                            (xhr.responseJSON?.message || 'Error desconocido'));
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error al verificar acceso',
+                            icon: 'error',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
                     }
                 });
-            }
+            });
+
+            // Función de búsqueda mejorada
+            $('#searchEstudiante').on('keyup', function () {
+                var value = $(this).val().toLowerCase().trim();
+
+                // Si el campo está vacío, ocultar solo la tabla de búsqueda
+                if (value === '') {
+                    $("#estudiantesTable table").hide();
+                    return;
+                }
+
+                // Si hay texto, mostrar la tabla y filtrar las filas
+                $("#estudiantesTable table").show();
+                $("#estudiantesTableBody tr").filter(function () {
+                    var nombre = $(this).find('td:eq(0)').text().toLowerCase();
+                    var documento = $(this).find('td:eq(1)').text().toLowerCase();
+                    var gradoSeccion = $(this).find('td:eq(2)').text().toLowerCase();
+                    var matchNombre = nombre.indexOf(value) > -1;
+                    var matchDocumento = documento.indexOf(value) > -1;
+                    var matchGradoSeccion = gradoSeccion.indexOf(value) > -1;
+                    $(this).toggle(matchNombre || matchDocumento || matchGradoSeccion);
+                });
+            });
+
+            // Manejar la eliminación de candidatos
+            $('.btn-danger').on('click', function (e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+
+                if (confirm('¿Está seguro de que desea eliminar este candidato?')) {
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                mostrarMensaje(response.message, 'success');
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 2000);
+                            } else {
+                                mostrarMensaje(response.message || 'Error al eliminar candidato', 'error');
+                            }
+                        },
+                        error: function (xhr) {
+                            console.error('Error:', xhr);
+                            mostrarMensaje('Error al eliminar el candidato: ' +
+                                (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                        }
+                    });
+                }
+            });
         });
-    });
-</script>
+    </script>
 
-<style>
-    .candidate-photo {
-        width: 100px;
-        height: 133px;
-        object-fit: cover;
-        border-radius: 4px;
-        border: 2px solid var(--primary-color);
-    }
+    <style>
+        .candidate-photo {
+            width: 100px;
+            height: 133px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 2px solid var(--primary-color);
+        }
 
-    .custom-file-label::after {
-        background-color: var(--primary-color);
-        color: white;
-    }
+        .custom-file-label::after {
+            background-color: var(--primary-color);
+            color: white;
+        }
 
-    /* Estilo inicial para ocultar solo la tabla de búsqueda */
-    #estudiantesTable table {
-        display: none;
-    }
+        /* Estilo inicial para ocultar solo la tabla de búsqueda */
+        #estudiantesTable table {
+            display: none;
+        }
 
-    .table-responsive {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-</style>
+        .table-responsive {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</div>
 {% endblock %}

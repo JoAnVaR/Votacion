@@ -3,69 +3,74 @@
 {% block title %}Detalle Grado {{ grado }} - Sección {{ seccion }} - Sede {{ sede }}{% endblock %}
 
 {% block content %}
-<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
-    <h1>Grado {{ grado }} - {{ seccion }} - Sede {{ sede }}</h1>
-</header>
+<div class="container mt-4">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+        <h1>Grado {{ grado }} - {{ seccion }} - Sede {{ sede }}</h1>
+    </header>
 
-<input type="hidden" id="configuracionFinalizada" value="{{ config.configuracion_finalizada|string|lower }}">
+    <input type="hidden" id="configuracionFinalizada" value="{{ config.configuracion_finalizada|string|lower }}">
 
-<div class="mt-5">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Número de Documento</th>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Nombre</th>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for estudiante in estudiantes %}
-            <tr>
-                <td>
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+    <div class="mt-5">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Número de Documento
+                    </th>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Nombre</th>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estudiante in estudiantes %}
+                <tr>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                            </div>
+                            <input type="text" name="numero_documento" value="{{ estudiante.numero_documento }}"
+                                class="form-control" required form="form-{{ estudiante.id }}">
                         </div>
-                        <input type="text" name="numero_documento" value="{{ estudiante.numero_documento }}"
-                            class="form-control" required form="form-{{ estudiante.id }}">
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    </td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            </div>
+                            <input type="text" name="nombre" value="{{ estudiante.nombre }}" class="form-control"
+                                required form="form-{{ estudiante.id }}">
                         </div>
-                        <input type="text" name="nombre" value="{{ estudiante.nombre }}" class="form-control" required
-                            form="form-{{ estudiante.id }}">
-                    </div>
-                </td>
-                <td>
-                    <form id="form-{{ estudiante.id }}" class="form-modificar d-inline">
-                        <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
-                        <button type="submit" class="btn btn-sm">
-                            <i class="fas fa-save"></i> Modificar
-                        </button>
-                    </form>
-                    <form class="form-eliminar d-inline">
-                        <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
-                        <button type="submit" class="btn btn-sm btn-danger">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </td>
+                    <td>
+                        <form id="form-{{ estudiante.id }}" class="form-modificar d-inline">
+                            <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
+                            <button type="submit" class="btn btn-sm">
+                                <i class="fas fa-save"></i> Modificar
+                            </button>
+                        </form>
+                        <form class="form-eliminar d-inline">
+                            <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    <a href="{{ url_for('estudiante.registro_estudiante') }}" class="btn mt-3"
-        style="background-color: var(--dark-blue); color: var(--white-color);">
-        Volver al registro
-    </a>
+        <a href="{{ url_for('estudiante.registro_estudiante') }}" class="btn mt-3"
+            style="background-color: var(--dark-blue); color: var(--white-color);">
+            Volver al registro
+        </a>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
 <script>
 
     function deshabilitarFormularios(deshabilitar) {
@@ -83,7 +88,7 @@
 
         if (configuracionFinalizada) {
             deshabilitarFormularios(true);
-            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
+            mostrarMensaje('El sistema está bloqueado. No se pueden realizar modificaciones.', 'warning');
         } else {
             verificarAccesoRuta('estudiante.registro_estudiante', '.form-modificar', function (permitido) {
                 deshabilitarFormularios(!permitido);
@@ -168,7 +173,7 @@
                     if (callback) callback(false);
 
                     // Luego mostramos el mensaje y redirigimos
-                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
+                    mostrarMensaje('Esta sección no está disponible en este momento según el calendario electoral', 'warning');
                     setTimeout(function () {
                         window.location.href = "{{ url_for('index') }}";
                     }, 2000);
@@ -181,9 +186,22 @@
                 }
             },
             error: function () {
-                toastr.error('Error al verificar acceso');
+                mostrarMensaje('Error al verificar acceso', 'error');
                 if (callback) callback(false);
             }
+        });
+    }
+
+    function mostrarMensaje(mensaje, tipo) {
+        Swal.fire({
+            title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+            text: mensaje,
+            icon: tipo,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
         });
     }
 

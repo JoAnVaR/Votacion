@@ -1,133 +1,518 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Reemplazo de Jurados</title>
-    <!-- Incluir Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Incluir CSS personalizado -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        .search-box {
-            margin-bottom: 20px;
-        }
+{% block title %}Reemplazo de Jurados{% endblock %}
 
-        .search-results {
-            display: none;
-        }
-    </style>
-    <script>
-        function searchJurados() {
-            let input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("searchJuradoInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("juradosTable");
-            tr = table.getElementsByTagName("tr");
-            let hasResults = false;
-            if (filter === "") {
-                document.getElementById("searchJuradoResults").style.display = "none";
-                return;
-            }
-            for (i = 1; i < tr.length; i++) {
-                tr[i].style.display = "none";
-                td = tr[i].getElementsByTagName("td")[2];  // Columna del número de documento
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                        hasResults = true;
-                    }
-                }
-            }
-            document.getElementById("searchJuradoResults").style.display = hasResults ? "block" : "none";
-        }
-    </script>
-</head>
+{% block extra_css %}
+<style>
+    .form-check-input[type="radio"] {
+        position: relative !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
 
-<body>
-    <div class="container mt-5">
-        <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
-            <h1>Reemplazo de Jurados</h1>
-        </header>
+    td.text-center {
+        vertical-align: middle;
+    }
 
-        <div class="mt-5">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <ul class="flashes mt-4">
-                {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            {% endwith %}
+    input[type="radio"] {
+        position: relative !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        z-index: 100;
+    }
 
-            <form method="post" action="{{ url_for('reemplazo_jurados') }}" class="mb-4">
-                <div class="search-box">
-                    <label for="searchJuradoInput">Buscar Jurado a Reemplazar:</label>
-                    <input type="text" id="searchJuradoInput" class="form-control" onkeyup="searchJurados()"
-                        placeholder="Buscar por número de documento...">
+    /* Estilo personalizado para radio buttons */
+    .custom-radio {
+        display: block;
+        position: relative;
+        padding-left: 25px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .custom-radio input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #eee;
+        border-radius: 50%;
+    }
+
+    .custom-radio:hover input~.checkmark {
+        background-color: #ccc;
+    }
+
+    .custom-radio input:checked~.checkmark {
+        background-color: #2196F3;
+    }
+
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    .custom-radio input:checked~.checkmark:after {
+        display: block;
+    }
+
+    .custom-radio .checkmark:after {
+        top: 6px;
+        left: 6px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: white;
+    }
+
+    .mesa-radio {
+        position: relative;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--primary-color);
+        border-radius: 50%;
+        outline: none;
+        margin: 0 auto;
+        display: block;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .mesa-radio:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Agregar SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Reemplazo de Jurados</h2>
+
+    <!-- Información de remanentes -->
+    <div class="alert alert-info">
+        <strong>Remanentes disponibles:</strong> {{ remanentes_disponibles }} de {{ total_remanentes }}
+    </div>
+
+    <!-- Buscador -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" id="searchJuradoInput" class="form-control"
+                    placeholder="Buscar por nombre o documento..." onkeyup="searchJurados()">
+                <div class="input-group-append">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
                 </div>
-                <div id="searchJuradoResults" class="search-results">
-                    <table id="juradosTable" class="table table-striped">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Número de Documento</th>
-                                <th>Tipo Persona</th>
-                                <th>Mesa</th>
-                                <th>Seleccionar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for jurado in jurados %}
-                            <tr>
-                                <td>{{ jurado.id }}</td>
-                                <td>{{ jurado.nombre }}</td>
-                                <td>{{ jurado.numero_documento }}</td>
-                                <td>{{ jurado.tipo_persona }}</td>
-                                <td>{{ jurado.id_mesa }}</td>
-                                <td><input type="radio" name="jurado_id" value="{{ jurado.id }}" required></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table><br>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de reemplazo -->
+    <form id="reemplazoForm" method="POST">
+        <!-- Tabla de resultados de búsqueda -->
+        <div id="searchJuradoResults" style="display: none;">
+            <div class="table-responsive">
+                <table class="table table-striped" id="juradosTable">
+                    <thead>
+                        <tr>
+                            <th>Seleccionar</th>
+                            <th>Nombre</th>
+                            <th>Documento</th>
+                            <th>Mesa</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for jurado in jurados %}
+                        <tr>
+                            <td class="text-center">
+                                <p>
+                                    <label>
+                                        <input type="radio" name="jurado_id" value="{{ jurado.id }}" class="with-gap"
+                                            onchange="habilitarBotonReemplazo()">
+                                        <span></span>
+                                    </label>
+                                </p>
+                            </td>
+                            <td>{{ jurado.nombre }}</td>
+                            <td>{{ jurado.numero_documento }}</td>
+                            <td>{{ jurado.mesa_id }}</td>
+                            <td>{{ jurado.tipo }}</td>
+                            <td>{{ jurado.descripcion }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Campo de razón -->
+            <div class="form-group mt-3">
+                <label for="razon">Razón del reemplazo:</label>
+                <textarea class="form-control" id="razon" name="razon" required></textarea>
+            </div>
+
+            <!-- Reemplazar el select por un campo de búsqueda con datalist -->
+            <div id="profesorReemplazoContainer" style="display: none;" class="form-group mt-3">
+                <label for="searchProfesor">Buscar Profesor de Reemplazo:</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchProfesor"
+                        placeholder="Buscar por nombre o documento..." onkeyup="searchProfesores()">
+                    <div class="input-group-append">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
                 </div>
+                <input type="hidden" id="profesor_reemplazo_id" name="profesor_reemplazo_id">
 
-                <div class="form-group">
-                    <label for="razon">Razón del Reemplazo:</label>
-                    <input type="text" id="razon" name="razon" class="form-control mb-2" required>
+                <!-- Tabla de resultados de búsqueda de profesores -->
+                <div id="profesoresResults" style="display: none;" class="mt-3">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="profesoresTable">
+                            <thead>
+                                <tr>
+                                    <th>Seleccionar</th>
+                                    <th>Nombre</th>
+                                    <th>Documento</th>
+                                    <th>Departamento</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profesor in profesores_disponibles %}
+                                {% set es_jurado = profesor.numero_documento in jurados_actuales %}
+                                <tr {% if es_jurado %}class="table-warning" {% endif %}>
+                                    <td class="text-center">
+                                        <input type="radio" name="profesor_select" value="{{ profesor.id }}"
+                                            onchange="seleccionarProfesor(this, '{{ profesor.nombre }}')" {% if
+                                            es_jurado %}disabled{% endif %}>
+                                    </td>
+                                    <td>{{ profesor.nombre }}</td>
+                                    <td>{{ profesor.numero_documento }}</td>
+                                    <td>{{ profesor.departamento }}</td>
+                                    <td>
+                                        {% if es_jurado %}
+                                        <span class="badge badge-warning">Ya es jurado</span>
+                                        {% else %}
+                                        <span class="badge badge-success">Disponible</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
 
-                <button type="submit" class="btn btn-primary">Reemplazar</button>
-            </form>
+            <!-- Selector de tipo de acción -->
+            <div class="form-group">
+                <label>Tipo de Acción:</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="tipo_accion" id="reemplazo" value="reemplazo"
+                        checked>
+                    <label class="form-check-label" for="reemplazo">
+                        Reemplazar con Remanente
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="tipo_accion" id="exoneracion"
+                        value="exoneracion">
+                    <label class="form-check-label" for="exoneracion">
+                        Exonerar sin Reemplazo
+                    </label>
+                </div>
+            </div>
 
-            <h2 class="text-primary mt-5">Reemplazos Realizados</h2>
+            <div class="text-center mt-3">
+                <button type="button" id="btnReemplazo" class="btn btn-warning" onclick="confirmarReemplazo()" disabled>
+                    <i class="fas fa-exchange-alt"></i> Reemplazar Jurado
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Historial de Reemplazos -->
+    <div class="mt-5">
+        <h3>Historial de Reemplazos</h3>
+        <div class="table-responsive">
             <table class="table table-striped">
-                <thead class="thead-dark">
+                <thead>
                     <tr>
-                        <th>Jurado Original</th>
-                        <th>Jurado Reemplazo</th>
-                        <th>Razón</th>
                         <th>Fecha</th>
+                        <th>Jurado Original</th>
+                        <th>Documento</th>
+                        <th>Descripción</th>
+                        <th>Jurado Reemplazo</th>
+                        <th>Documento</th>
+                        <th>Descripción</th>
+                        <th>Mesa</th>
+                        <th>Razón</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for reemplazo in reemplazos %}
+                    {% for reemplazo in reemplazos_info %}
                     <tr>
-                        <td>{{ reemplazo.jurado_original.nombre }} ({{ reemplazo.jurado_original.numero_documento }})
+                        <td>{{ reemplazo.fecha.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ reemplazo.original.nombre }}</td>
+                        <td>{{ reemplazo.original.documento }}</td>
+                        <td>{{ reemplazo.original.descripcion }}</td>
+                        <td>
+                            {% if reemplazo.reemplazo %}
+                            {{ reemplazo.reemplazo.nombre }}
+                            {% else %}
+                            <span class="text-warning">Exonerado</span>
+                            {% endif %}
                         </td>
-                        <td>{{ reemplazo.jurado_reemplazo.nombre }} ({{ reemplazo.jurado_reemplazo.numero_documento }})
+                        <td>
+                            {% if reemplazo.reemplazo %}
+                            {{ reemplazo.reemplazo.documento }}
+                            {% else %}
+                            -
+                            {% endif %}
                         </td>
+                        <td>
+                            {% if reemplazo.reemplazo %}
+                            {{ reemplazo.reemplazo.descripcion }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ reemplazo.mesa_id }}</td>
                         <td>{{ reemplazo.razon }}</td>
-                        <td>{{ reemplazo.fecha }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-</body>
+</div>
 
-</html>
+<script>
+    function searchJurados() {
+        let input = document.getElementById("searchJuradoInput");
+        let filter = input.value.toUpperCase();
+        let table = document.getElementById("juradosTable");
+        let tr = table.getElementsByTagName("tr");
+        let hasResults = false;
+        let resultsDiv = document.getElementById("searchJuradoResults");
+
+        if (filter === "") {
+            resultsDiv.style.display = "none";
+            return;
+        }
+
+        // Mostrar la tabla y resultados
+        resultsDiv.style.display = "block";
+        table.style.display = "";
+
+        for (let i = 1; i < tr.length; i++) {
+            let tdNombre = tr[i].getElementsByTagName("td")[1];
+            let tdDocumento = tr[i].getElementsByTagName("td")[2];
+            if (tdNombre || tdDocumento) {
+                let txtNombre = tdNombre.textContent || tdNombre.innerText;
+                let txtDocumento = tdDocumento.textContent || tdDocumento.innerText;
+                if (txtNombre.toUpperCase().indexOf(filter) > -1 ||
+                    txtDocumento.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    hasResults = true;
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        if (!hasResults) {
+            resultsDiv.style.display = "none";
+        }
+    }
+
+    let profesoresDisponibles = [];
+
+    function mostrarBusquedaProfesor(mostrar) {
+        document.getElementById('profesorReemplazoContainer').style.display = mostrar ? 'block' : 'none';
+    }
+
+    function habilitarBotonReemplazo() {
+        const radioSeleccionado = document.querySelector('input[name="jurado_id"]:checked');
+        const btnReemplazo = document.getElementById('btnReemplazo');
+        const tipoAccion = document.querySelector('input[name="tipo_accion"]:checked').value;
+
+        if (radioSeleccionado) {
+            btnReemplazo.disabled = false;
+
+            // Obtener el tipo de jurado seleccionado
+            const fila = radioSeleccionado.closest('tr');
+            const tipoJurado = fila.querySelector('td:nth-child(5)').textContent;
+
+            // Mostrar/ocultar búsqueda de profesor según corresponda
+            mostrarBusquedaProfesor(tipoJurado === 'Profesor' && tipoAccion === 'reemplazo');
+        } else {
+            btnReemplazo.disabled = true;
+            mostrarBusquedaProfesor(false);
+        }
+    }
+
+    document.querySelectorAll('input[name="tipo_accion"]').forEach(radio => {
+        radio.addEventListener('change', habilitarBotonReemplazo);
+    });
+
+    function confirmarReemplazo() {
+        const juradoSeleccionado = document.querySelector('input[name="jurado_id"]:checked');
+        const razon = document.getElementById('razon').value.trim();
+        const tipoAccion = document.querySelector('input[name="tipo_accion"]:checked').value;
+        const profesorReemplazoId = document.getElementById('profesor_reemplazo_id').value;
+
+        // Obtener el tipo de jurado seleccionado
+        const fila = juradoSeleccionado.closest('tr');
+        const tipoJurado = fila.querySelector('td:nth-child(5)').textContent;
+
+        if (!juradoSeleccionado) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Por favor seleccione un jurado para reemplazar',
+                icon: 'warning'
+            });
+            return;
+        }
+
+        if (!razon) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Por favor ingrese la razón del reemplazo',
+                icon: 'warning'
+            });
+            return;
+        }
+
+        // Solo validar profesor de reemplazo si es un profesor y es reemplazo
+        if (tipoAccion === 'reemplazo' && tipoJurado === 'Profesor' && !profesorReemplazoId) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Por favor seleccione un profesor de reemplazo',
+                icon: 'warning'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: 'Esta acción reemplazará al jurado seleccionado',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, reemplazar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                realizarReemplazo(juradoSeleccionado.value, razon, tipoAccion, profesorReemplazoId);
+            }
+        });
+    }
+
+    function realizarReemplazo(juradoId, razon, tipoAccion, profesorReemplazoId) {
+        const data = {
+            jurado_id: juradoId,
+            razon: razon,
+            tipo_accion: tipoAccion,
+            profesor_reemplazo_id: profesorReemplazoId  // Incluir solo si existe
+        };
+
+        fetch('/reemplazo_jurados', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Éxito',
+                        text: data.message,
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error al procesar la solicitud',
+                    icon: 'error'
+                });
+            });
+    }
+
+    function searchProfesores() {
+        let input = document.getElementById("searchProfesor");
+        let filter = input.value.toUpperCase();
+        let table = document.getElementById("profesoresTable");
+        let tr = table.getElementsByTagName("tr");
+        let resultsDiv = document.getElementById("profesoresResults");
+        let hasResults = false;
+
+        if (filter === "") {
+            resultsDiv.style.display = "none";
+            return;
+        }
+
+        // Mostrar la tabla y resultados
+        resultsDiv.style.display = "block";
+
+        for (let i = 1; i < tr.length; i++) {
+            let tdNombre = tr[i].getElementsByTagName("td")[1];
+            let tdDocumento = tr[i].getElementsByTagName("td")[2];
+            if (tdNombre || tdDocumento) {
+                let txtNombre = tdNombre.textContent || tdNombre.innerText;
+                let txtDocumento = tdDocumento.textContent || tdDocumento.innerText;
+                if (txtNombre.toUpperCase().indexOf(filter) > -1 ||
+                    txtDocumento.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    hasResults = true;
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        if (!hasResults) {
+            resultsDiv.style.display = "none";
+        }
+    }
+
+    function seleccionarProfesor(radio, nombre) {
+        document.getElementById('profesor_reemplazo_id').value = radio.value;
+        document.getElementById('searchProfesor').value = nombre;
+        document.getElementById('profesoresResults').style.display = "none";
+    }
+</script>
+{% endblock %}

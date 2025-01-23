@@ -17,6 +17,7 @@
             display: none;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <script>
         function searchTestigos() {
             let input, filter, table, tr, td, i, txtValue;
@@ -83,6 +84,19 @@
                     });
                 })
                 .catch(error => console.error('Error cargando mesas:', error));
+        }
+
+        function mostrarMensaje(mensaje, tipo) {
+            Swal.fire({
+                title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+                text: mensaje,
+                icon: tipo,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
         }
     </script>
 </head>

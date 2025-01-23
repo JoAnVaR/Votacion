@@ -196,7 +196,7 @@ def obtener_mesa_id():
         }), 500
 
 @sede_bp.route('/borrar_sede/<int:sede_id>', methods=['POST', 'DELETE'])
-@verificar_acceso_ruta()
+@verificar_acceso_ruta('sede.agregar_sede')
 def borrar_sede(sede_id):
     try:
         print(f"Intentando borrar sede {sede_id}")
@@ -233,7 +233,41 @@ def borrar_sede(sede_id):
 
 @sede_bp.route('/<int:sede_id>/mesas')
 def obtener_mesas_sede(sede_id):
-    sede = Sede.query.get_or_404(sede_id)
-    mesas = Mesa.query.filter_by(sede_id=sede_id).all()
-    html = render_template('_mesas_partial.html', mesas=mesas, sede=sede)
-    return jsonify({'html': html})
+    try:
+        mesas = Mesa.query.filter_by(sede_id=sede_id).order_by(Mesa.mesa_numero).all()
+        
+        # Preparar los datos de las mesas
+        mesas_data = []
+        for i, mesa in enumerate(mesas):
+            mesas_data.append({
+                'id': mesa.id,
+                'mesa_numero': mesa.mesa_numero,
+                'es_ultima': (i == len(mesas) - 1)  # Solo la última mesa tendrá el botón de borrar
+            })
+            
+        return jsonify({
+            'success': True,
+            'mesas': mesas_data
+        })
+    except Exception as e:
+        print(f"Error al obtener mesas: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Error al obtener las mesas'
+        }), 500
+
+# Agregar esta nueva ruta
+@sede_bp.route('/obtener_sedes', methods=['GET'])
+def obtener_sedes():
+    try:
+        sedes = Sede.query.all()
+        return jsonify({
+            'success': True,
+            'sedes': [{'id': sede.id, 'nombre': sede.nombre} for sede in sedes]
+        })
+    except Exception as e:
+        print(f"Error al obtener sedes: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Error al obtener las sedes'
+        }), 500

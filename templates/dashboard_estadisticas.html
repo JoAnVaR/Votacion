@@ -3,500 +3,350 @@
 {% block title %}Dashboard de Estadísticas{% endblock %}
 
 {% block content %}
-<header class="text-center py-4"
-    style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color); border-radius: 6px 6px 0 0;">
-    <h1>Dashboard de Estadísticas</h1>
-</header>
-
 <div class="container mt-5">
-    <!-- Resumen General -->
-    <div class="card mb-4">
-        <div class="card-header"
-            style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
-            <h2 class="mb-0">Resumen General</h2>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card stats-card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-building fa-2x mb-2"></i>
-                            <h5>Total Sedes</h5>
-                            <h3>{{ total_sedes }}</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stats-card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-user-graduate fa-2x mb-2"></i>
-                            <h5>Total Estudiantes</h5>
-                            <h3>{{ total_estudiantes }}</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stats-card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-chalkboard-teacher fa-2x mb-2"></i>
-                            <h5>Total Profesores</h5>
-                            <h3>{{ total_profesores }}</h3>
-                            {% if profesores_sin_sede > 0 %}
-                            <small>({{ profesores_sin_sede }} sin sede asignada)</small>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stats-card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-chair fa-2x mb-2"></i>
-                            <h5>Total Mesas</h5>
-                            <h3>{{ total_mesas }}</h3>
-                            {% if mesas_sin_asignaciones > 0 %}
-                            <small>({{ mesas_sin_asignaciones }} sin asignaciones)</small>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <header class="text-center py-4"
+        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color); border-radius: 6px 6px 0 0;">
+        <h1>Dashboard de Estadísticas</h1>
+    </header>
 
-    <!-- Agregar después del Resumen General y antes de Estadísticas por Sede -->
-    <div class="row mb-4">
-        <!-- Gráfico de Distribución de Estudiantes por Sede -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header"
-                    style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
-                    <h3 class="mb-0">Estudiantes por Sede</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="estudiantesPorSedeChart"></canvas>
-                </div>
+    <div class="container mt-5">
+        <!-- Resumen General -->
+        <div class="card mb-4">
+            <div class="card-header"
+                style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
+                <h2 class="mb-0">Resumen General</h2>
             </div>
-        </div>
-
-        <!-- Gráfico de Ocupación de Mesas -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Ocupación de Mesas</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="ocupacionMesasChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Después de los gráficos existentes, agregar una nueva fila -->
-    <div class="row mb-4">
-        <!-- Distribución de estudiantes por grado -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Estudiantes por Grado</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="estudiantesPorGradoChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Comparación de mesas por sede -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Mesas por Sede</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="mesasPorSedeChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-4">
-        <!-- Línea temporal de asignaciones -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Progreso de Asignaciones</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="progresoAsignacionesChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Distribución de profesores por sede -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Profesores por Sede</h3>
-                </div>
-                <div class="card-body">
-                    <canvas id="profesoresPorSedeChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Estadísticas por Sede -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">Estadísticas por Sede</h2>
-            <button class="btn btn-light btn-sm" type="button" data-toggle="collapse" data-target="#sedesCollapse">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-        </div>
-        <div class="collapse show" id="sedesCollapse">
             <div class="card-body">
-                {% for sede in sedes %}
-                <div class="card mb-3">
-                    <div class="card-header bg-secondary text-white sede-header" style="cursor: pointer;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">{{ sede.nombre }}</h5>
-                            <i class="fas fa-chevron-down"></i>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-building fa-2x mb-2"></i>
+                                <h5>Total Sedes</h5>
+                                <h3>{{ total_sedes }}</h3>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body sede-content" style="display: none;">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5>Mesas</h5>
-                                <ul class="list-group">
-                                    {% for mesa in sede.mesas %}
-                                    {% set total = estudiantes_por_mesa.get(mesa.id, 0) %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Mesa {{ mesa.mesa_numero }}
-                                        <span class="badge badge-primary badge-pill">
-                                            {{ total }} estudiantes
-                                        </span>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-graduate fa-2x mb-2"></i>
+                                <h5>Total Estudiantes</h5>
+                                <h3>{{ total_estudiantes }}</h3>
                             </div>
-                            <div class="col-md-6">
-                                <h5>Grados</h5>
-                                <ul class="list-group">
-                                    {% for grado_seccion, total in sede.grados.items() %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ grado_seccion }}
-                                        <span class="badge badge-info badge-pill">{{ total }} estudiantes</span>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chalkboard-teacher fa-2x mb-2"></i>
+                                <h5>Total Profesores</h5>
+                                <h3>{{ total_profesores }}</h3>
+                                {% if profesores_sin_sede > 0 %}
+                                <small>({{ profesores_sin_sede }} sin sede asignada)</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chair fa-2x mb-2"></i>
+                                <h5>Total Mesas</h5>
+                                <h3>{{ total_mesas }}</h3>
+                                {% if mesas_sin_asignaciones > 0 %}
+                                <small>({{ mesas_sin_asignaciones }} sin asignaciones)</small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
+
+        <!-- Agregar después del Resumen General y antes de Estadísticas por Sede -->
+        <div class="row mb-4">
+            <!-- Gráfico de Distribución de Estudiantes por Sede -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header"
+                        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
+                        <h3 class="mb-0">Estudiantes por Sede</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="estudiantesPorSedeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico de Ocupación de Mesas -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Ocupación de Mesas</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="ocupacionMesasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Después de los gráficos existentes, agregar una nueva fila -->
+        <div class="row mb-4">
+            <!-- Distribución de estudiantes por grado -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Estudiantes por Grado</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="estudiantesPorGradoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparación de mesas por sede -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Mesas por Sede</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="mesasPorSedeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <!-- Línea temporal de asignaciones -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Progreso de Asignaciones</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="progresoAsignacionesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribución de profesores por sede -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Profesores por Sede</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="profesoresPorSedeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas por Sede -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Estadísticas por Sede</h2>
+                <button class="btn btn-light btn-sm" type="button" data-toggle="collapse" data-target="#sedesCollapse">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="collapse show" id="sedesCollapse">
+                <div class="card-body">
+                    {% for sede in sedes %}
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white sede-header" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">{{ sede.nombre }}</h5>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="card-body sede-content" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Mesas</h5>
+                                    <ul class="list-group">
+                                        {% for mesa in sede.mesas %}
+                                        {% set total = estudiantes_por_mesa.get(mesa.id, 0) %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Mesa {{ mesa.mesa_numero }}
+                                            <span class="badge badge-primary badge-pill">
+                                                {{ total }} estudiantes
+                                            </span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Grados</h5>
+                                    <ul class="list-group">
+                                        {% for grado_seccion, total in sede.grados.items() %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ grado_seccion }}
+                                            <span class="badge badge-info badge-pill">{{ total }} estudiantes</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas y Validaciones -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning">
+                <h2 class="mb-0">Alertas y Validaciones</h2>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% if estudiantes_sin_mesa > 0 %}
+                    <li class="list-group-item list-group-item-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Hay {{ estudiantes_sin_mesa }} estudiantes sin mesa asignada
+                    </li>
+                    {% endif %}
+
+                    {% if profesores_sin_sede > 0 %}
+                    <li class="list-group-item list-group-item-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Hay {{ profesores_sin_sede }} profesores sin sede asignada
+                    </li>
+                    {% endif %}
+
+                    {% if mesas_vacias > 0 %}
+                    <li class="list-group-item list-group-item-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Hay {{ mesas_vacias }} mesas sin estudiantes asignados
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Alertas y Validaciones -->
-    <div class="card mb-4">
-        <div class="card-header bg-warning">
-            <h2 class="mb-0">Alertas y Validaciones</h2>
-        </div>
-        <div class="card-body">
-            <ul class="list-group">
-                {% if estudiantes_sin_mesa > 0 %}
-                <li class="list-group-item list-group-item-danger">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Hay {{ estudiantes_sin_mesa }} estudiantes sin mesa asignada
-                </li>
-                {% endif %}
+    {% endblock %}
 
-                {% if profesores_sin_sede > 0 %}
-                <li class="list-group-item list-group-item-danger">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Hay {{ profesores_sin_sede }} profesores sin sede asignada
-                </li>
-                {% endif %}
+    {% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Definir las variables con los datos de Jinja2 de forma correcta
+            const sedesData = JSON.parse('{{ sedes_nombres | tojson | safe }}');
+            const estudiantesData = JSON.parse('{{ estudiantes_por_sede | tojson | safe }}');
+            const gradosData = JSON.parse('{{ grados | tojson | safe }}');
+            const estudiantesPorGradoData = JSON.parse('{{ estudiantes_por_grado | tojson | safe }}');
+            const mesasPorSedeData = JSON.parse('{{ mesas_por_sede | tojson | safe }}');
+            const profesoresPorSedeData = JSON.parse('{{ profesores_por_sede | tojson | safe }}');
+            const totalEstudiantes = parseInt('{{ total_estudiantes }}');
+            const estudiantesSinMesa = parseInt('{{ estudiantes_sin_mesa }}');
 
-                {% if mesas_vacias > 0 %}
-                <li class="list-group-item list-group-item-warning">
-                    <i class="fas fa-exclamation-circle"></i>
-                    Hay {{ mesas_vacias }} mesas sin estudiantes asignados
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-
-</div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Definir las variables con los datos de Jinja2 de forma correcta
-        const sedesData = JSON.parse('{{ sedes_nombres | tojson | safe }}');
-        const estudiantesData = JSON.parse('{{ estudiantes_por_sede | tojson | safe }}');
-        const gradosData = JSON.parse('{{ grados | tojson | safe }}');
-        const estudiantesPorGradoData = JSON.parse('{{ estudiantes_por_grado | tojson | safe }}');
-        const mesasPorSedeData = JSON.parse('{{ mesas_por_sede | tojson | safe }}');
-        const profesoresPorSedeData = JSON.parse('{{ profesores_por_sede | tojson | safe }}');
-        const totalEstudiantes = parseInt('{{ total_estudiantes }}');
-        const estudiantesSinMesa = parseInt('{{ estudiantes_sin_mesa }}');
-
-        // Obtener los colores de las variables CSS
-        const getChartColors = () => ({
-            primary: getComputedStyle(document.documentElement).getPropertyValue('--chart-primary').trim(),
-            secondary: getComputedStyle(document.documentElement).getPropertyValue('--chart-secondary').trim(),
-            highlight: getComputedStyle(document.documentElement).getPropertyValue('--chart-highlight').trim(),
-            dark: getComputedStyle(document.documentElement).getPropertyValue('--chart-dark').trim(),
-            light: getComputedStyle(document.documentElement).getPropertyValue('--chart-light').trim(),
-            borderPrimary: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-primary').trim(),
-            borderSecondary: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-secondary').trim(),
-            borderHighlight: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-highlight').trim(),
-            borderDark: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-dark').trim(),
-            borderLight: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-light').trim()
-        });
-
-        // Usar los colores en los gráficos
-        const colors = getChartColors();
-
-        // Gráfico de estudiantes por sede
-        if (sedesData.length > 0) {
-            new Chart(
-                document.getElementById('estudiantesPorSedeChart').getContext('2d'),
-                {
-                    type: 'bar',
-                    data: {
-                        labels: sedesData,
-                        datasets: [{
-                            label: 'Estudiantes',
-                            data: estudiantesData,
-                            backgroundColor: [
-                                colors.primary,
-                                colors.secondary,
-                                colors.highlight,
-                                colors.dark,
-                                colors.light
-                            ],
-                            borderColor: [
-                                colors.borderPrimary,
-                                colors.borderSecondary,
-                                colors.borderHighlight,
-                                colors.borderDark,
-                                colors.borderLight
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Distribución de Estudiantes por Sede'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            },
-                            x: {
-                                ticks: {
-                                    maxRotation: 45,
-                                    minRotation: 45,
-                                    padding: 10,
-                                    autoSkip: false
-                                }
-                            }
-                        },
-                        layout: {
-                            padding: {
-                                bottom: 40
-                            }
-                        }
-                    }
-                }
-            );
-        }
-
-        // Gráfico de ocupación de mesas
-        new Chart(
-            document.getElementById('ocupacionMesasChart').getContext('2d'),
-            {
-                type: 'doughnut',
-                data: {
-                    labels: ['Ocupadas', 'Vacías'],
-                    datasets: [{
-                        data: [
-                            parseInt('{{ total_mesas - mesas_vacias }}'),
-                            parseInt('{{ mesas_vacias }}')
-                        ],
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.5)',
-                            'rgba(255, 99, 132, 0.5)'
-                        ],
-                        borderColor: [
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(255, 99, 132, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Estado de Ocupación de Mesas'
-                        }
-                    }
-                }
-            }
-        );
-
-        // Toggle para las sedes
-        document.querySelectorAll('.sede-header').forEach(function (header) {
-            header.addEventListener('click', function () {
-                const content = this.nextElementSibling;
-                const icon = this.querySelector('i');
-
-                // Toggle del contenido
-                $(content).slideToggle({
-                    duration: 300,
-                    complete: function () {
-                        icon.classList.toggle('fa-chevron-down');
-                        icon.classList.toggle('fa-chevron-up');
-                    }
-                });
+            // Obtener los colores de las variables CSS
+            const getChartColors = () => ({
+                primary: getComputedStyle(document.documentElement).getPropertyValue('--chart-primary').trim(),
+                secondary: getComputedStyle(document.documentElement).getPropertyValue('--chart-secondary').trim(),
+                highlight: getComputedStyle(document.documentElement).getPropertyValue('--chart-highlight').trim(),
+                dark: getComputedStyle(document.documentElement).getPropertyValue('--chart-dark').trim(),
+                light: getComputedStyle(document.documentElement).getPropertyValue('--chart-light').trim(),
+                borderPrimary: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-primary').trim(),
+                borderSecondary: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-secondary').trim(),
+                borderHighlight: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-highlight').trim(),
+                borderDark: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-dark').trim(),
+                borderLight: getComputedStyle(document.documentElement).getPropertyValue('--chart-border-light').trim()
             });
-        });
 
-        // Toggle para el colapso general de sedes
-        document.querySelector('[data-toggle="collapse"]').addEventListener('click', function () {
-            const icon = this.querySelector('i');
-            icon.classList.toggle('fa-chevron-down');
-            icon.classList.toggle('fa-chevron-up');
-        });
+            // Usar los colores en los gráficos
+            const colors = getChartColors();
 
-        // Gráfico de estudiantes por grado
-        if (gradosData.length > 0) {
-            new Chart(
-                document.getElementById('estudiantesPorGradoChart').getContext('2d'),
-                {
-                    type: 'pie',
-                    data: {
-                        labels: gradosData,
-                        datasets: [{
-                            data: estudiantesPorGradoData,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(153, 102, 255, 0.8)',
-                                'rgba(255, 159, 64, 0.8)'
-                            ],
-                            borderColor: 'white',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'right'
-                            }
-                        }
-                    }
-                }
-            );
-        }
-
-        // Gráfico de mesas por sede
-        if (mesasPorSedeData.length > 0) {
-            new Chart(
-                document.getElementById('mesasPorSedeChart').getContext('2d'),
-                {
-                    type: 'bar',
-                    data: {
-                        labels: sedesData,
-                        datasets: [{
-                            label: 'Mesas',
-                            data: mesasPorSedeData,
-                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Distribución de Mesas por Sede'
-                            }
+            // Gráfico de estudiantes por sede
+            if (sedesData.length > 0) {
+                new Chart(
+                    document.getElementById('estudiantesPorSedeChart').getContext('2d'),
+                    {
+                        type: 'bar',
+                        data: {
+                            labels: sedesData,
+                            datasets: [{
+                                label: 'Estudiantes',
+                                data: estudiantesData,
+                                backgroundColor: [
+                                    colors.primary,
+                                    colors.secondary,
+                                    colors.highlight,
+                                    colors.dark,
+                                    colors.light
+                                ],
+                                borderColor: [
+                                    colors.borderPrimary,
+                                    colors.borderSecondary,
+                                    colors.borderHighlight,
+                                    colors.borderDark,
+                                    colors.borderLight
+                                ],
+                                borderWidth: 1
+                            }]
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Distribución de Estudiantes por Sede'
+                                }
                             },
-                            x: {
-                                ticks: {
-                                    maxRotation: 45,
-                                    minRotation: 45,
-                                    padding: 10,
-                                    autoSkip: false
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                },
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 45,
+                                        padding: 10,
+                                        autoSkip: false
+                                    }
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    bottom: 40
                                 }
                             }
-                        },
-                        layout: {
-                            padding: {
-                                bottom: 40
-                            }
                         }
                     }
-                }
-            );
-        }
+                );
+            }
 
-        // Gráfico de profesores por sede
-        if (profesoresPorSedeData.length > 0) {
+            // Gráfico de ocupación de mesas
             new Chart(
-                document.getElementById('profesoresPorSedeChart').getContext('2d'),
+                document.getElementById('ocupacionMesasChart').getContext('2d'),
                 {
-                    type: 'pie',
+                    type: 'doughnut',
                     data: {
-                        labels: sedesData,
+                        labels: ['Ocupadas', 'Vacías'],
                         datasets: [{
-                            data: profesoresPorSedeData,
+                            data: [
+                                parseInt('{{ total_mesas - mesas_vacias }}'),
+                                parseInt('{{ mesas_vacias }}')
+                            ],
                             backgroundColor: [
-                                'rgba(255, 99, 132, 0.5)',
-                                'rgba(54, 162, 235, 0.5)',
-                                'rgba(255, 206, 86, 0.5)',
                                 'rgba(75, 192, 192, 0.5)',
-                                'rgba(153, 102, 255, 0.5)'
+                                'rgba(255, 99, 132, 0.5)'
                             ],
                             borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
                                 'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)'
+                                'rgba(255, 99, 132, 1)'
                             ],
                             borderWidth: 1
                         }]
@@ -509,185 +359,337 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Distribución de Profesores por Sede'
+                                text: 'Estado de Ocupación de Mesas'
                             }
                         }
                     }
                 }
             );
-        }
 
-        // Gráfico de progreso de asignaciones
-        new Chart(
-            document.getElementById('progresoAsignacionesChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: ['Inicio', 'Actual'],
-                    datasets: [{
-                        label: 'Estudiantes Asignados',
-                        data: [0, totalEstudiantes - estudiantesSinMesa],
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Progreso de Asignaciones'
+            // Toggle para las sedes
+            document.querySelectorAll('.sede-header').forEach(function (header) {
+                header.addEventListener('click', function () {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('i');
+
+                    // Toggle del contenido
+                    $(content).slideToggle({
+                        duration: 300,
+                        complete: function () {
+                            icon.classList.toggle('fa-chevron-down');
+                            icon.classList.toggle('fa-chevron-up');
                         }
+                    });
+                });
+            });
+
+            // Toggle para el colapso general de sedes
+            document.querySelector('[data-toggle="collapse"]').addEventListener('click', function () {
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-chevron-down');
+                icon.classList.toggle('fa-chevron-up');
+            });
+
+            // Gráfico de estudiantes por grado
+            if (gradosData.length > 0) {
+                new Chart(
+                    document.getElementById('estudiantesPorGradoChart').getContext('2d'),
+                    {
+                        type: 'pie',
+                        data: {
+                            labels: gradosData,
+                            datasets: [{
+                                data: estudiantesPorGradoData,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)',
+                                    'rgba(153, 102, 255, 0.8)',
+                                    'rgba(255, 159, 64, 0.8)'
+                                ],
+                                borderColor: 'white',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    }
+                );
+            }
+
+            // Gráfico de mesas por sede
+            if (mesasPorSedeData.length > 0) {
+                new Chart(
+                    document.getElementById('mesasPorSedeChart').getContext('2d'),
+                    {
+                        type: 'bar',
+                        data: {
+                            labels: sedesData,
+                            datasets: [{
+                                label: 'Mesas',
+                                data: mesasPorSedeData,
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Distribución de Mesas por Sede'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                },
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 45,
+                                        padding: 10,
+                                        autoSkip: false
+                                    }
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    bottom: 40
+                                }
+                            }
+                        }
+                    }
+                );
+            }
+
+            // Gráfico de profesores por sede
+            if (profesoresPorSedeData.length > 0) {
+                new Chart(
+                    document.getElementById('profesoresPorSedeChart').getContext('2d'),
+                    {
+                        type: 'pie',
+                        data: {
+                            labels: sedesData,
+                            datasets: [{
+                                data: profesoresPorSedeData,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.5)',
+                                    'rgba(54, 162, 235, 0.5)',
+                                    'rgba(255, 206, 86, 0.5)',
+                                    'rgba(75, 192, 192, 0.5)',
+                                    'rgba(153, 102, 255, 0.5)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Distribución de Profesores por Sede'
+                                }
+                            }
+                        }
+                    }
+                );
+            }
+
+            // Gráfico de progreso de asignaciones
+            new Chart(
+                document.getElementById('progresoAsignacionesChart').getContext('2d'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: ['Inicio', 'Actual'],
+                        datasets: [{
+                            label: 'Estudiantes Asignados',
+                            data: [0, totalEstudiantes - estudiantesSinMesa],
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            tension: 0.1
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: totalEstudiantes
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Progreso de Asignaciones'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: totalEstudiantes
+                            }
                         }
                     }
                 }
+            );
+        });
+
+        $(document).ready(function () {
+            const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+            if (configuracionFinalizada) {
+                $('#btnFinalizar').prop('disabled', true)
+                    .html('<i class="fas fa-lock"></i> Configuración Finalizada')
+                    .addClass('disabled');
+
+                // Deshabilitar todos los controles interactivos si los hay
+                $('input, select, button:not(#btnFinalizar)').prop('disabled', true);
             }
-        );
-    });
 
-    $(document).ready(function () {
-        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+            ;
+        });
+    </script>
 
-        if (configuracionFinalizada) {
-            $('#btnFinalizar').prop('disabled', true)
-                .html('<i class="fas fa-lock"></i> Configuración Finalizada')
-                .addClass('disabled');
-
-            // Deshabilitar todos los controles interactivos si los hay
-            $('input, select, button:not(#btnFinalizar)').prop('disabled', true);
+    <style>
+        .sede-header {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        ;
-    });
-</script>
+        .sede-header:hover {
+            background-color: #4a4a4a !important;
+        }
 
-<style>
-    .sede-header {
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
+        .sede-header i {
+            transition: transform 0.3s ease;
+        }
 
-    .sede-header:hover {
-        background-color: #4a4a4a !important;
-    }
+        .sede-content {
+            display: none;
+        }
 
-    .sede-header i {
-        transition: transform 0.3s ease;
-    }
+        .sede-header.active i {
+            transform: rotate(180deg);
+        }
 
-    .sede-content {
-        display: none;
-    }
+        .card-body {
+            position: relative;
+        }
 
-    .sede-header.active i {
-        transform: rotate(180deg);
-    }
+        canvas {
+            min-height: 300px;
+        }
 
-    .card-body {
-        position: relative;
-    }
+        /* Estilos para las tarjetas de resumen */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    canvas {
-        min-height: 300px;
-    }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
 
-    /* Estilos para las tarjetas de resumen */
-    .card {
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+        .card-header {
+            border-radius: 8px 8px 0 0 !important;
+            padding: 1rem;
+        }
 
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+        .card-body {
+            padding: 1.5rem;
+        }
 
-    .card-header {
-        border-radius: 8px 8px 0 0 !important;
-        padding: 1rem;
-    }
+        /* Estilos para los números en las tarjetas */
+        .card h3 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
 
-    .card-body {
-        padding: 1.5rem;
-    }
+        .card h5 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
 
-    /* Estilos para los números en las tarjetas */
-    .card h3 {
-        font-size: 2.5rem;
-        font-weight: 600;
-        margin: 0.5rem 0;
-    }
+        /* Estilos para las badges */
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
 
-    .card h5 {
-        font-size: 1rem;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
+        /* Estilos para los gráficos */
+        canvas {
+            padding: 1rem;
+            border-radius: 8px;
+        }
 
-    /* Estilos para las badges */
-    .badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 500;
-    }
+        /* Estilos para los controles deshabilitados */
+        .disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
 
-    /* Estilos para los gráficos */
-    canvas {
-        padding: 1rem;
-        border-radius: 8px;
-    }
+        /* Animación para los íconos */
+        .fas {
+            transition: transform 0.3s ease;
+        }
 
-    /* Estilos para los controles deshabilitados */
-    .disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
+        .card:hover .fas {
+            transform: scale(1.1);
+        }
 
-    /* Animación para los íconos */
-    .fas {
-        transition: transform 0.3s ease;
-    }
+        /* Estilos para las tarjetas de estadísticas */
+        .stats-card {
+            background: linear-gradient(45deg, var(--primary-color), var(--dark-blue));
+            color: white;
+        }
 
-    .card:hover .fas {
-        transform: scale(1.1);
-    }
+        .stats-card small {
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
 
-    /* Estilos para las tarjetas de estadísticas */
-    .stats-card {
-        background: linear-gradient(45deg, var(--primary-color), var(--dark-blue));
-        color: white;
-    }
+        /* Personalización de los gráficos */
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            width: 100%;
+        }
 
-    .stats-card small {
-        opacity: 0.8;
-        font-size: 0.875rem;
-    }
-
-    /* Personalización de los gráficos */
-    .chart-container {
-        position: relative;
-        margin: auto;
-        height: 300px;
-        width: 100%;
-    }
-
-    /* Estilos para los tooltips de los gráficos */
-    .chartjs-tooltip {
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 8px;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-</style>
+        /* Estilos para los tooltips de los gráficos */
+        .chartjs-tooltip {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</div>
 {% endblock %}

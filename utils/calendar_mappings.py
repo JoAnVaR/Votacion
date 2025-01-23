@@ -28,8 +28,12 @@ ACTIVITY_ROUTES = {
     ],
     'Designación de Jurados': [
         'jurado.sorteo_jurados',
-        'jurado.lista_jurados',
-        'jurado.reemplazar_jurado'
+        'jurado.lista_jurados'
+    ],
+    'Reemplazo de Jurados': [
+        'jurado.reemplazo_jurados',
+        'jurado.reemplazar_jurado',
+        'jurado.lista_reemplazos'
     ],
     'Inscripción de Candidatos': [
         'candidato.registro_candidato',

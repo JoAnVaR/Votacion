@@ -62,24 +62,62 @@ class AsignacionMesa(db.Model):
 
 class Jurado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    numero_documento = db.Column(db.String(20), nullable=False)
-    nombre = db.Column(db.String(100), nullable=False)
     tipo_persona = db.Column(db.String(20), nullable=False)
-    id_mesa = db.Column(db.Integer, nullable=True)
-    sorteo = db.Column(db.Integer, nullable=False)
+    persona_id = db.Column(db.Integer, nullable=True)
+    mesa_id = db.Column(db.Integer, db.ForeignKey('mesa.id'), nullable=True)
+    sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=True)
+    es_remanente = db.Column(db.Boolean, default=False)
+    disponible = db.Column(db.Boolean, default=True)
+    sorteo = db.Column(db.Integer, nullable=True)
     activo = db.Column(db.Boolean, default=True)
+    _numero_documento = db.Column('numero_documento', db.String(20), nullable=True)
+    _nombre = db.Column('nombre', db.String(100), nullable=True)
     
-    # Agregar relación con Mesa usando sede_id y mesa_numero
-    sede_id = db.Column(db.Integer, nullable=True)
-    mesa_numero = db.Column(db.Integer, nullable=True)
-    __table_args__ = (
-        db.ForeignKeyConstraint(
-            ['sede_id', 'mesa_numero'],
-            ['mesa.sede_id', 'mesa.mesa_numero'],
-            ondelete='SET NULL'
-        ),
-        db.UniqueConstraint('numero_documento', 'sorteo', name='unique_sorteo_documento')
-    )
+    # Relaciones
+    mesa = db.relationship('Mesa', backref='jurados')
+    sede = db.relationship('Sede', backref='jurados')
+    
+    @property
+    def id_mesa(self):
+        return self.mesa_id
+    
+    @id_mesa.setter
+    def id_mesa(self, value):
+        self.mesa_id = value
+    
+    @property
+    def nombre(self):
+        if self._nombre:
+            return self._nombre
+        if not self.persona_id:
+            return self._nombre or 'Sin Asignar'
+        if self.tipo_persona == 'estudiante':
+            estudiante = Estudiante.query.get(self.persona_id)
+            return estudiante.nombre if estudiante else 'Desconocido'
+        else:
+            profesor = Profesor.query.get(self.persona_id)
+            return profesor.nombre if profesor else 'Desconocido'
+    
+    @nombre.setter
+    def nombre(self, value):
+        self._nombre = value
+    
+    @property
+    def numero_documento(self):
+        if self._numero_documento:
+            return self._numero_documento
+        if not self.persona_id:
+            return self._numero_documento or 'Sin Asignar'
+        if self.tipo_persona == 'estudiante':
+            estudiante = Estudiante.query.get(self.persona_id)
+            return estudiante.numero_documento if estudiante else 'Desconocido'
+        else:
+            profesor = Profesor.query.get(self.persona_id)
+            return profesor.numero_documento if profesor else 'Desconocido'
+    
+    @numero_documento.setter
+    def numero_documento(self, value):
+        self._numero_documento = value
 
 class Votacion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -127,14 +165,19 @@ class Candidato(db.Model):
     propuesta = db.Column(db.Text, nullable=False)
     foto_path = db.Column(db.String(200), nullable=True)  # Agregar el campo foto_path
 
-class Reemplazo(db.Model):
+class ReemplazoJurado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jurado_original_id = db.Column(db.Integer, db.ForeignKey('jurado.id'), nullable=False)
+    jurado_reemplazo_id = db.Column(db.Integer, db.ForeignKey('jurado.id'), nullable=True)
+    mesa_id = db.Column(db.Integer, db.ForeignKey('mesa.id'), nullable=False)
+    razon = db.Column(db.String(200), nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.now)
+    activo = db.Column(db.Boolean, default=True)
+    
+    # Relaciones
     jurado_original = db.relationship('Jurado', foreign_keys=[jurado_original_id])
-    jurado_reemplazo_id = db.Column(db.Integer, db.ForeignKey('jurado.id'), nullable=False)
     jurado_reemplazo = db.relationship('Jurado', foreign_keys=[jurado_reemplazo_id])
-    razon = db.Column(db.String(255), nullable=False)
-    fecha = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    mesa = db.relationship('Mesa')
 
 class EventoCalendario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -215,6 +258,15 @@ class EventoCalendario(db.Model):
                 'estado': 'pendiente'
             },
             {
+                'titulo': 'Inscripción de Candidatos',
+                'descripcion': 'Registro de estudiantes candidatos a personería estudiantil',
+                'fase': 2,
+                'orden': 1,
+                'fecha_inicio': fecha_base + timedelta(days=15),
+                'fecha_fin': fecha_base + timedelta(days=17),
+                'estado': 'pendiente'
+            },
+            {
                 'titulo': 'Designación de Jurados',
                 'descripcion': 'Asignación de profesores como jurados en las mesas de votación',
                 'fase': 2,
@@ -224,14 +276,23 @@ class EventoCalendario(db.Model):
                 'estado': 'pendiente'
             },
             {
-                'titulo': 'Inscripción de Candidatos',
-                'descripcion': 'Registro de estudiantes candidatos a personería estudiantil',
-                'fase': 2,
-                'orden': 1,
-                'fecha_inicio': fecha_base + timedelta(days=15),
-                'fecha_fin': fecha_base + timedelta(days=17),
-                'estado': 'pendiente'
-            },
+            'titulo': 'Reemplazo de Jurados',
+            'descripcion': 'Proceso de sustitución de jurados que presentan impedimentos justificados para ejercer su función durante la jornada electoral. Incluye el registro de la razón del reemplazo y la asignación del nuevo jurado.',
+            'fase': 2,
+            'orden': 3,
+            'fecha_inicio': fecha_base + timedelta(days=13),
+            'fecha_fin': fecha_base + timedelta(days=16),
+            'estado': 'pendiente'
+        },
+        {
+            'titulo': 'Inscripción de Candidatos',
+            'descripcion': 'Registro de estudiantes candidatos a personería estudiantil',
+            'fase': 2,
+            'orden': 4,
+            'fecha_inicio': fecha_base + timedelta(days=15),
+            'fecha_fin': fecha_base + timedelta(days=17),
+            'estado': 'pendiente'
+        },
             {
                 'titulo': 'Jornada de Votación',
                 'descripcion': 'Proceso de votación electrónica para la elección del personero estudiantil',

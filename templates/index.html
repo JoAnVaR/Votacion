@@ -50,6 +50,7 @@
             verificarAccesoRuta('asignar_mesa.asignar_mesas', '[href="{{ url_for("asignar_mesa.asignar_mesas") }}"]');
             verificarAccesoRuta('candidato.registro_candidato', '[href="{{ url_for("candidato.registro_candidato") }}"]');
             verificarAccesoRuta('jurado.sorteo_jurados', '[href="{{ url_for("jurado.sorteo_jurados") }}"]');
+            verificarAccesoRuta('jurado.reemplazo_jurados', '[href="{{ url_for("jurado.reemplazo_jurados") }}"]');
 
         });
     </script>
@@ -98,6 +99,10 @@
                 <a href="{{ url_for('jurado.sorteo_jurados') }}"
                     class="list-group-item list-group-item-action menu-item fase-2">
                     <i class="fas fa-gavel"></i> Sorteo de Jurados
+                </a>
+                <a href="{{ url_for('jurado.reemplazo_jurados') }}"
+                    class="list-group-item list-group-item-action menu-item fase-2">
+                    <i class="fas fa-exchange-alt"></i> Reemplazo de Jurados
                 </a>
                 <a href="{{ url_for('testigo.asignar_testigos') }}"
                     class="list-group-item list-group-item-action menu-item fase-2" {% if not

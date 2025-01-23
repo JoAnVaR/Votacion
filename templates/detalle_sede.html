@@ -3,205 +3,253 @@
 {% block title %}Detalle Sede {{ sede }}{% endblock %}
 
 {% block content %}
-<header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
-    <h1>Sede {{ sede }}</h1>
-</header>
+<div class="container mt-4">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+        <h1>Sede {{ sede }}</h1>
+    </header>
 
-<div class="mt-5">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Número de Documento</th>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Nombre</th>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Departamento</th>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Título</th>
-                <th style="background-color: var(--primary-color); color: var(--white-color);">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for profesor in profesores %}
-            <tr>
-                <td>
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+    <div class="mt-5">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Número de Documento
+                    </th>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Nombre</th>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Departamento</th>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Título</th>
+                    <th style="background-color: var(--primary-color); color: var(--white-color);">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profesor in profesores %}
+                <tr>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                            </div>
+                            <input type="text" name="numero_documento" value="{{ profesor.numero_documento }}"
+                                class="form-control" required form="form-{{ profesor.id }}">
                         </div>
-                        <input type="text" name="numero_documento" value="{{ profesor.numero_documento }}"
-                            class="form-control" required form="form-{{ profesor.id }}">
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    </td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            </div>
+                            <input type="text" name="nombre" value="{{ profesor.nombre }}" class="form-control" required
+                                form="form-{{ profesor.id }}">
                         </div>
-                        <input type="text" name="nombre" value="{{ profesor.nombre }}" class="form-control" required
-                            form="form-{{ profesor.id }}">
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-building"></i></span>
+                    </td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                            </div>
+                            <input type="text" name="departamento" value="{{ profesor.departamento }}"
+                                class="form-control" required form="form-{{ profesor.id }}">
                         </div>
-                        <input type="text" name="departamento" value="{{ profesor.departamento }}" class="form-control"
-                            required form="form-{{ profesor.id }}">
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
+                    </td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
+                            </div>
+                            <input type="text" name="titulo" value="{{ profesor.titulo }}" class="form-control" required
+                                form="form-{{ profesor.id }}">
                         </div>
-                        <input type="text" name="titulo" value="{{ profesor.titulo }}" class="form-control" required
-                            form="form-{{ profesor.id }}">
-                    </div>
-                </td>
-                <td>
-                    <form id="form-{{ profesor.id }}" class="form-modificar d-inline">
-                        <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
-                        <button type="submit" class="btn btn-sm">
-                            <i class="fas fa-save"></i> Modificar
+                    </td>
+                    <td>
+                        <form id="form-{{ profesor.id }}" class="form-modificar d-inline">
+                            <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
+                            <button type="submit" class="btn btn-sm">
+                                <i class="fas fa-save"></i> Modificar
 
-                        </button>
-                    </form>
-                    <form class="form-eliminar d-inline">
-                        <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
-                        <button type="submit" class="btn btn-sm btn-danger">
-                            <i class=" fas fa-trash"></i>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                            </button>
+                        </form>
+                        <form class="form-eliminar d-inline">
+                            <input type="hidden" name="profesor_id" value="{{ profesor.id }}">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class=" fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    <a href="{{ url_for('profesor.registro_profesor') }}" class="btn mt-3"
-        style="background-color: var(--dark-blue); color: var(--white-color);">
-        Volver al registro
-    </a>
-</div>
-{% endblock %}
+        <a href="{{ url_for('profesor.registro_profesor') }}" class="btn mt-3"
+            style="background-color: var(--dark-blue); color: var(--white-color);">
+            Volver al registro
+        </a>
+    </div>
 
-{% block extra_js %}
-<script>
-    $(document).ready(function () {
-        // Manejar modificación de profesor
-        $('.form-modificar').on('submit', function (e) {
-            e.preventDefault();
-            var $form = $(this);
-            var profesor_id = $form.find('input[name="profesor_id"]').val();
-            var $row = $form.closest('tr');
+    <!-- Agregar la librería SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    {% endblock %}
 
-            var datos = {
-                profesor_id: profesor_id,
-                numero_documento: $row.find('input[name="numero_documento"]').val(),
-                nombre: $row.find('input[name="nombre"]').val(),
-                departamento: $row.find('input[name="departamento"]').val(),
-                titulo: $row.find('input[name="titulo"]').val()
-            };
+    {% block extra_js %}
+    <script>
+        $(document).ready(function () {
+            // Manejar modificación de profesor
+            $('.form-modificar').on('submit', function (e) {
+                e.preventDefault();
+                var $form = $(this);
+                var profesor_id = $form.find('input[name="profesor_id"]').val();
+                var $row = $form.closest('tr');
 
-            $.ajax({
-                url: "{{ url_for('profesor.actualizar_profesor') }}",
-                type: 'POST',
-                data: datos,
-                success: function (response) {
-                    if (response.success) {
-                        mostrarMensaje('Profesor modificado exitosamente', 'success');
-                        setTimeout(function () {
-                            location.reload();
-                        }, 1000);
-                    } else {
-                        mostrarMensaje(response.message, 'error');
-                    }
-                },
-                error: function (xhr) {
-                    mostrarMensaje('Error al modificar profesor: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
-                }
-            });
-        });
+                var datos = {
+                    profesor_id: profesor_id,
+                    numero_documento: $row.find('input[name="numero_documento"]').val(),
+                    nombre: $row.find('input[name="nombre"]').val(),
+                    departamento: $row.find('input[name="departamento"]').val(),
+                    titulo: $row.find('input[name="titulo"]').val()
+                };
 
-        // Manejar eliminación de profesor
-        $('.form-eliminar').on('submit', function (e) {
-            e.preventDefault();
-            var $form = $(this);
-            var $row = $form.closest('tr');
-
-            if (confirm('¿Está seguro de que desea eliminar este profesor?')) {
                 $.ajax({
-                    url: "{{ url_for('profesor.borrar_profesor') }}",
+                    url: "{{ url_for('profesor.actualizar_profesor') }}",
                     type: 'POST',
-                    data: $form.serialize(),
+                    data: datos,
                     success: function (response) {
                         if (response.success) {
-                            mostrarMensaje('Profesor eliminado exitosamente', 'success');
-                            $row.fadeOut(300, function () { $(this).remove(); });
+                            mostrarMensaje('Profesor modificado exitosamente', 'success');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1000);
                         } else {
                             mostrarMensaje(response.message, 'error');
                         }
                     },
-                    error: function () {
-                        mostrarMensaje('Error al eliminar profesor', 'error');
+                    error: function (xhr) {
+                        mostrarMensaje('Error al modificar profesor: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
                     }
+                });
+            });
+
+            // Manejar eliminación de profesor
+            $('.form-eliminar').on('submit', function (e) {
+                e.preventDefault();
+                var $form = $(this);
+                var $row = $form.closest('tr');
+
+                Swal.fire({
+                    title: '¿Está seguro?',
+                    text: '¿Desea eliminar este profesor?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: 'var(--primary-color)',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ url_for('profesor.borrar_profesor') }}",
+                            type: 'POST',
+                            data: $form.serialize(),
+                            success: function (response) {
+                                if (response.success) {
+                                    mostrarMensaje('Profesor eliminado exitosamente', 'success');
+                                    $row.fadeOut(300, function () { $(this).remove(); });
+                                } else {
+                                    mostrarMensaje(response.message, 'error');
+                                }
+                            },
+                            error: function () {
+                                mostrarMensaje('Error al eliminar profesor', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        function verificarAccesoRuta(ruta, elemento, callback) {
+            $.ajax({
+                url: "{{ url_for('calendario.verificar_acceso') }}",
+                type: 'POST',
+                data: JSON.stringify({ ruta: ruta }),
+                contentType: 'application/json',
+                success: function (response) {
+                    if (!response.permitido) {
+                        // Primero deshabilitamos todo
+                        deshabilitarFormularios(true);
+                        $('.btn').addClass('disabled')
+                            .attr('title', 'No disponible en este momento')
+                            .css('pointer-events', 'none')
+                            .css('opacity', '0.6');
+
+                        if (callback) callback(false);
+
+                        // Luego mostramos el mensaje y redirigimos usando SweetAlert2
+                        Swal.fire({
+                            title: 'Acceso no disponible',
+                            text: 'Esta sección no está disponible en este momento según el calendario electoral',
+                            icon: 'warning',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didClose: () => {
+                                window.location.href = "{{ url_for('index') }}";
+                            }
+                        });
+                    } else {
+                        if (callback) callback(true);
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error al verificar acceso',
+                        icon: 'error',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    if (callback) callback(false);
+                }
+            });
+        }
+
+        function deshabilitarFormularios(deshabilitar) {
+            $('.form-modificar button, .form-eliminar button').prop('disabled', deshabilitar);
+            $('input[name="numero_documento"], input[name="nombre"]').prop('disabled', deshabilitar);
+            if (deshabilitar) {
+                $('.form-modificar, .form-eliminar').css('opacity', '0.6');
+            } else {
+                $('.form-modificar, .form-eliminar').css('opacity', '1');
+            }
+        }
+
+        $(document).ready(function () {
+            const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+            if (configuracionFinalizada) {
+                deshabilitarFormularios(true);
+                mostrarMensaje('El sistema está bloqueado. No se pueden realizar modificaciones.', 'warning');
+            } else {
+                verificarAccesoRuta('profesor.registro_profesor', '.form-modificar', function (permitido) {
+                    deshabilitarFormularios(!permitido);
                 });
             }
         });
-    });
-    function verificarAccesoRuta(ruta, elemento, callback) {
-        $.ajax({
-            url: "{{ url_for('calendario.verificar_acceso') }}",
-            type: 'POST',
-            data: JSON.stringify({ ruta: ruta }),
-            contentType: 'application/json',
-            success: function (response) {
-                if (!response.permitido) {
-                    // Primero deshabilitamos todo
-                    deshabilitarFormularios(true);
-                    $('.btn').addClass('disabled')
-                        .attr('title', 'No disponible en este momento')
-                        .css('pointer-events', 'none')
-                        .css('opacity', '0.6');
 
-                    if (callback) callback(false);
-
-                    // Luego mostramos el mensaje y redirigimos
-                    toastr.warning('Esta sección no está disponible en este momento según el calendario electoral');
-                    setTimeout(function () {
-                        window.location.href = "{{ url_for('index') }}";
-                    }, 2000);
-                } else {
-                    if (callback) callback(true);
-                }
-            },
-            error: function () {
-                toastr.error('Error al verificar acceso');
-                if (callback) callback(false);
-            }
-        });
-    }
-
-    function deshabilitarFormularios(deshabilitar) {
-        $('.form-modificar button, .form-eliminar button').prop('disabled', deshabilitar);
-        $('input[name="numero_documento"], input[name="nombre"]').prop('disabled', deshabilitar);
-        if (deshabilitar) {
-            $('.form-modificar, .form-eliminar').css('opacity', '0.6');
-        } else {
-            $('.form-modificar, .form-eliminar').css('opacity', '1');
-        }
-    }
-
-    $(document).ready(function () {
-        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
-
-        if (configuracionFinalizada) {
-            deshabilitarFormularios(true);
-            toastr.warning('El sistema está bloqueado. No se pueden realizar modificaciones.');
-        } else {
-            verificarAccesoRuta('profesor.registro_profesor', '.form-modificar', function (permitido) {
-                deshabilitarFormularios(!permitido);
+        function mostrarMensaje(mensaje, tipo) {
+            Swal.fire({
+                title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+                text: mensaje,
+                icon: tipo,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
             });
         }
-    });
-</script>
+    </script>
+</div>
 {% endblock %}

@@ -2,6 +2,9 @@
 
 {% block content %}
 
+<!-- Agregar la librería SweetAlert2 al inicio -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
 <div class="container mt-5">
     <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
         <h1>Asignar Mesas a Grados</h1>
@@ -214,20 +217,35 @@
                     deshabilitarFormulario('.sede-list', true);
                     deshabilitarFormulario('.asignaciones-accordion', true);
 
-                    // Mostrar mensaje y redireccionar
-                    toastr.options = {
-                        "timeOut": "2000",
-                        "onHidden": function () {
+                    // Mostrar mensaje con SweetAlert2
+                    Swal.fire({
+                        title: 'Acceso no disponible',
+                        text: 'Esta sección no está disponible en este momento según el calendario electoral',
+                        icon: 'warning',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didClose: () => {
                             window.location.href = "{{ url_for('index') }}";
                         }
-                    };
-                    toastr.warning('Esta actividad no está disponible en la fecha actual según el calendario electoral.');
+                    });
                 } else {
                     if (callback) callback(true);
                 }
             },
             error: function () {
-                toastr.error('Error al verificar acceso');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al verificar acceso',
+                    icon: 'error',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
                 if (callback) callback(false);
             }
         });
@@ -252,6 +270,93 @@
         verificarAccesoRuta('asignar_mesa.asignar_mesas', null, function (permitido) {
             if (permitido) {
                 MesasManager.initEvents();
+            }
+        });
+    });
+
+    function mostrarMensaje(mensaje, tipo) {
+        Swal.fire({
+            title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+            text: mensaje,
+            icon: tipo,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    }
+
+    // Actualizar el manejo de asignación de mesas
+    $(document).on('change', '.mesa-radio', function () {
+        var grado_seccion = $(this).data('grado-seccion');
+        var mesa_numero = $(this).val();
+        var sede_id = $(this).data('sede-id');
+
+        // Mostrar indicador de carga
+        Swal.fire({
+            title: 'Procesando...',
+            text: 'Realizando la asignación',
+            icon: 'info',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: "{{ url_for('asignar_mesa.asignar_mesas') }}",
+            type: 'POST',
+            data: {
+                grado_seccion: grado_seccion,
+                mesa_numero: mesa_numero,
+                sede_id: sede_id
+            },
+            success: function (response) {
+                Swal.close(); // Cerrar el indicador de carga
+
+                if (response.success) {
+                    Swal.fire({
+                        title: 'Asignación Exitosa',
+                        text: 'La asignación se realizó correctamente',
+                        icon: 'success',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didClose: () => {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message || 'Error al realizar la asignación',
+                        icon: 'error',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                }
+            },
+            error: function (xhr) {
+                Swal.close(); // Cerrar el indicador de carga
+
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al realizar la asignación: ' + (xhr.responseJSON?.message || 'Error desconocido'),
+                    icon: 'error',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
             }
         });
     });

@@ -3,7 +3,16 @@
 {% block title %}Sorteo de Jurados{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<input type="hidden" id="configuracionFinalizada"
+    value="{{ 'true' if config and config.configuracion_finalizada else 'false' }}">
+
+<div class="container mt-5" id="mainContainer">
+    {% if config and config.configuracion_finalizada %}
+    <div class="alert alert-warning">
+        <i class="fas fa-lock"></i> El sistema está bloqueado. No se pueden realizar modificaciones.
+    </div>
+    {% endif %}
+
     <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
         <h1><i class="fas fa-random"></i> Sorteo de Jurados</h1>
     </header>
@@ -115,8 +124,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Mesa</th>
-                                                <th>Estudiantes</th>
-                                                <th>Profesor</th>
+                                                <th>Jurados</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -125,23 +133,33 @@
                                                 <td>{{ sorteo.mesa_numero }}</td>
                                                 <td>
                                                     <ul>
-                                                        {% for estudiante in sorteo.estudiantes %}
                                                         <li>
-                                                            {{ estudiante.numero_documento }} {{ estudiante.nombre }}
-                                                            <small class="text-muted">
-                                                                ({{ estudiante.grado }}° {{ estudiante.seccion }})
-                                                            </small>
+                                                            <span class="fw-bold"
+                                                                style="font-family: 'Segoe UI', Roboto, sans-serif;">
+                                                                {{ sorteo.profesor.numero_documento }} {{
+                                                                sorteo.profesor.nombre }}
+                                                            </span>
+                                                            <span style="font-size: 0.8em; color: #666;">(Prof)</span>
+                                                            {% if sorteo.profesor.reemplazado %}
+                                                            <span class="badge badge-warning">Exonerado/a</span>
+                                                            {% endif %}
+                                                        </li>
+                                                        {% for estudiante in
+                                                        sorteo.estudiantes|sort(attribute='numero_documento') %}
+                                                        <li>
+                                                            <span class="fw-bold"
+                                                                style="font-family: 'Segoe UI', Roboto, sans-serif;">
+                                                                {{ estudiante.numero_documento }} {{ estudiante.nombre
+                                                                }}
+                                                            </span>
+                                                            <span style="font-size: 0.8em; color: #666;">({{
+                                                                estudiante.grado }}° {{ estudiante.seccion }})</span>
+                                                            {% if estudiante.reemplazado %}
+                                                            <span class="badge badge-warning">Exonerado/a</span>
+                                                            {% endif %}
                                                         </li>
                                                         {% endfor %}
                                                     </ul>
-                                                </td>
-                                                <td>
-                                                    <i class="fas fa-chalkboard-teacher"></i>
-                                                    {{ sorteo.profesor.nombre }}
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        DNI: {{ sorteo.profesor.numero_documento }}
-                                                    </small>
                                                 </td>
                                             </tr>
                                             {% endfor %}
@@ -161,35 +179,39 @@
         <div class="card mt-4">
             <div class="card-header bg-info text-white">
                 <h3 class="mb-0">
-                    <i class="fas fa-user-shield"></i>
                     Jurados Remanentes - {% if fase < 3 %}Simulacro {{ fase }}{% else %}Sorteo Final{% endif %} </h3>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Documento</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for remanente in remanentes %}
-                            <tr>
-                                <td>
-                                    <i class="fas fa-user-graduate"></i>
-                                    {{ remanente.nombre }}
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ remanente.grado }} -{{ remanente.seccion }}
-                                    </small>
-                                </td>
-                                <td>{{ remanente.numero_documento }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mesa</th>
+                            <th>Jurados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0</td>
+                            <td>
+                                <ul>
+                                    {% for remanente in remanentes %}
+                                    <li>
+                                        <div class="remanente-info {% if not remanente.activo %}usado{% endif %}">
+                                            {{ remanente.numero_documento }} {{ remanente.nombre }}
+                                            <span style="font-size: 0.8em; color: #666;">({{
+                                                remanente.grado }}° {{ remanente.seccion }})</span>
+
+                                            {% if not remanente.activo %}
+                                            <span class="badge badge-warning">Asignado como reemplazo</span>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         {% endif %}
@@ -353,5 +375,64 @@
             calcularJuradosNecesarios();
         }
     });
+
+    $(document).ready(function () {
+        verificarBloqueoSistema();
+        verificarAccesoRuta('jurado.sorteo_jurados', null, function (permitido) {
+            if (!permitido) {
+                deshabilitarFormulario('#formSorteo', true);
+                $('.btn').addClass('disabled')
+                    .attr('title', 'No disponible en este momento')
+                    .css('pointer-events', 'none')
+                    .css('opacity', '0.6');
+                mostrarMensaje('Esta sección no está disponible en este momento según el calendario electoral', 'warning');
+                setTimeout(function () {
+                    window.location.href = "{{ url_for('index') }}";
+                }, 2000);
+            }
+        });
+    });
+
+    function verificarAccesoRuta(ruta, params, callback) {
+        $.ajax({
+            url: "{{ url_for('calendario.verificar_acceso') }}",
+            type: 'POST',
+            data: JSON.stringify({ ruta: ruta }),
+            contentType: 'application/json',
+            success: function (response) {
+                if (!response.permitido) {
+                    deshabilitarFormulario('#formSorteo', true);
+                    $('.btn').addClass('disabled')
+                        .attr('title', 'No disponible en este momento')
+                        .css('pointer-events', 'none')
+                        .css('opacity', '0.6');
+                    if (callback) callback(false);
+                } else {
+                    if (callback) callback(true);
+                }
+            },
+            error: function () {
+                mostrarMensaje('Error al verificar acceso', 'error');
+            }
+        });
+    }
+
+    function deshabilitarFormulario(formId, deshabilitar) {
+        $(`${formId} input, ${formId} select, ${formId} button, ${formId} textarea`).prop('disabled', deshabilitar);
+        $(formId).css('opacity', deshabilitar ? '0.6' : '1');
+    }
+
+    function verificarBloqueoSistema() {
+        const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
+
+        if (configuracionFinalizada) {
+            deshabilitarFormulario('#formSorteo', true);
+            $('.btn').addClass('disabled')
+                .attr('title', 'Sistema bloqueado')
+                .css('pointer-events', 'none')
+                .css('opacity', '0.6');
+            mostrarMensaje('El sistema está bloqueado. No se pueden realizar modificaciones.', 'warning');
+        }
+    }
 </script>
 {% endblock %}
