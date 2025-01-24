@@ -294,12 +294,21 @@ class EventoCalendario(db.Model):
             'estado': 'pendiente'
         },
             {
+                'titulo': 'Registro de Testigos',
+                'descripcion': 'Inscripción de testigos para garantizar la transparencia del proceso electoral',
+                'fase': 2,
+                'orden': 5,
+                'fecha_inicio': fecha_base + timedelta(days=18),
+                'fecha_fin': fecha_base + timedelta(days=19),
+                'estado': 'pendiente'
+            },
+            {
                 'titulo': 'Jornada de Votación',
                 'descripcion': 'Proceso de votación electrónica para la elección del personero estudiantil',
                 'fase': 3,
                 'orden': 1,
-                'fecha_inicio': fecha_base + timedelta(days=18),
-                'fecha_fin': fecha_base + timedelta(days=20),
+                'fecha_inicio': fecha_base + timedelta(days=20),
+                'fecha_fin': fecha_base + timedelta(days=21),
                 'estado': 'pendiente'
             }
         ]

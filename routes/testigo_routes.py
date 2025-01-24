@@ -1,19 +1,30 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import Testigo, AsignacionTestigo, Candidato, Sede, Mesa
+from models import Testigo, AsignacionTestigo, Candidato, Sede, Mesa, Configuracion
 from sqlalchemy.exc import IntegrityError
+import csv
+import io
 from extensions import db
+from utils.decorators import verificar_acceso_ruta
+
 testigo_bp = Blueprint('testigo', __name__)
 
 # Ruta para Registro de Testigos
-@testigo_bp.route('/asignar_testigos', methods=['GET', 'POST'])
-def asignar_testigos():
+@testigo_bp.route('/registro-testigos', methods=['GET', 'POST'])
+@verificar_acceso_ruta('testigo.registro_testigos')
+def registro_testigos():
     testigos = Testigo.query.all()
     asignaciones = AsignacionTestigo.query.all()
     candidatos = Candidato.query.all()
     sedes = Sede.query.all()
+    config = Configuracion.query.first()  # Obtener configuración
 
     if request.method == 'POST':
-        if 'agregar_testigo' in request.form:
+        if config and config.configuracion_finalizada:  # Verificar si el sistema está bloqueado
+            flash("Error: El sistema está bloqueado. No se pueden realizar modificaciones.", "error")
+            return redirect(url_for('testigo.registro_testigos'))
+
+        try:
+            # Lógica para agregar testigos
             numero_documento = request.form.get('numero_documento')
             nombre = request.form.get('nombre')
             tipo_persona = request.form.get('tipo_persona')
@@ -24,27 +35,29 @@ def asignar_testigos():
                 tipo_persona=tipo_persona,
                 id_candidato=id_candidato
             )
-            try:
-                db.session.add(nuevo_testigo)
-                db.session.commit()
-                flash("Testigo agregado con éxito.", "success")
-            except IntegrityError:
-                db.session.rollback()
-                flash("Error: El número de documento ya existe.", "error")
-        elif 'asignar_testigo' in request.form:
-            testigo_id = request.form.get('testigo_id')
-            id_sede = request.form.get('id_sede')
-            mesas_seleccionadas = request.form.getlist('mesas')
-
-            for mesa_numero in mesas_seleccionadas:
-                asignacion = AsignacionTestigo(id_testigo=testigo_id, id_sede=id_sede, mesa_numero=mesa_numero)
-                db.session.add(asignacion)
+            db.session.add(nuevo_testigo)
             db.session.commit()
-            flash("Testigo asignado con éxito a las mesas seleccionadas.", "success")
-        return redirect(url_for('asignar_testigos'))
+            flash("Testigo agregado con éxito.", "success")
+        except IntegrityError:
+            db.session.rollback()
+            flash("Error: El número de documento ya existe.", "error")
 
-    return render_template('asignar_testigos.html', testigos=testigos, asignaciones=asignaciones, candidatos=candidatos, sedes=sedes)
+    elif 'registro_testigo' in request.form:
+        if config and config.configuracion_finalizada:  # Verificar si el sistema está bloqueado
+            flash("Error: El sistema está bloqueado. No se pueden realizar modificaciones.", "error")
+            return redirect(url_for('testigo.registro_testigos'))
 
+        testigo_id = request.form.get('testigo_id')
+        id_sede = request.form.get('id_sede')
+        mesas_seleccionadas = request.form.getlist('mesas')
+
+        for mesa_numero in mesas_seleccionadas:
+            asignacion = AsignacionTestigo(id_testigo=testigo_id, id_sede=id_sede, mesa_numero=mesa_numero)
+            db.session.add(asignacion)
+        db.session.commit()
+        flash("Testigo asignado con éxito a las mesas seleccionadas.", "success")
+
+    return render_template('registro_testigos.html', testigos=testigos, asignaciones=asignaciones, candidatos=candidatos, sedes=sedes, config=config)
 
 # Ruta para obtener las mesas de una sede
 @testigo_bp.route('/get_mesas/<int:sede_id>')
@@ -62,4 +75,6 @@ def eliminar_asignacion_testigo(asignacion_id):
         flash("Asignación eliminada con éxito.", "success")
     else:
         flash("Error: Asignación no encontrada.", "error")
-    return redirect(url_for('asignar_testigos'))
+    return redirect(url_for('testigo.registro_testigos'))
+
+

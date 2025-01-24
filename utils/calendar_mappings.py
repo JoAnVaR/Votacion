@@ -41,6 +41,11 @@ ACTIVITY_ROUTES = {
         'candidato.editar_candidato',
         'candidato.eliminar_candidato'
     ],
+    'Registro de Testigos': [
+        'testigo.registro_testigo',
+        'testigo.eliminar_asignacion_testigo'
+    ],
+
     'Jornada de Votación': [
         'votacion.paso1',
         'votacion.paso2',

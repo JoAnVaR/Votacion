@@ -324,3 +324,32 @@ function deshabilitarFormulario(selector, deshabilitar) {
         $elemento.find('.mesa-radio').css('pointer-events', 'auto');
     }
 }
+
+const TestigosManager = {
+    registrar: function (form, callback) {
+        const $form = $(form);
+        const datos = {
+            nombre: $form.find('input[name="nombre"]').val(),
+            numero_documento: $form.find('input[name="numero_documento"]').val(),
+            correo: $form.find('input[name="correo"]').val(),
+            telefono: $form.find('input[name="telefono"]').val()
+        };
+
+        $.ajax({
+            url: '/registrar_testigo',
+            type: 'POST',
+            data: datos,
+            success: function (response) {
+                if (response.success) {
+                    mostrarMensaje('Testigo registrado exitosamente', 'success');
+                    if (callback) callback(response);
+                } else {
+                    mostrarMensaje(response.message, 'error');
+                }
+            },
+            error: function (xhr) {
+                mostrarMensaje('Error al registrar testigo: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+            }
+        });
+    }
+};

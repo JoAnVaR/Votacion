@@ -51,7 +51,7 @@
             verificarAccesoRuta('candidato.registro_candidato', '[href="{{ url_for("candidato.registro_candidato") }}"]');
             verificarAccesoRuta('jurado.sorteo_jurados', '[href="{{ url_for("jurado.sorteo_jurados") }}"]');
             verificarAccesoRuta('jurado.reemplazo_jurados', '[href="{{ url_for("jurado.reemplazo_jurados") }}"]');
-
+            verificarAccesoRuta('testigo.registro_testigos', '[href="{{ url_for("testigo.registro_testigos") }}"]');
         });
     </script>
 
@@ -104,14 +104,13 @@
                     class="list-group-item list-group-item-action menu-item fase-2">
                     <i class="fas fa-exchange-alt"></i> Reemplazo de Jurados
                 </a>
-                <a href="{{ url_for('testigo.asignar_testigos') }}"
-                    class="list-group-item list-group-item-action menu-item fase-2" {% if not
-                    config.CONFIGURACION_FINALIZADA %}disabled{% endif %}>
-                    <i class="fas fa-eye"></i> Inscripción de Testigos
+                <a href="{{ url_for('testigo.registro_testigos') }}"
+                    class="list-group-item list-group-item-action menu-item fase-2">
+                    <i class="fas fa-eye"></i> Registro de Testigos
                 </a>
             </div>
 
-            <!-- Fase 3: Proceso de Votación -->
+            <!-- Fase 3: Proceso de Votación 
             <div class="mb-4">
                 <h3 style="color: var(--secondary-color)">Proceso de Votación</h3>
                 <a href="{{ url_for('votacion.paso1') }}"
@@ -130,6 +129,7 @@
                     <i class="fas fa-check-double"></i> Paso 3: Confirmación del Voto
                 </a>
             </div>
+            -->
         </div>
     </div>
 </div>
