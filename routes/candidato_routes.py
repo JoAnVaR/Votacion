@@ -14,6 +14,7 @@ def allowed_file(filename):
 
 # Ruta para Registro de Candidatos
 @candidato_bp.route('/registro-candidato', methods=['GET', 'POST'])
+@verificar_acceso_ruta('candidato.registro_candidato')
 def registro_candidato():
     if request.method == 'POST':
         try:
@@ -21,7 +22,7 @@ def registro_candidato():
             if not verificar_acceso():
                 return jsonify({
                     'success': False,
-                    'message': 'No tienes permiso para realizar esta acción'
+                    'message': 'Acceso no permitido.'
                 }), 403
                 
             id_estudiante = request.form['id_estudiante']

@@ -97,6 +97,7 @@ def agregar_mesas():
 
 # Ruta mesas existentes
 @sede_bp.route('/mesas_existentes/<int:sede_id>', methods=['GET'])
+@verificar_acceso_ruta('sede.ver_mesas_existentes')
 def mesas_existentes(sede_id):
     try:
         print(f"\n=== Consultando mesas para sede {sede_id} ===")
@@ -130,6 +131,7 @@ def before_request():
     print(f"Ruta llamada: {request.path}")
 
 @sede_bp.route('/borrar_mesa/<int:mesa_id>', methods=['POST'])
+@verificar_acceso_ruta('sede.borrar_mesa')
 def borrar_mesa(mesa_id):
     try:
         print(f"=== Intentando borrar mesa {mesa_id} ===")
@@ -165,6 +167,7 @@ def borrar_mesa(mesa_id):
         }), 500
 
 @sede_bp.route('/obtener_mesa_id', methods=['GET'])
+@verificar_acceso_ruta('sede.obtener_mesa_id')
 def obtener_mesa_id():
     try:
         sede_id = request.args.get('sede_id', type=int)
@@ -196,7 +199,7 @@ def obtener_mesa_id():
         }), 500
 
 @sede_bp.route('/borrar_sede/<int:sede_id>', methods=['POST', 'DELETE'])
-@verificar_acceso_ruta('sede.agregar_sede')
+@verificar_acceso_ruta('sede.borrar_sede')
 def borrar_sede(sede_id):
     try:
         print(f"Intentando borrar sede {sede_id}")
@@ -232,6 +235,7 @@ def borrar_sede(sede_id):
         }), 500
 
 @sede_bp.route('/<int:sede_id>/mesas')
+@verificar_acceso_ruta('sede.ver_mesas')
 def obtener_mesas_sede(sede_id):
     try:
         mesas = Mesa.query.filter_by(sede_id=sede_id).order_by(Mesa.mesa_numero).all()
@@ -258,6 +262,7 @@ def obtener_mesas_sede(sede_id):
 
 # Agregar esta nueva ruta
 @sede_bp.route('/obtener_sedes', methods=['GET'])
+@verificar_acceso_ruta('sede.obtener_sedes')
 def obtener_sedes():
     try:
         sedes = Sede.query.all()
@@ -271,3 +276,9 @@ def obtener_sedes():
             'success': False,
             'message': 'Error al obtener las sedes'
         }), 500
+
+@sede_bp.route('/administrar_sedes_mesas', methods=['GET'])
+@verificar_acceso_ruta('sede.administrar_sedes_mesas')
+def administrar_sedes_mesas():
+    # Lógica para administrar sedes y mesas
+    return render_template('administrar_sedes_mesas.html')

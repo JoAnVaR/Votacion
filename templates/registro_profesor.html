@@ -87,34 +87,73 @@
             </button>
         </form>
 
-        <!-- Formulario CSV -->
-        <form id="formCSV" class="mb-4" {% if not sedes %}style="display: none;" {% endif %}>
-            <h2 style="color: var(--primary-color)">Subir archivo CSV</h2>
-            <div class="form-group">
-                <label for="file">Subir archivo CSV:</label>
-                <input type="file" id="file" name="file" class="form-control mb-2" accept=".csv" required>
-                <small class="form-text text-muted">
-                    El archivo CSV debe contener las columnas: numero_documento, nombre, departamento, titulo, sede
-                    <br>
-                    Las sedes disponibles son: {% for sede in sedes %}{{ sede.nombre }}{% if not loop.last %}, {% endif
-                    %}{%
-                    endfor %}
-                    <br>
-                    <strong>Nota:</strong> El archivo debe estar en formato CSV y preferiblemente guardado con
-                    codificación
-                    UTF-8.
-                </small>
-            </div>
 
-            <button type="submit" class="btn"
-                style="background-color: var(--primary-color); color: var(--white-color);">
-                Cargar CSV
-            </button>
-            <a href="{{ url_for('profesor.descargar_plantilla_profesor') }}" class="btn ml-2"
-                style="background-color: var(--dark-blue); color: var(--white-color);">
-                Descargar plantilla CSV
-            </a>
-        </form>
+
+        <!-- Formulario CSV -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-file-upload mr-2"></i>
+                            Carga Masiva de Estudiantes
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-4" role="alert">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Instrucciones
+                            </h5>
+                            <p class="mb-2">El archivo CSV debe contener las siguientes columnas:</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="mb-0">
+                                        <li>Número de documento</li>
+                                        <li>Nombre completo</li>
+                                        <li>Grado</li>
+                                        
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="mb-0">
+                                        <li>Sección</li>
+                                        <li>Sede</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <hr>
+                            <p class="mb-0">
+                                <a href="{{ url_for('profesor.descargar_plantilla_profesor') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-download mr-1"></i>
+                                    Descargar plantilla CSV
+                                </a>
+                            </p>
+                        </div>
+                        <form id="formCSV" class="mb-4" {% if not sedes %}style="display: none;" {% endif %}>
+          
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="custom-file">
+                                        <input type="file" id="file" name="file" class="form-control mb-2" accept=".csv" required>
+                                       
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-upload mr-1"></i>
+                                        Cargar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
 
         {% if not sedes %}
         <div class="alert alert-warning">

@@ -3,7 +3,7 @@
 {% block title %}Sistema de Votación{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-1">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -55,18 +55,20 @@
         });
     </script>
 
-    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+    <header class="text-center py-1" style="border-radius: 6px 6px 0 0;">
         <h1>Bienvenido al Sistema de Votación</h1>
-        <a href="{{ url_for('calendario.calendario_electoral') }}" class="btn btn-primary mt-3">
+        <a href="{{ url_for('calendario.calendario_electoral') }}" class="btn btn-primary mt-1">
             <i class="fas fa-calendar-alt"></i> Ver Calendario Electoral
         </a>
     </header>
-    <div class="mt-5 text-center">
+    <div class="mt-2 text-center">
         <h2 style="color: var(--primary-color)">Seleccione una Opción</h2>
-        <div class="list-group mx-auto" style="max-width: 400px;">
+        <div class="list-group mx-auto" style="max-width: 800px;">
             <!-- Fase 1: Configuración Inicial -->
-            <div class="mb-4">
-                <h3 style="color: var(--secondary-color)">Configuración Inicial</h3>
+            <div id="fase1-container" class="fase-container mx-auto">
+                <h2>Fase 1: Configuración Inicial</h2>
+                <p>En esta fase, se configuran los parámetros iniciales para el proceso electoral, incluyendo la creación de sedes y la asignación de testigos.</p>
+                <p>Esta fase es crucial para establecer la base del proceso electoral, ya que se definen los parámetros que regirán el desarrollo de las siguientes fases.</p>
                 <a href="{{ url_for('sede.agregar_sede') }}"
                     class="list-group-item list-group-item-action menu-item fase-1">
                     <i class="fas fa-building"></i> Administrar Sedes y Mesas
@@ -90,8 +92,10 @@
             </div>
 
             <!-- Fase 2: Preparación Electoral -->
-            <div class="mb-4">
-                <h3 style="color: var(--secondary-color)">Preparación Electoral</h3>
+            <div id="fase2-container" class="fase-container mx-auto">
+                <h2>Fase 2: Preparación Electoral</h2>
+                <p>Durante esta fase, se realiza la preparación de los candidatos y se organizan los recursos necesarios para la votación.</p>
+                <p>En esta fase, se lleva a cabo la inscripción de candidatos, la organización de los recursos necesarios para la votación y la preparación de los materiales electorales.</p>
                 <a href="{{ url_for('candidato.registro_candidato') }}"
                     class="list-group-item list-group-item-action menu-item fase-2">
                     <i class="fas fa-user-tie"></i> Inscripción de Candidatos
@@ -111,8 +115,10 @@
             </div>
 
             <!-- Fase 3: Proceso de Votación 
-            <div class="mb-4">
-                <h3 style="color: var(--secondary-color)">Proceso de Votación</h3>
+            <div id="fase3-container" class="fase-container mx-auto">
+                <h2>Fase 3: Votación</h2>
+                <p>En esta fase, se lleva a cabo el proceso de votación, donde los ciudadanos ejercen su derecho al voto.</p>
+                <p>Esta fase es la más importante del proceso electoral, ya que se lleva a cabo la votación y se determinan los resultados de la elección.</p>
                 <a href="{{ url_for('votacion.paso1') }}"
                     class="list-group-item list-group-item-action menu-item fase-3" {% if not
                     config.PREPARACION_FINALIZADA %}disabled{% endif %}>

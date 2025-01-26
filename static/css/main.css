@@ -1,9 +1,11 @@
+/* Estilos globales */
+
 /* Variables globales con los colores exactos de la Registraduría */
 :root {
-    --primary-color: #004884;
-    --secondary-color: #3366CC;
-    --accent-color: #F3B61F;
-    --dark-blue: #00204A;
+    --primary-color: #333;
+    --secondary-color: #555;
+    --accent-color: #28a745;
+    --dark-blue: #333;
     --light-blue: #E6EFFD;
     --white-color: #FFFFFF;
     --gray-color: #F2F2F2;
@@ -11,19 +13,19 @@
     --success-color: #28a745;
     --danger-color: #dc3545;
     --warning-color: #ffc107;
-    --info-color: #17a2b8;
+    --info-color: #4e5a5c;
     --background-color: #E5E5E5;
     --text-color: #4B4B4B;
     --highlight-color: #FDB913;
-    --chart-primary: rgba(0, 72, 132, 0.8);
-    --chart-secondary: rgba(179, 20, 22, 0.8);
+    --chart-primary: rgba(51, 51, 51, 0.8);
+    --chart-secondary: rgba(85, 85, 85, 0.8);
     --chart-highlight: rgba(255, 198, 41, 0.8);
-    --chart-dark: rgba(0, 45, 82, 0.8);
+    --chart-dark: rgba(51, 51, 51, 0.8);
     --chart-light: rgba(240, 240, 240, 0.8);
-    --chart-border-primary: rgba(0, 72, 132, 1);
-    --chart-border-secondary: rgba(179, 20, 22, 1);
+    --chart-border-primary: rgba(51, 51, 51, 1);
+    --chart-border-secondary: rgba(85, 85, 85, 1);
     --chart-border-highlight: rgba(255, 198, 41, 1);
-    --chart-border-dark: rgba(0, 45, 82, 1);
+    --chart-border-dark: rgba(51, 51, 51, 1);
     --chart-border-light: rgba(240, 240, 240, 1);
     --container-background: #F8F9FA;
     --dark-mode-background: #1a1a1a;
@@ -33,40 +35,15 @@
     --dark-mode-border: #404040;
 }
 
-/* Agregar clase para tema oscuro */
-body.dark-theme {
-    background-color: var(--dark-mode-background);
-    color: var(--dark-mode-text);
-}
-
-body.dark-theme .container,
-body.dark-theme .card {
-    background-color: var(--dark-mode-card);
-    border-color: var(--dark-mode-border);
-}
-
-body.dark-theme .form-control {
-    background-color: var(--dark-mode-input);
-    color: var(--dark-mode-text);
-    border-color: var(--dark-mode-border);
-}
-
-body.dark-theme .table {
-    color: var(--dark-mode-text);
-}
-
-body.dark-theme .table td {
-    border-color: var(--dark-mode-border);
-}
-
 /* Estilos básicos */
 body {
     font-family: 'Montserrat', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
     background-color: var(--gray-color);
     color: var(--dark-gray);
     min-height: 100vh;
-    margin: 0;
-    padding: 0;
 }
 
 /* Contenedor principal */
@@ -83,7 +60,8 @@ body {
 
 /* Headers y títulos */
 header {
-    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    /* Optimizado para mejorar la legibilidad */
+    background: linear-gradient(to right, var(--primary-color), var(--dark-gray));
     color: var(--white-color);
     padding: 20px;
     text-align: center;
@@ -92,14 +70,23 @@ header {
 
 /* Botones */
 .btn-primary {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color); /* Color primario más claro */
     border-color: var(--primary-color);
     color: var(--white-color);
 }
 
 .btn-primary:hover {
-    background-color: var(--dark-blue);
-    border-color: var(--dark-blue);
+    background-color: var(--secondary-color); /* Color al pasar el ratón */
+    border-color: var(--secondary-color);
+}
+
+.btn-secondary {
+    background-color: var(--light-blue); /* Color de fondo neutro */
+    color: var(--dark-gray); /* Color de texto oscuro */
+}
+
+.btn-secondary:hover {
+    background-color: var(--light-gray); /* Color al pasar el ratón */
 }
 
 /* Tablas */
@@ -138,7 +125,7 @@ header {
 }
 
 .sede-link:hover {
-    color: var(--dark-blue);
+    color: var(--dark-gray);
     background-color: var(--light-gray);
     text-decoration: none;
 }
@@ -272,7 +259,7 @@ header {
 /* Estilos para badges */
 .badge {
     background-color: var(--highlight-color);
-    color: var(--dark-blue);
+    color: var(--dark-gray);
     padding: 5px 10px;
     border-radius: 4px;
 }
@@ -285,7 +272,7 @@ header {
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 72, 132, 0.05);
+    background-color: rgba(51, 51, 51, 0.05);
 }
 
 /* Estilos para botones de acción */
@@ -312,7 +299,7 @@ header {
 
 .alert-warning {
     background-color: var(--highlight-color);
-    color: var(--dark-blue);
+    color: var(--dark-gray);
 }
 
 .alert-danger {
@@ -343,7 +330,7 @@ header {
 }
 
 .dashboard-item:hover {
-    background-color: var(--dark-blue) !important;
+    background-color: var(--dark-gray) !important;
     transform: translateX(5px);
 }
 
@@ -378,18 +365,18 @@ header {
 
 /* Estilos para la página de administración de sedes */
 .card-header {
-    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    background: linear-gradient(to right, var(--primary-color), var(--dark-gray));
     color: var(--white-color);
 }
 
 .mesa-item .badge {
     background-color: var(--highlight-color);
-    color: var(--dark-blue);
+    color: var(--dark-gray);
     transition: all 0.3s ease;
 }
 
 .mesa-item .badge:hover {
-    background-color: var(--dark-blue);
+    background-color: var(--dark-gray);
     color: var(--white-color);
 }
 
@@ -405,13 +392,13 @@ header {
 
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(0, 72, 132, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(51, 51, 51, 0.25);
 }
 
 /* Estilos para formularios */
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(0, 72, 132, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(51, 51, 51, 0.25);
 }
 
 /* Estilos para tablas */
@@ -422,30 +409,28 @@ header {
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 72, 132, 0.05);
+    background-color: rgba(51, 51, 51, 0.05);
 }
 
 /* Estilos para botones */
 .btn-primary {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color); /* Color primario más claro */
     border-color: var(--primary-color);
     color: var(--white-color);
 }
 
 .btn-primary:hover {
-    background-color: var(--dark-blue);
-    border-color: var(--dark-blue);
+    background-color: var(--secondary-color); /* Color al pasar el ratón */
+    border-color: var(--secondary-color);
 }
 
 .btn-secondary {
-    background-color: var(--dark-blue);
-    border-color: var(--dark-blue);
-    color: var(--white-color);
+    background-color: var(--light-blue); /* Color de fondo neutro */
+    color: var(--dark-gray); /* Color de texto oscuro */
 }
 
 .btn-secondary:hover {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--light-gray); /* Color al pasar el ratón */
 }
 
 .btn-danger {
@@ -460,7 +445,7 @@ header {
 
 /* Estilos para las estadísticas */
 .card-header {
-    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    background: linear-gradient(to right, var(--primary-color), var(--dark-gray));
     color: var(--white-color);
 }
 
@@ -482,12 +467,12 @@ header {
 
 .toggle-grados .badge {
     background-color: var(--highlight-color);
-    color: var(--dark-blue);
+    color: var(--dark-gray);
     transition: all 0.3s ease;
 }
 
 .toggle-grados:hover .badge {
-    background-color: var(--dark-blue);
+    background-color: var(--dark-gray);
     color: var(--white-color);
 }
 
@@ -497,7 +482,7 @@ header {
 }
 
 .list-group-item:hover .badge {
-    background-color: var(--dark-blue);
+    background-color: var(--dark-gray);
 }
 
 /* Estilos para asignación de mesas */
@@ -522,14 +507,14 @@ header {
 
 .asignacion-sede-header,
 .resumen-sede-header {
-    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    background: linear-gradient(to right, var(--primary-color), var(--dark-gray));
     padding: 15px;
     border-radius: 4px;
 }
 
 .badge {
     background-color: var(--highlight-color);
-    color: var(--dark-blue);
+    color: var(--dark-gray);
     padding: 5px 10px;
     border-radius: 4px;
     font-weight: 500;
@@ -561,7 +546,7 @@ header {
 }
 
 .badge-secondary {
-    background-color: var(--dark-blue);
+    background-color: var(--dark-gray);
     color: var(--white-color);
 }
 
@@ -574,12 +559,12 @@ header {
 }
 
 .sede-header:hover {
-    background-color: var(--dark-blue) !important;
+    background-color: var(--dark-gray) !important;
 }
 
 .badge {
     background-color: var(--highlight-color);
-    color: var(--dark-blue);
+    color: var(--dark-gray);
 }
 
 .btn-finalizar {
@@ -590,7 +575,7 @@ header {
 }
 
 .btn-finalizar:hover {
-    background-color: var(--dark-blue);
+    background-color: var(--dark-gray);
 }
 
 .btn-finalizar:disabled {
@@ -613,7 +598,7 @@ canvas {
 }
 
 .card-header {
-    background: linear-gradient(to right, var(--primary-color), var(--dark-blue));
+    background: linear-gradient(to right, var(--primary-color), var(--dark-gray));
     color: var(--white-color);
     border-bottom: none;
 }
@@ -634,7 +619,7 @@ canvas {
 .chart-legend {
     margin-top: 1rem;
     font-size: 0.9rem;
-    color: var(--dark-blue);
+    color: var(--dark-gray);
 }
 
 .chart-tooltip {
@@ -667,14 +652,9 @@ canvas {
     justify-content: center;
 }
 
-.form-control {
-    border: 1px solid #ced4da;
-    transition: all 0.3s ease;
-}
-
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(0, 72, 132, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(51, 51, 51, 0.25);
 }
 
 .form-control:disabled {
@@ -737,7 +717,7 @@ label {
 }
 
 .mesa-radio:hover {
-    border-color: var(--dark-blue);
+    border-color: var(--dark-gray);
 }
 
 /* Estilos para tema oscuro */
@@ -1029,9 +1009,9 @@ body.dark-theme .table-info {
 }
 
 .alert-info {
-    background-color: var(--light-blue);
+    background-color: var(info-color);
     border-color: var(--secondary-color);
-    color: var(--dark-blue);
+    color: var(--dark-gray);
 }
 
 .alert-info .alert-heading {
@@ -1075,7 +1055,7 @@ body.dark-theme .table-info {
 .progress {
     height: 1.5rem;
     border-radius: 0.75rem;
-    background-color: var(--light-blue);
+    background-color: var(--light-gray);
 }
 
 .progress-bar {
@@ -1139,4 +1119,87 @@ body.dark-theme .table-info {
     .alert-info ul {
         padding-left: 1rem;
     }
+}
+
+/* Estilos para la página de inicio */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 10px 0;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+footer {
+    text-align: center;
+    padding: 10px 0;
+    background: #333;
+    color: #fff;
+}
+
+.fase-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    max-width: 95%; /* Aumentar el ancho */
+}
+
+.fase-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    max-width: 95%; /* Aumentar el ancho */
+}
+
+.list-group-item {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.list-group-item:hover {
+    background-color: #e2e6ea;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: #333;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: #555;
+}
+
+.list-group-item {
+    background-color: #f8f9fa; /* Color de fondo neutro */
+    color: #333; /* Color de texto oscuro */
+}
+
+.list-group-item:hover {
+    background-color: #e2e6ea; /* Color de fondo al pasar el ratón */
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: #333; /* Cambiar el color de los enlaces de navegación a gris oscuro */
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: #555; /* Color al pasar el ratón sobre los enlaces de navegación */
 }

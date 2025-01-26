@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, url_for, send_file, render_template
+from flask import Blueprint, request, jsonify, url_for, send_file, render_template, make_response
 from models import db, AsignacionTestigo, Sede, Mesa, Candidato
 import csv
 import io
@@ -89,24 +89,28 @@ def obtener_mesas(sede_id):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-@testigo_bp.route('/descargar-plantilla-csv')
-@verificar_acceso_ruta('testigo.descargar_plantilla_csv')
-def descargar_plantilla_csv():
-    # Crear un buffer en memoria para el CSV
-    output = io.StringIO()
-    writer = csv.writer(output)
+
+@testigo_bp.route('/descargar_plantilla_testigos')
+def descargar_plantilla_testigos():
+    # Crear un StringIO para escribir el CSV
+    si = io.StringIO()
+    writer = csv.writer(si)
     
-    # Escribir los encabezados
-    writer.writerow(['numero_documento', 'nombre', 'sede_id', 'mesa_id', 'candidato_id', 'es_blanco', 'es_otro'])
+    # Escribir los encabezados específicos para testigos
+    writer.writerow(['numero_documento', 'nombre', 'sede', 'mesa', 'tipo_testigo'])
     
-    # Preparar el archivo para descarga
-    output.seek(0)
-    return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8')),
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name='plantilla_testigos.csv'
-    )
+    # Obtener todas las sedes para el ejemplo
+    sedes = Sede.query.all()
+    sede_ejemplo = sedes[0].nombre if sedes else ''
+    
+    # Escribir una fila de ejemplo para testigos
+    writer.writerow(['12345678', 'Nombre Testigo', sede_ejemplo, 'Mesa 1', 'Candidato'])
+    
+    # Preparar la respuesta
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=plantilla_testigos.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 @testigo_bp.route('/testigos/obtener_estadisticas')
 def obtener_estadisticas():

@@ -19,19 +19,23 @@ def verificar_acceso_ruta(ruta=None):
                             fecha_inicio = evento.fecha_inicio.replace(hour=0, minute=0, second=0)
                             fecha_fin = evento.fecha_fin.replace(hour=23, minute=59, second=59)
                             
+                            # Permitir eliminación si estamos en horario de modificación
+                            if ruta == 'sede.borrar_sede' and (fecha_inicio <= ahora <= fecha_fin):
+                                return f(*args, **kwargs)
+                            
                             if fecha_inicio <= ahora <= fecha_fin:
                                 return f(*args, **kwargs)
+
+                            # Si no está permitido
+                            if request.method == 'POST':
+                                return jsonify({
+                                    'success': False,
+                                    'message': 'Esta sección no está disponible en este momento'
+                                }), 403
                 
-                # Si no está permitido
-                if request.method == 'POST':
-                    return jsonify({
-                        'success': False,
-                        'message': 'Esta sección no está disponible en este momento'
-                    }), 403
-                
-                # Para solicitudes GET, redirigir al index
-                #flash('Esta sección no está disponible en este momento según el calendario electoral.', 'warning')
-                #return redirect(url_for('index'))
+                            # Para solicitudes GET, redirigir al index
+                            flash('Esta sección no está disponible en este momento según el calendario electoral.', 'warning')
+                            return redirect(url_for('index'))
             
             return f(*args, **kwargs)
         return decorated_function

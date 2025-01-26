@@ -14,18 +14,45 @@ def registro_estudiante():
     if request.method == 'POST':
         try:
             data = request.form
+            print("Datos recibidos en el servidor:", data)  # Para depurar
+            print(data)  # Para depurar los datos recibidos
             
+            # Verificar si todos los campos requeridos están presentes
+            required_fields = ['numero_documento', 'nombre', 'grado', 'seccion', 'sede_id']
+            for field in required_fields:
+                if field not in data:
+                    print(f"Falta el campo requerido: {field}")  # Para depurar
+                    return jsonify({'success': False, 'message': f'Falta el campo requerido: {field}'}), 400
+
             # Verificar si ya existe un estudiante con ese número de documento
             estudiante_existente = Estudiante.query.filter_by(
                 numero_documento=data['numero_documento']
             ).first()
             
             if estudiante_existente:
+                print("El estudiante ya existe en la base de datos.")  # Para depurar
                 return jsonify({
                     'success': False,
                     'message': 'Ya existe un estudiante con ese número de documento'
-                })
+                }), 400
 
+            try:
+                # Verificar si el número de documento es único
+                if Estudiante.query.filter_by(numero_documento=data['numero_documento']).first():
+                    print("El número de documento ya existe en la base de datos.")  # Para depurar
+                    return jsonify({
+                        'success': False,
+                        'message': 'El número de documento ya existe en la base de datos'
+                    }), 400
+            except Exception as e:
+                print(f"Error al verificar número de documento: {str(e)}")  # Para debugging
+                return jsonify({
+                    'success': False,
+                    'message': f"Error al verificar número de documento: {str(e)}"
+                }), 400
+
+            print(f"Intentando registrar: {data['numero_documento']}")  # Para depurar antes de la inserción
+            print("Intentando registrar estudiante:", data)  # Para depurar
             estudiante = Estudiante(
                 numero_documento=data['numero_documento'],
                 nombre=data['nombre'],
@@ -33,6 +60,7 @@ def registro_estudiante():
                 seccion=data['seccion'],
                 sede_id=data['sede_id']
             )
+            print("Estudiante creado:", estudiante)  # Para depurar
             db.session.add(estudiante)
             db.session.commit()
             
@@ -44,6 +72,7 @@ def registro_estudiante():
         except Exception as e:
             db.session.rollback()
             print(f"Error al registrar estudiante: {str(e)}")  # Para debugging
+            print("Error al registrar estudiante:", e)  # Para debugging
             return jsonify({
                 'success': False,
                 'message': f"Error al registrar estudiante: {str(e)}"

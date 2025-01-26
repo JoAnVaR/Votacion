@@ -10,8 +10,11 @@
 
     <div class="mt-5">
         <!-- Formulario individual -->
-        <form id="formEstudiante" class="mb-4">
-            <h2 style="color: var(--primary-color)">Registrar Estudiante</h2>
+        <form id="formEstudiante" class="mb-4" action="{{ url_for('estudiante.registro_estudiante') }}" method="post" {% if
+            config.configuracion_finalizada %}style="display: none;" {% endif %}>
+            <h2 style="color: var(--primary-color)">
+                Registrar Estudiante
+            </h2>
             <div class="form-group">
                 <label for="numero_documento">
                     <i class="fas fa-id-card"></i> Número de Documento:
@@ -20,102 +23,133 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
                     </div>
-                    <input type="text" id="numero_documento" name="numero_documento" class="form-control"
-                        placeholder="Ingrese el número de documento" required>
-                </div>
+                <input type="text" class="form-control" id="numero_documento" name="numero_documento" 
+                placeholder="Ingrese el número de documento" required>
             </div>
-
+            </div>
             <div class="form-group">
                 <label for="nombre">
                     <i class="fas fa-user"></i> Nombre:
                 </label>
                 <div class="input-group">
                     <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-font"></i></span>
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
                     </div>
-                    <input type="text" id="nombre" name="nombre" class="form-control"
-                        placeholder="Ingrese el nombre completo" required>
+                    <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ingrese el nombre" required>
+                    
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="grado">
                     <i class="fas fa-graduation-cap"></i> Grado:
                 </label>
                 <div class="input-group">
                     <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
+                        <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
                     </div>
-                    <input type="text" id="grado" name="grado" class="form-control" placeholder="Ingrese el grado"
-                        required>
+                    <input type="text" class="form-control" id="grado" name="grado" placeholder="Ingrese el grado" required>
+                    <div class="invalid-feedback">
+                    
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="seccion">
-                    <i class="fas fa-users"></i> Sección:
+                    <i class="fas fa-chalkboard-teacher"></i> Sección:
                 </label>
                 <div class="input-group">
                     <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-door-open"></i></span>
+                        <span class="input-group-text"><i class="fas fa-chalkboard-teacher"></i></span>
                     </div>
-                    <input type="text" id="seccion" name="seccion" class="form-control" placeholder="Ingrese la sección"
-                        required>
+                    <input type="text" class="form-control" id="seccion" name="seccion" placeholder="Ingrese la sección" required>
+                    
                 </div>
             </div>
-
             <div class="form-group">
-                <label for="sede">
-                    <i class="fas fa-building"></i> Sede:
+                <label for="sede_id">
+                    <i class="fas fa-school"></i> Sede:
                 </label>
                 <div class="input-group">
                     <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                        <span class="input-group-text"><i class="fas fa-school"></i></span>
                     </div>
-                    <select id="sede_id" name="sede_id" class="form-control" required>
-                        <option value="">Seleccione una sede</option>
+                    <select class="form-control" id="sede_id" name="sede_id" required>
+                        <option value="" disabled selected>Seleccione una sede</option>
                         {% for sede in sedes %}
-                        <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                            <option value="{{ sede.id }}">{{ sede.nombre }}</option>
                         {% endfor %}
                     </select>
+                    
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary"
-                style="background-color: var(--primary-color); border-color: var(--primary-color);">
-                Registrar
-            </button>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
         </form>
 
         <!-- Formulario CSV -->
-        <form id="formCSV" action="{{ url_for('estudiante.cargar_csv') }}" method="post" enctype="multipart/form-data"
-            class="mb-4" {% if not sedes %}style="display: none;" {% endif %}>
-            <h2 style="color: var(--primary-color)">Subir archivo CSV</h2>
-            <div class="form-group">
-                <label for="file">Subir archivo CSV:</label>
-                <input type="file" id="file" name="file" class="form-control mb-2" accept=".csv" required>
-                <small class="form-text text-muted">
-                    El archivo CSV debe contener las columnas: numero_documento, nombre, grado, seccion, sede
-                    <br>
-                    Las sedes disponibles son: {% for sede in sedes %}{{ sede.nombre }}{% if not loop.last %}, {% endif
-                    %}{%
-                    endfor %}
-                    <br>
-                    <strong>Nota:</strong> El archivo debe estar en formato CSV y preferiblemente guardado con
-                    codificación
-                    UTF-8.
-                </small>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-file-upload mr-2"></i>
+                            Carga Masiva de Estudiantes
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-4" role="alert">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Instrucciones
+                            </h5>
+                            <p class="mb-2">El archivo CSV debe contener las siguientes columnas:</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="mb-0">
+                                        <li>Número de documento</li>
+                                        <li>Nombre completo</li>
+                                        <li>Grado</li>
+                                        
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="mb-0">
+                                        <li>Sección</li>
+                                        <li>Sede</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <hr>
+                            <p class="mb-0">
+                                <a href="{{ url_for('estudiante.descargar_plantilla_estudiante') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-download mr-1"></i>
+                                    Descargar plantilla CSV
+                                </a>
+                            </p>
+                        </div>
+                        <form id="formCSV" action="{{ url_for('estudiante.cargar_csv') }}" method="post" enctype="multipart/form-data" class="mb-4 needs-validation" novalidate {% if not sedes %}style="display: none;" {% endif %}>
+                            
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="custom-file">
+                                        <input type="file" id="file" name="file" class="form-control mb-2" accept=".csv" required>
+                                       
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-upload mr-1"></i>
+                                        Cargar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            
+                        </form>
+                    </div>
+                </div>
             </div>
-
-            <button type="submit" class="btn btn-primary"
-                style="background-color: var(--primary-color); border-color: var(--primary-color);">
-                Cargar CSV
-            </button>
-            <a href="{{ url_for('estudiante.descargar_plantilla_estudiante') }}" class="btn btn-secondary ml-2"
-                style="background-color: var(--dark-blue); border-color: var(--dark-blue);">
-                Descargar plantilla CSV
-            </a>
-        </form>
+        </div>
 
         {% if not sedes %}
         <div class="alert alert-warning">
@@ -135,98 +169,128 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
     <script>
-        function verificarAccesoRuta(ruta, elemento, callback) {
-            $.ajax({
-                url: "{{ url_for('calendario.verificar_acceso') }}",
-                type: 'POST',
-                data: JSON.stringify({ ruta: ruta }),
-                contentType: 'application/json',
-                success: function (response) {
-                    if (!response.permitido) {
-                        deshabilitarFormulario('#formEstudiante', true);
-                        deshabilitarFormulario('#formCSV', true);
-                        $('.btn').addClass('disabled')
-                            .attr('title', 'No disponible en este momento')
-                            .css('pointer-events', 'none')
-                            .css('opacity', '0.6');
+        $(document).ready(function() {
+            let formSubmitted = false;
 
+            $('#formEstudiante').on('submit', function(e) {
+                e.preventDefault(); // Prevenir el envío predeterminado
+                const form = $(this);
+                
+                // Deshabilitar el botón para evitar doble envío
+                form.find('button[type="submit"]').prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ url_for('estudiante.registro_estudiante') }}",
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            mostrarMensaje('Estudiante guardado con éxito', 'success');
+                            $('#formEstudiante')[0].reset(); // Limpiar el formulario
+                            actualizarEstadisticas();
+                        } else {
+                            mostrarMensaje(response.message || 'Error al guardar el estudiante', 'error');
+                        }
+                        form.find('button[type="submit"]').prop('disabled', false); // Rehabilitar el botón
+                    },
+                    error: function (xhr) {
+                        mostrarMensaje('Error al guardar el estudiante', 'error');
+                        form.find('button[type="submit"]').prop('disabled', false); // Rehabilitar el botón
+                    }
+                });
+            });
+
+            function verificarAccesoRuta(ruta, elemento, callback) {
+                $.ajax({
+                    url: "{{ url_for('calendario.verificar_acceso') }}",
+                    type: 'POST',
+                    data: JSON.stringify({ ruta: ruta }),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        if (!response.permitido) {
+                            deshabilitarFormulario('#formEstudiante', true);
+                            deshabilitarFormulario('#formCSV', true);
+                            $('.btn').addClass('disabled')
+                                .attr('title', 'No disponible en este momento')
+                                .css('pointer-events', 'none')
+                                .css('opacity', '0.6');
+
+                            Swal.fire({
+                                title: 'Acceso no disponible',
+                                text: 'Esta sección no está disponible en este momento según el calendario electoral',
+                                icon: 'warning',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didClose: () => {
+                                    window.location.href = "{{ url_for('index') }}";
+                                }
+                            });
+
+                            if (callback) callback(false);
+                        } else {
+                            if (callback) callback(true);
+                        }
+                    },
+                    error: function () {
                         Swal.fire({
-                            title: 'Acceso no disponible',
-                            text: 'Esta sección no está disponible en este momento según el calendario electoral',
-                            icon: 'warning',
+                            title: 'Error',
+                            text: 'Error al verificar acceso',
+                            icon: 'error',
                             toast: true,
                             position: 'top-end',
                             showConfirmButton: false,
                             timer: 3000,
-                            timerProgressBar: true,
-                            didClose: () => {
-                                window.location.href = "{{ url_for('index') }}";
-                            }
+                            timerProgressBar: true
                         });
-
                         if (callback) callback(false);
-                    } else {
-                        if (callback) callback(true);
                     }
-                },
-                error: function () {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Error al verificar acceso',
-                        icon: 'error',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
-                    if (callback) callback(false);
-                }
-            });
-        }
+                });
+            }
 
-        function deshabilitarFormulario(formId, deshabilitar) {
-            $(`${formId} input, ${formId} select, ${formId} button, ${formId} textarea`).prop('disabled', deshabilitar);
-            $(formId).css('opacity', deshabilitar ? '0.6' : '1');
-        }
+            function deshabilitarFormulario(formId, deshabilitar) {
+                $(`${formId} input, ${formId} select, ${formId} button, ${formId} textarea`).prop('disabled', deshabilitar);
+                $(formId).css('opacity', deshabilitar ? '0.6' : '1');
+            }
 
-        function actualizarEstadisticas() {
-            $.ajax({
-                url: "{{ url_for('estudiante.obtener_estadisticas') }}",
-                type: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        $('#estadisticas').html(response.html);
-                        $('.toggle-grados').off('click').on('click', function (e) {
-                            e.preventDefault();
-                            var $lista = $(this).closest('.card-header').next('.grados-lista');
-                            $('.grados-lista').not($lista).slideUp();
-                            $lista.slideToggle();
-                        });
-                    } else {
-                        mostrarMensaje(response.message || 'Error al cargar estadísticas', 'error');
+            function actualizarEstadisticas() {
+                $.ajax({
+                    url: "{{ url_for('estudiante.obtener_estadisticas') }}",
+                    type: 'GET',
+                    success: function (response) {
+                        if (response.success) {
+                            $('#estadisticas').html(response.html);
+                            $('.toggle-grados').off('click').on('click', function (e) {
+                                e.preventDefault();
+                                var $lista = $(this).closest('.card-header').next('.grados-lista');
+                                $('.grados-lista').not($lista).slideUp();
+                                $lista.slideToggle();
+                            });
+                        } else {
+                            mostrarMensaje(response.message || 'Error al cargar estadísticas', 'error');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        mostrarMensaje('Error al cargar estadísticas: ' + error, 'error');
                     }
-                },
-                error: function (xhr, status, error) {
-                    mostrarMensaje('Error al cargar estadísticas: ' + error, 'error');
-                }
-            });
-        }
+                });
+            }
 
-        function mostrarMensaje(mensaje, tipo) {
-            Swal.fire({
-                title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
-                text: mensaje,
-                icon: tipo,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            });
-        }
+            function mostrarMensaje(mensaje, tipo) {
+                Swal.fire({
+                    title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+                    text: mensaje,
+                    icon: tipo,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
 
-        $(document).ready(function () {
             const configuracionFinalizada = $('#configuracionFinalizada').val() === 'true';
 
             if (configuracionFinalizada) {
@@ -236,43 +300,6 @@
             } else {
                 verificarAccesoRuta('estudiante.registro_estudiante');
             }
-
-            // Manejar el registro individual
-            $('#formEstudiante').on('submit', function (e) {
-                e.preventDefault();
-                var $form = $(this);
-                var $submitButton = $form.find('button[type="submit"]');
-
-                $submitButton.prop('disabled', true);
-
-                $.ajax({
-                    url: "{{ url_for('estudiante.registro_estudiante') }}",
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function (response) {
-                        if (response.success) {
-                            mostrarMensaje('Estudiante registrado exitosamente', 'success');
-                            $('#formEstudiante')[0].reset();
-                            actualizarEstadisticas();
-                        } else {
-                            mostrarMensaje(response.message || 'Error al registrar estudiante', 'error');
-                        }
-                    },
-                    error: function (xhr) {
-                        if (xhr.status === 403) {
-                            mostrarMensaje('Esta sección no está disponible en este momento según el calendario electoral', 'warning');
-                            setTimeout(function () {
-                                window.location.href = "{{ url_for('index') }}";
-                            }, 2000);
-                        } else {
-                            mostrarMensaje('Error al registrar estudiante: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
-                        }
-                    },
-                    complete: function () {
-                        $submitButton.prop('disabled', false);
-                    }
-                });
-            });
 
             // Manejar la carga de CSV
             $('#formCSV').on('submit', function (e) {
@@ -302,7 +329,9 @@
                         mostrarMensaje('Error al procesar el archivo CSV: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
                     },
                     complete: function () {
-                        $submitButton.prop('disabled', false);
+                        setTimeout(function() {
+                            $submitButton.prop('disabled', false);
+                        }, 2000);
                     }
                 });
             });
@@ -325,6 +354,25 @@
                 }
             });
         });
+    </script>
+
+    <script>
+        // Agregar validación de formulario
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
     </script>
 </div>
 {% endblock %}

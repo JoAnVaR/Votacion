@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <header class="text-center py-4">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;" class="fas fa-user-graduate">
         <h1>Administrar Sedes y Mesas</h1>
     </header>
 
@@ -18,7 +18,7 @@
             </h2>
             <div class="form-group">
                 <label for="nombre_sede">
-                    Nombre de la Sede:
+                    <i class="fas fa-building"></i> Nombre de la Sede:
                 </label>
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -99,9 +99,9 @@
                         <div class="card-header d-flex justify-content-between align-items-center"
                             style="background-color: var(--primary-color); color: var(--white-color);">
                             <span>{{ sede.nombre }}</span>
-                            {% if sede.mesas|length == 0 and not config.configuracion_finalizada %}
+                            {% if sede.mesas|length == 0 %}
                             <button class="btn btn-danger btn-sm borrar-sede" data-sede-id="{{ sede.id }}"
-                                style="padding: 0.25rem 0.5rem; background-color: var(--secondary-color); border-color: var(--secondary-color);">
+                                style="padding: 0.25rem 0.5rem; background-color: var(--secondary-color); border-color: var(--secondary-color);" aria-label="Eliminar sede">
                                 <small>×</small>
                             </button>
                             {% endif %}
@@ -116,7 +116,7 @@
                                         {% if loop.last and not config.configuracion_finalizada %}
                                         <button class="btn btn-danger btn-sm ml-1 borrar-mesa"
                                             data-sede-id="{{ sede.id }}" data-mesa-id="{{ mesa.id }}"
-                                            style="padding: 0.1rem 0.4rem; background-color: var(--secondary-color); border-color: var(--secondary-color);">
+                                            style="padding: 0.1rem 0.4rem; background-color: var(--secondary-color); border-color: var(--secondary-color);" aria-label="Eliminar mesa">
                                             <small>×</small>
                                         </button>
                                         {% endif %}
@@ -287,25 +287,29 @@
 
         // Manejar envío del formulario de sede
         $('#formSede').submit(function (e) {
-            e.preventDefault();
-            console.log('Formulario enviado');
+            e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
 
             $.ajax({
                 url: $(this).attr('action'),
-                type: 'POST',
+                type: $(this).attr('method'),
                 data: $(this).serialize(),
                 success: function (response) {
-                    console.log('Respuesta recibida:', response);
                     if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sede guardada',
+                            text: 'La sede ha sido agregada exitosamente.'
+                        });
+
                         // Agregar nueva sede a la lista
                         var nuevaSede = `
-                        <div class="card mb-3">
-                            <div class="card-header bg-primary text-white">
-                                ID ${response.sede.id} - ${response.sede.nombre}
-                            </div>
-                            <ul class="list-group list-group-flush" id="mesas-sede-${response.sede.id}">
-                            </ul>
-                        </div>`;
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    ID ${response.sede.id} - ${response.sede.nombre}
+                                </div>
+                                <ul class="list-group list-group-flush" id="mesas-sede-${response.sede.id}">
+                                </ul>
+                            </div>`;
                         $('#listaSedes').append(nuevaSede);
 
                         // Agregar opción al select de sedes
@@ -313,14 +317,20 @@
 
                         // Limpiar formulario
                         $('#formSede')[0].reset();
-
-                        // Mostrar mensaje de éxito
-                        mostrarMensaje('Sede agregada exitosamente', 'success');
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
                     }
                 },
-                error: function (xhr, status, error) {
-                    console.error('Error:', error);
-                    mostrarMensaje('Error al agregar sede: ' + error, 'danger');
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Ocurrió un error al agregar la sede.'
+                    });
                 }
             });
         });
@@ -328,41 +338,76 @@
         // Manejar el borrado de mesas
         $(document).on('click', '.borrar-mesa', function (e) {
             e.preventDefault();
-            var sedeId = $(this).data('sede-id');
-            var mesaId = $(this).data('mesa-id');
-            var $mesaItem = $(this).closest('.mesa-item');
+            var $btn = $(this);
+            var mesaId = $btn.data('mesa-id');
+            var sedeId = $btn.data('sede-id');
 
-            if (confirm('¿Está seguro de que desea eliminar esta mesa?')) {
-                $.ajax({
-                    url: "{{ url_for('sede.borrar_mesa', mesa_id=0) }}".replace('0', mesaId),
-                    type: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            $mesaItem.remove();
-                            mostrarMensaje('Mesa eliminada exitosamente', 'success');
-                            obtenerNumeroMesaDisponible(sedeId);
-                        } else {
-                            mostrarMensaje(response.message || 'Error al eliminar mesa', 'error');
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: '¿Desea eliminar esta mesa?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ url_for('sede.borrar_mesa', mesa_id=0) }}".replace('0', mesaId),
+                        type: 'POST',
+                        success: function (response) {
+                            if (response.success) {
+                                mostrarMensaje('Mesa eliminada exitosamente', 'success');
+                                actualizarMesasSede(sedeId); // Actualizamos las mesas de la sede
+                            } else {
+                                mostrarMensaje(response.message || 'Error al eliminar la mesa', 'error');
+                            }
+                        },
+                        error: function (xhr) {
+                            mostrarMensaje('Error al eliminar la mesa: ' + xhr.responseText, 'error');
                         }
-                    },
-                    error: function (xhr, status, error) {
-                        if (xhr.status === 403) {
-                            mostrarMensaje('No está permitido eliminar mesas en este momento según el calendario electoral', 'warning');
-                        } else {
-                            console.error('Error detallado:', {
-                                status: xhr.status,
-                                statusText: xhr.statusText,
-                                responseText: xhr.responseText,
-                                error: error
-                            });
-                            mostrarMensaje('Error al eliminar mesa: ' + error, 'error');
+                    });
+                }
+            });
+        });
+
+        // Manejar el borrado de sedes
+        $(document).on('click', '.borrar-sede', function (e) {
+            e.preventDefault();
+            var sedeId = $(this).data('sede-id');
+            var $sedeCard = $(this).closest('.card');
+
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: '¿Desea eliminar esta sede?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ url_for('sede.borrar_sede', sede_id=0) }}".replace('0', sedeId),
+                        type: 'POST',
+                        success: function (response) {
+                            if (response.success) {
+                                mostrarMensaje('Sede eliminada exitosamente', 'success');
+                                $sedeCard.fadeOut(300, function () {
+                                    $(this).remove();
+                                });
+                            } else {
+                                mostrarMensaje(response.message || 'Error al eliminar sede', 'error');
+                            }
+                        },
+                        error: function (xhr) {
+                            mostrarMensaje('Error al eliminar sede: ' + xhr.responseText, 'error');
                         }
-                    }
-                });
-            }
+                    });
+                }
+            });
         });
 
         // Función para actualizar el select de sedes
@@ -474,7 +519,7 @@
                                             <button class="btn btn-danger btn-sm ml-1 borrar-mesa"
                                                 data-sede-id="${sedeId}" 
                                                 data-mesa-id="${mesa.id}"
-                                                style="padding: 0.1rem 0.4rem; background-color: var(--secondary-color); border-color: var(--secondary-color);">
+                                                style="padding: 0.1rem 0.4rem; background-color: var(--secondary-color); border-color: var(--secondary-color);" aria-label="Eliminar mesa">
                                                 <small>×</small>
                                             </button>
                                         ` : ''}
@@ -526,68 +571,77 @@
                 }
             });
         });
-    });
 
-    function verificarAccesoRuta(ruta, elemento, callback) {
-        $.ajax({
-            url: "{{ url_for('calendario.verificar_acceso') }}",
-            type: 'POST',
-            data: JSON.stringify({ ruta: ruta }),
-            contentType: 'application/json',
-            success: function (response) {
-                if (!response.permitido) {
-                    if (elemento) {
-                        $(elemento).addClass('disabled')
-                            .attr('title', 'No disponible en este momento')
-                            .css('pointer-events', 'none')
-                            .css('opacity', '0.6');
+        verificarAccesoRuta('sede.administrar_sedes_mesas', null, function (permitido) {
+            if (!permitido) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Acceso no disponible',
+                    text: 'Esta sección no está disponible en este momento según el calendario electoral'
+                });
+                $('#formSede').hide(); // Ocultar el formulario si no hay acceso
+            }
+        });
+
+        function verificarAccesoRuta(ruta, elemento, callback) {
+            $.ajax({
+                url: "{{ url_for('calendario.verificar_acceso') }}",
+                type: 'POST',
+                data: JSON.stringify({ ruta: ruta }),
+                contentType: 'application/json',
+                success: function (response) {
+                    if (!response.permitido) {
+                        if (elemento) {
+                            $(elemento).addClass('disabled')
+                                .attr('title', 'No disponible en este momento')
+                                .css('pointer-events', 'none')
+                                .css('opacity', '0.6');
+                        }
+                        if (callback) callback(false);
+
+                        // Mostrar mensaje de acceso no disponible
+                        Swal.fire({
+                            title: 'Acceso no disponible',
+                            text: 'Esta sección no está disponible en este momento según el calendario electoral',
+                            icon: 'warning',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didClose: () => {
+                                window.location.href = "{{ url_for('index') }}";
+                            }
+                        });
+                    } else {
+                        if (callback) callback(true);
                     }
-                    if (callback) callback(false);
-
-                    // Mostrar mensaje de acceso no disponible
+                },
+                error: function () {
                     Swal.fire({
-                        title: 'Acceso no disponible',
-                        text: 'Esta sección no está disponible en este momento según el calendario electoral',
-                        icon: 'warning',
+                        title: 'Error',
+                        text: 'Error al verificar acceso',
+                        icon: 'error',
                         toast: true,
                         position: 'top-end',
                         showConfirmButton: false,
                         timer: 3000,
-                        timerProgressBar: true,
-                        didClose: () => {
-                            window.location.href = "{{ url_for('index') }}";
-                        }
+                        timerProgressBar: true
                     });
-                } else {
-                    if (callback) callback(true);
+                    if (callback) callback(false);
                 }
-            },
-            error: function () {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Error al verificar acceso',
-                    icon: 'error',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-                if (callback) callback(false);
-            }
-        });
-    }
-
-    function deshabilitarFormularios(deshabilitar) {
-        const elementos = $('#formMesa, #formSede, #listaSedes .card, .borrar-sede');
-        if (deshabilitar) {
-            elementos.addClass('disabled-element');
-        } else {
-            elementos.removeClass('disabled-element');
+            });
         }
-    }
 
-
+        function deshabilitarFormularios(deshabilitar) {
+            const elementos = $('#formMesa, #formSede, #listaSedes .card, .borrar-sede');
+            if (deshabilitar) {
+                elementos.addClass('disabled-element');
+            } else {
+                elementos.removeClass('disabled-element');
+            }
+        }
+    });
 </script>
 {% endblock %}
 

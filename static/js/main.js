@@ -7,7 +7,8 @@ const Toast = Swal.mixin({
     timerProgressBar: true
 });
 
-// Función para mostrar mensajes de éxito
+// Funciones para mostrar mensajes
+// -------------------------------
 function mostrarExito(mensaje) {
     Toast.fire({
         icon: 'success',
@@ -15,7 +16,6 @@ function mostrarExito(mensaje) {
     });
 }
 
-// Función para mostrar mensajes de error
 function mostrarError(mensaje) {
     Toast.fire({
         icon: 'error',
@@ -23,7 +23,6 @@ function mostrarError(mensaje) {
     });
 }
 
-// Función para mostrar mensajes de advertencia
 function mostrarAdvertencia(mensaje) {
     Toast.fire({
         icon: 'warning',
@@ -31,7 +30,6 @@ function mostrarAdvertencia(mensaje) {
     });
 }
 
-// Función para mostrar mensajes de información
 function mostrarInfo(mensaje) {
     Toast.fire({
         icon: 'info',
@@ -53,7 +51,8 @@ function confirmarAccion(titulo, mensaje) {
     });
 }
 
-// Función para validar campos requeridos
+// Funciones para validación de formularios
+// ----------------------------------------
 function validarCamposRequeridos(formulario) {
     let camposValidos = true;
     const camposRequeridos = formulario.querySelectorAll('[required]');
@@ -70,52 +69,59 @@ function validarCamposRequeridos(formulario) {
     return camposValidos;
 }
 
-// Función para formatear números con separadores de miles
+// Funciones para formateo de números
+// -----------------------------------
 function formatearNumero(numero) {
     return new Intl.NumberFormat('es-CO').format(numero);
 }
 
-// Función para validar número de documento
+// Funciones para validación de documentos
+// ----------------------------------------
 function validarDocumento(documento) {
     return /^\d{5,12}$/.test(documento);
 }
 
-// Función para validar correo electrónico
+// Funciones para validación de correos electrónicos
+// ------------------------------------------------
 function validarEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// Función para validar número de teléfono
+// Funciones para validación de números de teléfono
+// -----------------------------------------------
 function validarTelefono(telefono) {
     return /^\d{10}$/.test(telefono);
 }
 
-// Función para limpiar formularios
+// Funciones para limpieza de formularios
+// ---------------------------------------
 function limpiarFormulario(formulario) {
     formulario.reset();
     const camposInvalidos = formulario.querySelectorAll('.is-invalid');
     camposInvalidos.forEach(campo => campo.classList.remove('is-invalid'));
 }
 
-// Función para deshabilitar botón de envío durante el proceso
+// Funciones para manejo de botones
+// ---------------------------------
 function deshabilitarBoton(boton, texto = 'Procesando...') {
     boton.disabled = true;
     boton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${texto}`;
 }
 
-// Función para habilitar botón de envío
 function habilitarBoton(boton, textoOriginal) {
     boton.disabled = false;
     boton.innerHTML = textoOriginal;
 }
 
-// Función para manejar errores de fetch
+// Funciones para manejo de errores de fetch
+// ------------------------------------------
 function manejarErrorFetch(error) {
     console.error('Error:', error);
     mostrarError('Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.');
 }
 
-// Función para convertir formulario a objeto
+// Funciones para conversión de formularios a objetos
+// -------------------------------------------------
 function formToObject(formulario) {
     const formData = new FormData(formulario);
     const objeto = {};
@@ -126,6 +132,7 @@ function formToObject(formulario) {
 }
 
 // Event Listeners globales
+// -------------------------
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar tooltips de Bootstrap
     $('[data-toggle="tooltip"]').tooltip();
@@ -152,7 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Función para inicializar la aplicación
+function init() {
+    console.log('Aplicación inicializada');
+    // Aquí puedes añadir más lógica de inicialización
+}
+
+// Llamar a la función init al cargar la página
+window.onload = init;
+
 // Funciones para estudiantes
+// -------------------------
 const EstudiantesManager = {
     modificar: function (form, callback) {
         const $form = $(form);
@@ -209,6 +226,7 @@ const EstudiantesManager = {
 };
 
 // Funciones para asignación de mesas
+// -----------------------------------
 const MesasManager = {
     toggleGrados: function (sedeId) {
         const gradosDiv = $(`#grados-${sedeId}`);
@@ -404,6 +422,7 @@ $(document).ready(function () {
 });
 
 // Manejo de carga masiva de testigos
+// -----------------------------------
 const CargaMasivaManager = {
     init: function() {
         // Actualizar el nombre del archivo seleccionado

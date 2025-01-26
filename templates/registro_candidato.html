@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
 
-<div class="container mt-5">
+<div class="container mt-4">
     <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
         <h1>Registro de Candidatos</h1>
     </header>
@@ -217,7 +217,12 @@
             // Verificar acceso al cargar la página
             verificarAccesoRuta('candidato.registro_candidato', null, function (permitido) {
                 if (!permitido) {
-                    console.log('Acceso denegado al cargar la página');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Acceso no disponible',
+                        text: 'Esta sección no está disponible en este momento según el calendario electoral'
+                    });
+                    $('#formCandidato').hide(); // Ocultar el formulario si no hay acceso
                 }
             });
 

@@ -6,217 +6,212 @@
 <input type="hidden" id="configuracionFinalizada"
     value="{{ 'true' if config and config.configuracion_finalizada else 'false' }}">
 
-<div class="container mt-5" id="mainContainer">
-    {% if config and config.configuracion_finalizada %}
-    <div class="alert alert-warning">
-        <i class="fas fa-lock"></i> El sistema está bloqueado. No se pueden realizar modificaciones.
-    </div>
-    {% endif %}
-
-    <header class="text-center bg-primary text-white py-4" style="border-radius: 6px 6px 0 0;">
-        <h1><i class="fas fa-random"></i> Sorteo de Jurados</h1>
+<div class="container mt-4">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+            <h1> Sorteo de Jurados</h1>
     </header>
 
-    <div class="mt-5">
-        <form id="formSorteo" method="post" action="{{ url_for('jurado.sorteo_jurados') }}" class="mb-4">
-            <h2 class="text-primary">Configuración del Sorteo</h2>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="jurados_por_mesa">
-                            <i class="fas fa-users"></i> Jurados por Mesa:
-                        </label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                            </div>
-                            <input type="number" id="jurados_por_mesa" name="jurados_por_mesa" class="form-control"
-                                value="{{ session.get('jurados_por_mesa', 3) }}" min="3" max="5" required
-                                oninput="validarJurados(this)" {% if fase_1_completado %}readonly{% endif %}>
-                        </div>
-                        <div class="invalid-feedback">
-                            El número de jurados debe estar entre 3 y 5 por mesa
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="porcentaje_remanentes">
-                            <i class="fas fa-percentage"></i> Porcentaje de Remanentes:
-                        </label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-percent"></i></span>
-                            </div>
-                            <input type="number" id="porcentaje_remanentes" name="porcentaje_remanentes"
-                                class="form-control" value="{{ session.get('porcentaje_remanentes', 12) }}" min="5"
-                                max="20" required {% if fase_1_completado %}readonly{% endif %}>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <div class="mt-5">
+                        <form id="formSorteo" method="post" action="{{ url_for('jurado.sorteo_jurados') }}" class="mb-4">
+                            <h2 style="color: var(--primary-color)">Configuración del Sorteo</h2>
 
-            <div class="form-group">
-                <label>
-                    <i class="fas fa-graduation-cap"></i> Seleccionar Grados:
-                </label>
-                <div class="checkbox-container card p-3">
-                    <div class="row">
-                        {% for grado in grados %}
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="grado{{ grado }}" name="grados"
-                                    value="{{ grado }}" {% if grado in grados_seleccionados %}checked{% endif %} {% if
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="jurados_por_mesa">
+                                            <i class="fas fa-users"></i> Jurados por Mesa:
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                            </div>
+                                            <input type="number" id="jurados_por_mesa" name="jurados_por_mesa" class="form-control"
+                                                value="{{ session.get('jurados_por_mesa', 3) }}" min="3" max="5" required
+                                                oninput="validarJurados(this)" {% if fase_1_completado %}readonly{% endif %}>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            El número de jurados debe estar entre 3 y 5 por mesa
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="porcentaje_remanentes">
+                                            <i class="fas fa-percentage"></i> Porcentaje de Remanentes:
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-percent"></i></span>
+                                            </div>
+                                            <input type="number" id="porcentaje_remanentes" name="porcentaje_remanentes"
+                                                class="form-control" value="{{ session.get('porcentaje_remanentes', 12) }}" min="5"
+                                                max="20" required {% if fase_1_completado %}readonly{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-graduation-cap"></i> Seleccionar Grados:
+                                </label>
+                                <div class="checkbox-container card p-3">
+                                    <div class="row">
+                                        {% for grado in grados %}
+                                        <div class="col-md-2 col-sm-4 col-6">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="grado{{ grado }}" name="grados"
+                                                    value="{{ grado }}" {% if grado in grados_seleccionados %}checked{% endif %} {% if
+                                                    fase_1_completado %}disabled{% endif %}>
+                                                <label class="custom-control-label" for="grado{{ grado }}">{{ grado }}°</label>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="info_box" class="alert alert-info mt-3" style="display: none;">
+                                <!-- Información dinámica del sorteo -->
+                            </div>
+
+                            <div class="btn-group mt-4">
+                                <button type="submit" name="fase" value="Iniciar Primer Sorteo" class="btn btn-primary" {% if
                                     fase_1_completado %}disabled{% endif %}>
-                                <label class="custom-control-label" for="grado{{ grado }}">{{ grado }}°</label>
+                                    <i class="fas fa-dice-one"></i> Simulacro 1
+                                </button>
+                                <button type="submit" name="fase" value="Realizar Segundo Sorteo" class="btn btn-primary" {% if not
+                                    fase_1_completado or fase_2_completado %}disabled{% endif %}>
+                                    <i class="fas fa-dice-two"></i> Simulacro 2
+                                </button>
+                                <button type="submit" name="fase" value="Realizar Sorteo Definitivo" class="btn btn-primary" {% if not
+                                    fase_2_completado or fase_3_completado %}disabled{% endif %}>
+                                    <i class="fas fa-dice-three"></i> Sorteo Final
+                                </button>
                             </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+                        </form>
 
-            <div id="info_box" class="alert alert-info mt-3" style="display: none;">
-                <!-- Información dinámica del sorteo -->
-            </div>
-
-            <div class="btn-group mt-4">
-                <button type="submit" name="fase" value="Iniciar Primer Sorteo" class="btn btn-primary" {% if
-                    fase_1_completado %}disabled{% endif %}>
-                    <i class="fas fa-dice-one"></i> Simulacro 1
-                </button>
-                <button type="submit" name="fase" value="Realizar Segundo Sorteo" class="btn btn-primary" {% if not
-                    fase_1_completado or fase_2_completado %}disabled{% endif %}>
-                    <i class="fas fa-dice-two"></i> Simulacro 2
-                </button>
-                <button type="submit" name="fase" value="Realizar Sorteo Definitivo" class="btn btn-primary" {% if not
-                    fase_2_completado or fase_3_completado %}disabled{% endif %}>
-                    <i class="fas fa-dice-three"></i> Sorteo Final
-                </button>
-            </div>
-        </form>
-
-        {% if sorteos %}
-        <div class="mt-5">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h3 class="mb-0">
-                        <i class="fas fa-list"></i>
-                        Resultados del {% if fase < 3 %}Simulacro {{ fase }}{% else %}Sorteo Final{% endif %} </h3>
-                </div>
-                <div class="card-body">
-                    <div class="accordion" id="sorteoAccordion">
-                        {% for sede in sedes %}
-                        <div class="card">
-                            <div class="card-header" id="heading{{ sede.id }}">
-                                <h2 class="mb-0">
-                                    <button class="btn btn-link" type="button" data-toggle="collapse"
-                                        data-target="#collapse{{ sede.id }}">
-                                        <i class="fas fa-building"></i> {{ sede.nombre }}
-                                    </button>
-                                </h2>
-                            </div>
-
-                            <div id="collapse{{ sede.id }}" class="collapse" data-parent="#sorteoAccordion">
+                        {% if sorteos %}
+                        <div class="mt-5">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h3 class="mb-0">
+                                        <i class="fas fa-list"></i>
+                                        Resultados del {% if fase < 3 %}Simulacro {{ fase }}{% else %}Sorteo Final{% endif %} </h3>
+                                </div>
                                 <div class="card-body">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Mesa</th>
-                                                <th>Jurados</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for sorteo in sorteos if sorteo.sede_id == sede.id %}
-                                            <tr>
-                                                <td>{{ sorteo.mesa_numero }}</td>
-                                                <td>
-                                                    <ul>
-                                                        <li>
-                                                            <span class="fw-bold"
-                                                                style="font-family: 'Segoe UI', Roboto, sans-serif;">
-                                                                {{ sorteo.profesor.numero_documento }} {{
-                                                                sorteo.profesor.nombre }}
-                                                            </span>
-                                                            <span style="font-size: 0.8em; color: #666;">(Prof)</span>
-                                                            {% if sorteo.profesor.reemplazado %}
-                                                            <span class="badge badge-warning">Exonerado/a</span>
-                                                            {% endif %}
-                                                        </li>
-                                                        {% for estudiante in
-                                                        sorteo.estudiantes|sort(attribute='numero_documento') %}
-                                                        <li>
-                                                            <span class="fw-bold"
-                                                                style="font-family: 'Segoe UI', Roboto, sans-serif;">
-                                                                {{ estudiante.numero_documento }} {{ estudiante.nombre
-                                                                }}
-                                                            </span>
-                                                            <span style="font-size: 0.8em; color: #666;">({{
-                                                                estudiante.grado }}° {{ estudiante.seccion }})</span>
-                                                            {% if estudiante.reemplazado %}
-                                                            <span class="badge badge-warning">Exonerado/a</span>
-                                                            {% endif %}
-                                                        </li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                                    <div class="accordion" id="sorteoAccordion">
+                                        {% for sede in sedes %}
+                                        <div class="card">
+                                            <div class="card-header" id="heading{{ sede.id }}">
+                                                <h2 class="mb-0">
+                                                    <button class="btn btn-link" type="button" data-toggle="collapse"
+                                                        data-target="#collapse{{ sede.id }}">
+                                                        <i class="fas fa-building"></i> {{ sede.nombre }}
+                                                    </button>
+                                                </h2>
+                                            </div>
+
+                                            <div id="collapse{{ sede.id }}" class="collapse" data-parent="#sorteoAccordion">
+                                                <div class="card-body">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Mesa</th>
+                                                                <th>Jurados</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for sorteo in sorteos if sorteo.sede_id == sede.id %}
+                                                            <tr>
+                                                                <td>{{ sorteo.mesa_numero }}</td>
+                                                                <td>
+                                                                    <ul>
+                                                                        <li>
+                                                                            <span class="fw-bold"
+                                                                                style="font-family: 'Segoe UI', Roboto, sans-serif;">
+                                                                                {{ sorteo.profesor.numero_documento }} {{
+                                                                                sorteo.profesor.nombre }}
+                                                                            </span>
+                                                                            <span style="font-size: 0.8em; color: #666;">(Prof)</span>
+                                                                            {% if sorteo.profesor.reemplazado %}
+                                                                            <span class="badge badge-warning">Exonerado/a</span>
+                                                                            {% endif %}
+                                                                        </li>
+                                                                        {% for estudiante in
+                                                                        sorteo.estudiantes|sort(attribute='numero_documento') %}
+                                                                        <li>
+                                                                            <span class="fw-bold"
+                                                                                style="font-family: 'Segoe UI', Roboto, sans-serif;">
+                                                                                {{ estudiante.numero_documento }} {{ estudiante.nombre
+                                                                                }}
+                                                                            </span>
+                                                                            <span style="font-size: 0.8em; color: #666;">({{
+                                                                                estudiante.grado }}° {{ estudiante.seccion }})</span>
+                                                                            {% if estudiante.reemplazado %}
+                                                                            <span class="badge badge-warning">Exonerado/a</span>
+                                                                            {% endif %}
+                                                                        </li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
+                        {% endif %}
+
+                        {% if remanentes %}
+                        <div class="card mt-4">
+                            <div class="card-header bg-info text-white">
+                                <h3 class="mb-0">
+                                    Jurados Remanentes - {% if fase < 3 %}Simulacro {{ fase }}{% else %}Sorteo Final{% endif %} </h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Mesa</th>
+                                            <th>Jurados</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>0</td>
+                                            <td>
+                                                <ul>
+                                                    {% for remanente in remanentes %}
+                                                    <li>
+                                                        <div class="remanente-info {% if not remanente.activo %}usado{% endif %}">
+                                                            {{ remanente.numero_documento }} {{ remanente.nombre }}
+                                                            <span style="font-size: 0.8em; color: #666;">({{
+                                                                remanente.grado }}° {{ remanente.seccion }})</span>
+
+                                                            {% if not remanente.activo %}
+                                                            <span class="badge badge-warning">Asignado como reemplazo</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if remanentes %}
-        <div class="card mt-4">
-            <div class="card-header bg-info text-white">
-                <h3 class="mb-0">
-                    Jurados Remanentes - {% if fase < 3 %}Simulacro {{ fase }}{% else %}Sorteo Final{% endif %} </h3>
-            </div>
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Mesa</th>
-                            <th>Jurados</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>0</td>
-                            <td>
-                                <ul>
-                                    {% for remanente in remanentes %}
-                                    <li>
-                                        <div class="remanente-info {% if not remanente.activo %}usado{% endif %}">
-                                            {{ remanente.numero_documento }} {{ remanente.nombre }}
-                                            <span style="font-size: 0.8em; color: #666;">({{
-                                                remanente.grado }}° {{ remanente.seccion }})</span>
-
-                                            {% if not remanente.activo %}
-                                            <span class="badge badge-warning">Asignado como reemplazo</span>
-                                            {% endif %}
-                                        </div>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
+                
 {% endblock %}
 
 {% block extra_js %}
