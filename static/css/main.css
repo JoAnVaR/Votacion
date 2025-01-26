@@ -1,44 +1,36 @@
 /* Variables globales con los colores exactos de la Registraduría */
 :root {
     --primary-color: #004884;
-    /* Azul principal de la Registraduría */
-    --secondary-color: #CD1719;
-    /* Rojo institucional */
-    --background-color: #E5E5E5;
-    /* Gris más suave */
-    --text-color: #4B4B4B;
-    /* Gris texto */
+    --secondary-color: #3366CC;
+    --accent-color: #F3B61F;
+    --dark-blue: #00204A;
+    --light-blue: #E6EFFD;
     --white-color: #FFFFFF;
-    /* Blanco */
+    --gray-color: #F2F2F2;
+    --dark-gray: #4B4B4B;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --background-color: #E5E5E5;
+    --text-color: #4B4B4B;
     --highlight-color: #FDB913;
-    /* Amarillo/Dorado institucional */
-    --accent-color: #31B44C;
-    /* Verde institucional */
-    --dark-blue: #00325B;
-    /* Azul oscuro para hover */
-    --light-gray: #E6EFFD;
-    /* Gris claro para fondos alternos */
     --chart-primary: rgba(0, 72, 132, 0.8);
     --chart-secondary: rgba(179, 20, 22, 0.8);
     --chart-highlight: rgba(255, 198, 41, 0.8);
     --chart-dark: rgba(0, 45, 82, 0.8);
     --chart-light: rgba(240, 240, 240, 0.8);
-
     --chart-border-primary: rgba(0, 72, 132, 1);
     --chart-border-secondary: rgba(179, 20, 22, 1);
     --chart-border-highlight: rgba(255, 198, 41, 1);
     --chart-border-dark: rgba(0, 45, 82, 1);
     --chart-border-light: rgba(240, 240, 240, 1);
-
-    /* Variables para tema oscuro */
+    --container-background: #F8F9FA;
     --dark-mode-background: #1a1a1a;
     --dark-mode-text: #ffffff;
     --dark-mode-card: #2d2d2d;
     --dark-mode-input: #333333;
     --dark-mode-border: #404040;
-
-    --container-background: #F8F9FA;
-    /* Fondo menos blanco para contenedores */
 }
 
 /* Agregar clase para tema oscuro */
@@ -69,12 +61,12 @@ body.dark-theme .table td {
 
 /* Estilos básicos */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #E5E5E5, #F6F8F9);
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--gray-color);
+    color: var(--dark-gray);
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    color: var(--text-color);
 }
 
 /* Contenedor principal */
@@ -1006,4 +998,145 @@ body.dark-theme .table-info {
     pointer-events: none !important;
     cursor: not-allowed !important;
     background-color: #f8f9fa !important;
+}
+
+/* Estilos para la sección de carga masiva */
+.custom-file {
+    height: calc(2.5rem + 2px);
+}
+
+.custom-file-input {
+    cursor: pointer;
+}
+
+.custom-file-label {
+    height: 100%;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--dark-gray);
+    background-color: var(--white-color);
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.custom-file-label::after {
+    height: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    content: "Examinar";
+}
+
+.alert-info {
+    background-color: var(--light-blue);
+    border-color: var(--secondary-color);
+    color: var(--dark-blue);
+}
+
+.alert-info .alert-heading {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.alert-info ul {
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.alert-info ul li {
+    margin-bottom: 0.25rem;
+}
+
+.alert-info .alert-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.alert-info .alert-link:hover {
+    text-decoration: underline;
+}
+
+.btn-upload {
+    height: calc(2.5rem + 2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilos para el progreso de carga */
+.upload-progress {
+    margin-top: 1rem;
+    display: none;
+}
+
+.progress {
+    height: 1.5rem;
+    border-radius: 0.75rem;
+    background-color: var(--light-blue);
+}
+
+.progress-bar {
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+/* Estilos para los resultados de la carga */
+.upload-results {
+    margin-top: 1rem;
+    display: none;
+}
+
+.upload-results .card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.upload-results .card-header {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    font-weight: 600;
+}
+
+.upload-results .list-group-item {
+    border: none;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.upload-results .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.upload-results .badge {
+    font-size: 0.875rem;
+    padding: 0.5em 1em;
+}
+
+/* Animaciones para la carga */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.uploading .btn-upload {
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .custom-file {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-upload {
+        width: 100%;
+    }
+    
+    .alert-info ul {
+        padding-left: 1rem;
+    }
 }

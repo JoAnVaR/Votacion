@@ -1,80 +1,221 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import Testigo, AsignacionTestigo, Candidato, Sede, Mesa, Configuracion
-from sqlalchemy.exc import IntegrityError
+from flask import Blueprint, request, jsonify, url_for, send_file, render_template
+from models import db, AsignacionTestigo, Sede, Mesa, Candidato
 import csv
 import io
-from extensions import db
 from utils.decorators import verificar_acceso_ruta
 
 testigo_bp = Blueprint('testigo', __name__)
 
-# Ruta para Registro de Testigos
-@testigo_bp.route('/registro-testigos', methods=['GET', 'POST'])
-@verificar_acceso_ruta('testigo.registro_testigos')
-def registro_testigos():
-    testigos = Testigo.query.all()
-    asignaciones = AsignacionTestigo.query.all()
-    candidatos = Candidato.query.all()
-    sedes = Sede.query.all()
-    config = Configuracion.query.first()  # Obtener configuración
-
+@testigo_bp.route('/registro-testigo', methods=['GET', 'POST'])
+@verificar_acceso_ruta('testigo.registro_testigo')
+def registro_testigo():
     if request.method == 'POST':
-        if config and config.configuracion_finalizada:  # Verificar si el sistema está bloqueado
-            flash("Error: El sistema está bloqueado. No se pueden realizar modificaciones.", "error")
-            return redirect(url_for('testigo.registro_testigos'))
+        if 'file' in request.files:
+            # Procesar archivo CSV
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({'success': False, 'message': 'No se seleccionó ningún archivo'})
+            
+            try:
+                # Leer el archivo CSV
+                stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+                csv_reader = csv.DictReader(stream)
+                
+                for row in csv_reader:
+                    testigo = AsignacionTestigo(
+                        numero_documento=str(row['numero_documento']),
+                        nombre=row['nombre'],
+                        sede_id=int(row['sede_id']),
+                        mesa_id=int(row['mesa_id']),
+                        candidato_id=int(row['candidato_id']) if row.get('candidato_id') else None,
+                        es_blanco=row.get('es_blanco', '').lower() == 'true',
+                        es_otro=row.get('es_otro', '').lower() == 'true'
+                    )
+                    db.session.add(testigo)
+                db.session.commit()
+                return jsonify({'success': True, 'message': 'Testigos registrados exitosamente'})
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({'success': False, 'message': f'Error al procesar el archivo: {str(e)}'})
+        else:
+            # Registro individual
+            try:
+                numero_documento = request.form.get('numero_documento')
+                nombre = request.form.get('nombre')
+                sede_id = request.form.get('sede_id')
+                mesas_ids = request.form.getlist('mesas_ids[]')
+                candidato_id = request.form.get('candidato_id')
+                es_blanco = request.form.get('es_blanco') == 'true'
+                es_otro = request.form.get('es_otro') == 'true'
+                
+                # Validar que solo se seleccione una opción
+                opciones_seleccionadas = sum([1 for x in [candidato_id, es_blanco, es_otro] if x])
+                if opciones_seleccionadas != 1:
+                    return jsonify({'success': False, 'message': 'Debe seleccionar exactamente una opción: candidato, voto en blanco u otro'})
+                
+                for mesa_id in mesas_ids:
+                    testigo = AsignacionTestigo(
+                        numero_documento=numero_documento,
+                        nombre=nombre,
+                        sede_id=sede_id,
+                        mesa_id=mesa_id,
+                        candidato_id=candidato_id if candidato_id else None,
+                        es_blanco=es_blanco,
+                        es_otro=es_otro
+                    )
+                    db.session.add(testigo)
+                db.session.commit()
+                return jsonify({'success': True, 'message': 'Testigo registrado exitosamente'})
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({'success': False, 'message': f'Error al registrar el testigo: {str(e)}'})
+    
+    # GET: Mostrar formulario
+    sedes = Sede.query.all()
+    candidatos = Candidato.query.all()
+    return render_template('registro_testigos.html', sedes=sedes, candidatos=candidatos)
 
-        try:
-            # Lógica para agregar testigos
-            numero_documento = request.form.get('numero_documento')
-            nombre = request.form.get('nombre')
-            tipo_persona = request.form.get('tipo_persona')
-            id_candidato = request.form.get('id_candidato')
-            nuevo_testigo = Testigo(
-                numero_documento=numero_documento,
-                nombre=nombre,
-                tipo_persona=tipo_persona,
-                id_candidato=id_candidato
-            )
-            db.session.add(nuevo_testigo)
-            db.session.commit()
-            flash("Testigo agregado con éxito.", "success")
-        except IntegrityError:
-            db.session.rollback()
-            flash("Error: El número de documento ya existe.", "error")
+@testigo_bp.route('/obtener-mesas/<int:sede_id>')
+def obtener_mesas(sede_id):
+    try:
+        mesas = Mesa.query.filter_by(sede_id=sede_id).all()
+        return jsonify({
+            'success': True,
+            'mesas': [{
+                'id': mesa.id,
+                'numero': mesa.mesa_numero
+            } for mesa in mesas]
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-    elif 'registro_testigo' in request.form:
-        if config and config.configuracion_finalizada:  # Verificar si el sistema está bloqueado
-            flash("Error: El sistema está bloqueado. No se pueden realizar modificaciones.", "error")
-            return redirect(url_for('testigo.registro_testigos'))
+@testigo_bp.route('/descargar-plantilla-csv')
+@verificar_acceso_ruta('testigo.descargar_plantilla_csv')
+def descargar_plantilla_csv():
+    # Crear un buffer en memoria para el CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Escribir los encabezados
+    writer.writerow(['numero_documento', 'nombre', 'sede_id', 'mesa_id', 'candidato_id', 'es_blanco', 'es_otro'])
+    
+    # Preparar el archivo para descarga
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='plantilla_testigos.csv'
+    )
 
-        testigo_id = request.form.get('testigo_id')
-        id_sede = request.form.get('id_sede')
-        mesas_seleccionadas = request.form.getlist('mesas')
+@testigo_bp.route('/testigos/obtener_estadisticas')
+def obtener_estadisticas():
+    try:
+        print("Obteniendo estadísticas de testigos...")  # Debug
+        # Obtener estadísticas por sede
+        estadisticas_sede = db.session.query(
+            Sede.nombre,
+            db.func.count(db.distinct(AsignacionTestigo.numero_documento)).label('total_testigos'),
+            db.func.count(AsignacionTestigo.id).label('total_asignaciones')
+        ).outerjoin(AsignacionTestigo, Sede.id == AsignacionTestigo.sede_id).group_by(Sede.id, Sede.nombre).all()
+        
+        print(f"Estadísticas obtenidas: {estadisticas_sede}")  # Debug
+        
+        # Formatear los resultados
+        sedes_data = []
+        total_testigos = 0
+        total_asignaciones = 0
+        
+        for sede_nombre, testigos, asignaciones in estadisticas_sede:
+            total_testigos += testigos
+            total_asignaciones += asignaciones
+            sedes_data.append({
+                'nombre': sede_nombre,
+                'total_testigos': testigos,
+                'total_asignaciones': asignaciones
+            })
+        
+        result = {
+            'success': True,
+            'total_testigos': total_testigos,
+            'total_asignaciones': total_asignaciones,
+            'por_sede': sedes_data
+        }
+        print(f"Resultado final: {result}")  # Debug
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error en obtener_estadisticas: {str(e)}")  # Para debug
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-        for mesa_numero in mesas_seleccionadas:
-            asignacion = AsignacionTestigo(id_testigo=testigo_id, id_sede=id_sede, mesa_numero=mesa_numero)
-            db.session.add(asignacion)
+@testigo_bp.route('/testigos/detalle_sede/<string:sede>')
+def detalle_sede(sede):
+    try:
+        print(f"Obteniendo detalle para sede: {sede}")  # Debug
+        # Obtener todos los testigos de la sede
+        testigos = db.session.query(
+            AsignacionTestigo.numero_documento,
+            AsignacionTestigo.nombre,
+            Candidato.nombre.label('candidato_nombre'),
+            AsignacionTestigo.es_blanco,
+            AsignacionTestigo.es_otro,
+            db.func.group_concat(Mesa.mesa_numero).label('mesas')
+        ).join(
+            Sede, AsignacionTestigo.sede_id == Sede.id
+        ).outerjoin(
+            Candidato, AsignacionTestigo.candidato_id == Candidato.id
+        ).join(
+            Mesa, AsignacionTestigo.mesa_id == Mesa.id
+        ).filter(
+            Sede.nombre == sede
+        ).group_by(
+            AsignacionTestigo.numero_documento,
+            AsignacionTestigo.nombre,
+            Candidato.nombre,
+            AsignacionTestigo.es_blanco,
+            AsignacionTestigo.es_otro
+        ).all()
+
+        print(f"Testigos encontrados: {testigos}")  # Debug
+
+        # Formatear los resultados
+        testigos_data = []
+        for t in testigos:
+            tipo = 'Candidato: ' + t.candidato_nombre if t.candidato_nombre else ('Voto en Blanco' if t.es_blanco else 'Otro')
+            testigos_data.append({
+                'numero_documento': t.numero_documento,
+                'nombre': t.nombre,
+                'tipo': tipo,
+                'mesas': str(t.mesas).split(',') if t.mesas else []
+            })
+
+        result = {
+            'success': True,
+            'testigos': testigos_data
+        }
+        print(f"Resultado final: {result}")  # Debug
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error en detalle_sede: {str(e)}")  # Para debug
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@testigo_bp.route('/testigos/eliminar/<string:numero_documento>', methods=['DELETE'])
+def eliminar_testigo(numero_documento):
+    try:
+        print(f"Eliminando testigo con documento: {numero_documento}")  # Debug
+        # Buscar todas las asignaciones del testigo
+        asignaciones = AsignacionTestigo.query.filter_by(numero_documento=numero_documento).all()
+        
+        if not asignaciones:
+            return jsonify({'success': False, 'message': 'No se encontró el testigo'}), 404
+        
+        # Eliminar todas las asignaciones
+        for asignacion in asignaciones:
+            db.session.delete(asignacion)
+        
         db.session.commit()
-        flash("Testigo asignado con éxito a las mesas seleccionadas.", "success")
-
-    return render_template('registro_testigos.html', testigos=testigos, asignaciones=asignaciones, candidatos=candidatos, sedes=sedes, config=config)
-
-# Ruta para obtener las mesas de una sede
-@testigo_bp.route('/get_mesas/<int:sede_id>')
-def get_mesas(sede_id):
-    mesas = Mesa.query.filter_by(sede_id=sede_id).all()
-    return jsonify([{'mesa_numero': mesa.mesa_numero} for mesa in mesas])
-
-# Ruta para eliminar una asignación de testigo
-@testigo_bp.route('/eliminar_asignacion/_testigo<int:asignacion_id>', methods=['POST'])
-def eliminar_asignacion_testigo(asignacion_id):
-    asignacion = AsignacionTestigo.query.get(asignacion_id)
-    if asignacion:
-        db.session.delete(asignacion)
-        db.session.commit()
-        flash("Asignación eliminada con éxito.", "success")
-    else:
-        flash("Error: Asignación no encontrada.", "error")
-    return redirect(url_for('testigo.registro_testigos'))
-
-
+        print(f"Testigo eliminado exitosamente")  # Debug
+        return jsonify({'success': True, 'message': 'Testigo eliminado exitosamente'})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al eliminar testigo: {str(e)}")  # Debug
+        return jsonify({'success': False, 'message': str(e)}), 500

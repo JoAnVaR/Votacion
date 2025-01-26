@@ -43,7 +43,7 @@ ACTIVITY_ROUTES = {
     ],
     'Registro de Testigos': [
         'testigo.registro_testigo',
-        'testigo.eliminar_asignacion_testigo'
+        'testigo.eliminar_testigo'
     ],
 
     'Jornada de Votación': [

@@ -34,6 +34,7 @@ class Sede(db.Model):
     estudiantes = db.relationship('Estudiante', back_populates='sede')
     mesas = db.relationship('Mesa', back_populates='sede', cascade='all, delete-orphan')
     asignaciones = db.relationship('AsignacionMesa', back_populates='sede')
+    asignaciones_testigos = db.relationship('AsignacionTestigo', back_populates='sede')
 
 # Definición del modelo para la tabla de mesas
 class Mesa(db.Model):
@@ -45,6 +46,7 @@ class Mesa(db.Model):
     sede = db.relationship('Sede', back_populates='mesas')
     estudiantes = db.relationship('Estudiante', back_populates='mesa')
     asignaciones = db.relationship('AsignacionMesa', back_populates='mesa')
+    asignaciones_testigos = db.relationship('AsignacionTestigo', back_populates='mesa')
     
     __table_args__ = (db.UniqueConstraint('sede_id', 'mesa_numero', name='_sede_mesa_uc'),)
 
@@ -138,24 +140,34 @@ class Votacion(db.Model):
         ),
     )
 
-class Testigo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    numero_documento = db.Column(db.String(20), nullable=False, unique=True)
-    nombre = db.Column(db.String(100), nullable=False)
-    tipo_persona = db.Column(db.String(20), nullable=False)  # Estudiante o Profesor
-    id_candidato = db.Column(db.Integer, db.ForeignKey('candidato.id'), nullable=True)
-    asignaciones = db.relationship('AsignacionTestigo', backref='testigo', lazy=True)  # Cambiamos a 'testigo'
-
 class AsignacionTestigo(db.Model):
+    __tablename__ = 'asignacion_testigo'
     id = db.Column(db.Integer, primary_key=True)
-    id_testigo = db.Column(db.Integer, db.ForeignKey('testigo.id'), nullable=False)
-    id_sede = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
-    mesa_numero = db.Column(db.String(20), nullable=False)
-    # No necesitamos redefinir aquí el backref, solo en el modelo Testigo
-    sede = db.relationship('Sede', backref='asignaciones_testigos')
+    numero_documento = db.Column(db.String(20), nullable=False)
+    nombre = db.Column(db.String(100), nullable=False)
+    sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)
+    mesa_id = db.Column(db.Integer, db.ForeignKey('mesa.id'), nullable=False)
+    candidato_id = db.Column(db.Integer, db.ForeignKey('candidato.id'), nullable=True)
+    es_blanco = db.Column(db.Boolean, default=False)
+    es_otro = db.Column(db.Boolean, default=False)
+    fecha_asignacion = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relaciones
+    sede = db.relationship('Sede', back_populates='asignaciones_testigos')
+    mesa = db.relationship('Mesa', back_populates='asignaciones_testigos')
+    candidato = db.relationship('Candidato', backref='testigos')
+    
+    # Restricción única para evitar duplicados de testigo en la misma mesa
+    __table_args__ = (
+        db.UniqueConstraint('numero_documento', 'mesa_id', name='_testigo_mesa_uc'),
+        db.CheckConstraint(
+            '(candidato_id IS NOT NULL AND NOT es_blanco AND NOT es_otro) OR '
+            '(candidato_id IS NULL AND es_blanco AND NOT es_otro) OR '
+            '(candidato_id IS NULL AND NOT es_blanco AND es_otro)',
+            name='_testigo_tipo_check'
+        )
+    )
 
-
-# Definir el modelo Candidato con el campo foto_path
 class Candidato(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero_documento = db.Column(db.String(80), unique=True, nullable=False)

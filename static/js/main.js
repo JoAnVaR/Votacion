@@ -1,62 +1,156 @@
-// Configuración global de Toastr
-$(document).ready(function () {
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
-
-    // Verificar estado de configuración usando el objeto appConfig
-    if (typeof appConfig !== 'undefined' && appConfig.configuracionFinalizada) {
-        // Deshabilitar todos los botones de edición
-        $('.btn-editar, .btn-eliminar, .btn-agregar').prop('disabled', true);
-        // Ocultar formularios de registro
-        $('.form-registro').hide();
-        // Mostrar mensaje si no está visible
-        if (!$('#sistema-bloqueado-alert').is(':visible')) {
-            const alertHTML = `
-                <div class="alert alert-warning" id="sistema-bloqueado-alert">
-                    <i class="fas fa-lock"></i> Configuración Inicial bloqueada.
-                    ${appConfig.fechaFinalizacion ?
-                    `La configuración fue finalizada el ${appConfig.fechaFinalizacion}` :
-                    ''}
-                </div>
-            `;
-            $('.container').prepend(alertHTML);
-        }
-    }
+// Configuración global de SweetAlert2
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
 });
 
-// Función global para mostrar mensajes
-function mostrarMensaje(mensaje, tipo) {
-    switch (tipo) {
-        case 'success':
-            toastr.success(mensaje);
-            break;
-        case 'error':
-        case 'danger':
-            toastr.error(mensaje);
-            break;
-        case 'warning':
-            toastr.warning(mensaje);
-            break;
-        case 'info':
-            toastr.info(mensaje);
-            break;
-    }
+// Función para mostrar mensajes de éxito
+function mostrarExito(mensaje) {
+    Toast.fire({
+        icon: 'success',
+        title: mensaje
+    });
 }
+
+// Función para mostrar mensajes de error
+function mostrarError(mensaje) {
+    Toast.fire({
+        icon: 'error',
+        title: mensaje
+    });
+}
+
+// Función para mostrar mensajes de advertencia
+function mostrarAdvertencia(mensaje) {
+    Toast.fire({
+        icon: 'warning',
+        title: mensaje
+    });
+}
+
+// Función para mostrar mensajes de información
+function mostrarInfo(mensaje) {
+    Toast.fire({
+        icon: 'info',
+        title: mensaje
+    });
+}
+
+// Función para confirmar acciones
+function confirmarAccion(titulo, mensaje) {
+    return Swal.fire({
+        title: titulo,
+        text: mensaje,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#004884',
+        cancelButtonColor: '#dc3545',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+// Función para validar campos requeridos
+function validarCamposRequeridos(formulario) {
+    let camposValidos = true;
+    const camposRequeridos = formulario.querySelectorAll('[required]');
+    
+    camposRequeridos.forEach(campo => {
+        if (!campo.value.trim()) {
+            campo.classList.add('is-invalid');
+            camposValidos = false;
+        } else {
+            campo.classList.remove('is-invalid');
+        }
+    });
+    
+    return camposValidos;
+}
+
+// Función para formatear números con separadores de miles
+function formatearNumero(numero) {
+    return new Intl.NumberFormat('es-CO').format(numero);
+}
+
+// Función para validar número de documento
+function validarDocumento(documento) {
+    return /^\d{5,12}$/.test(documento);
+}
+
+// Función para validar correo electrónico
+function validarEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// Función para validar número de teléfono
+function validarTelefono(telefono) {
+    return /^\d{10}$/.test(telefono);
+}
+
+// Función para limpiar formularios
+function limpiarFormulario(formulario) {
+    formulario.reset();
+    const camposInvalidos = formulario.querySelectorAll('.is-invalid');
+    camposInvalidos.forEach(campo => campo.classList.remove('is-invalid'));
+}
+
+// Función para deshabilitar botón de envío durante el proceso
+function deshabilitarBoton(boton, texto = 'Procesando...') {
+    boton.disabled = true;
+    boton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${texto}`;
+}
+
+// Función para habilitar botón de envío
+function habilitarBoton(boton, textoOriginal) {
+    boton.disabled = false;
+    boton.innerHTML = textoOriginal;
+}
+
+// Función para manejar errores de fetch
+function manejarErrorFetch(error) {
+    console.error('Error:', error);
+    mostrarError('Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.');
+}
+
+// Función para convertir formulario a objeto
+function formToObject(formulario) {
+    const formData = new FormData(formulario);
+    const objeto = {};
+    for (let [key, value] of formData.entries()) {
+        objeto[key] = value;
+    }
+    return objeto;
+}
+
+// Event Listeners globales
+document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar tooltips de Bootstrap
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Inicializar popovers de Bootstrap
+    $('[data-toggle="popover"]').popover();
+
+    // Manejar cierre de alertas
+    document.querySelectorAll('.alert .close').forEach(button => {
+        button.addEventListener('click', function() {
+            this.closest('.alert').remove();
+        });
+    });
+
+    // Validación de campos en tiempo real
+    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(campo => {
+        campo.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
 
 // Funciones para estudiantes
 const EstudiantesManager = {
@@ -75,14 +169,14 @@ const EstudiantesManager = {
             data: datos,
             success: function (response) {
                 if (response.success) {
-                    mostrarMensaje('Estudiante modificado exitosamente', 'success');
+                    mostrarExito('Estudiante modificado exitosamente');
                     if (callback) callback(response);
                 } else {
-                    mostrarMensaje(response.message, 'error');
+                    mostrarError(response.message);
                 }
             },
             error: function (xhr) {
-                mostrarMensaje('Error al modificar estudiante: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                mostrarError('Error al modificar estudiante: ' + (xhr.responseJSON?.message || 'Error desconocido'));
             }
         });
     },
@@ -91,24 +185,26 @@ const EstudiantesManager = {
         const $form = $(form);
         const $row = $form.closest('tr');
 
-        if (confirm('¿Está seguro de que desea eliminar este estudiante?')) {
-            $.ajax({
-                url: '/eliminar_estudiante',
-                type: 'POST',
-                data: $form.serialize(),
-                success: function (response) {
-                    if (response.success) {
-                        mostrarMensaje('Estudiante eliminado exitosamente', 'success');
-                        if (callback) callback($row);
-                    } else {
-                        mostrarMensaje(response.message, 'error');
+        if (confirmarAccion('Eliminar estudiante', '¿Está seguro de que desea eliminar este estudiante?').then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/eliminar_estudiante',
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            mostrarExito('Estudiante eliminado exitosamente');
+                            if (callback) callback($row);
+                        } else {
+                            mostrarError(response.message);
+                        }
+                    },
+                    error: function () {
+                        mostrarError('Error al eliminar estudiante');
                     }
-                },
-                error: function () {
-                    mostrarMensaje('Error al eliminar estudiante', 'error');
-                }
-            });
-        }
+                });
+            }
+        }));
     }
 };
 
@@ -121,52 +217,54 @@ const MesasManager = {
     },
 
     eliminarAsignacion: function (id) {
-        if (confirm('¿Está seguro de que desea eliminar esta asignación?')) {
-            $.ajax({
-                url: `/eliminar_asignacion/${id}`,
-                type: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                success: function (response) {
-                    if (response.success) {
-                        $.get('/asignar_mesas', function (data) {
-                            var sedeId = response.sede_id;
+        confirmarAccion('Eliminar asignación', '¿Está seguro de que desea eliminar esta asignación?').then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/eliminar_asignacion/${id}`,
+                    type: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $.get('/asignar_mesas', function (data) {
+                                var sedeId = response.sede_id;
 
-                            // Actualizar la lista de grados de la sede específica
-                            var $newGradosContainer = $(data).find(`#grados-${sedeId}`);
-                            $(`#grados-${sedeId}`).html($newGradosContainer.html());
+                                // Actualizar la lista de grados de la sede específica
+                                var $newGradosContainer = $(data).find(`#grados-${sedeId}`);
+                                $(`#grados-${sedeId}`).html($newGradosContainer.html());
 
-                            // Actualizar la tabla de asignaciones
-                            var $newAsignaciones = $(data).find(`.asignacion-sede-card[data-sede-id="${sedeId}"] .asignaciones-table tbody`);
-                            $(`.asignacion-sede-card[data-sede-id="${sedeId}"] .asignaciones-table tbody`).html($newAsignaciones.html());
+                                // Actualizar la tabla de asignaciones
+                                var $newAsignaciones = $(data).find(`.asignacion-sede-card[data-sede-id="${sedeId}"] .asignaciones-table tbody`);
+                                $(`.asignacion-sede-card[data-sede-id="${sedeId}"] .asignaciones-table tbody`).html($newAsignaciones.html());
 
-                            // Actualizar la sección de resumen
-                            $('.resumen-accordion').html($(data).find('.resumen-accordion').html());
+                                // Actualizar la sección de resumen
+                                $('.resumen-accordion').html($(data).find('.resumen-accordion').html());
 
-                            // Actualizar la sección de selección de sede
-                            var $newSedeList = $(data).find('.sede-list');
-                            $('.sede-list').html($newSedeList.html());
+                                // Actualizar la sección de selección de sede
+                                var $newSedeList = $(data).find('.sede-list');
+                                $('.sede-list').html($newSedeList.html());
 
-                            // Mantener visible el contenedor de grados si estaba visible
-                            if ($(`#grados-${sedeId}`).is(':visible')) {
-                                $(`#grados-${sedeId}`).show();
-                            }
+                                // Mantener visible el contenedor de grados si estaba visible
+                                if ($(`#grados-${sedeId}`).is(':visible')) {
+                                    $(`#grados-${sedeId}`).show();
+                                }
 
-                            // Reinicializar eventos
-                            MesasManager.initEvents();
+                                // Reinicializar eventos
+                                MesasManager.initEvents();
 
-                            mostrarMensaje('Asignación eliminada correctamente', 'success');
-                        });
-                    } else {
-                        mostrarMensaje('Error al eliminar la asignación', 'error');
+                                mostrarExito('Asignación eliminada correctamente');
+                            });
+                        } else {
+                            mostrarError('Error al eliminar la asignación');
+                        }
+                    },
+                    error: function (xhr) {
+                        mostrarError('Error al eliminar la asignación');
                     }
-                },
-                error: function (xhr) {
-                    mostrarMensaje('Error al eliminar la asignación', 'error');
-                }
-            });
-        }
+                });
+            }
+        });
     },
 
     toggleAsignaciones: function (element) {
@@ -256,16 +354,16 @@ const MesasManager = {
                             // Reinicializar eventos
                             MesasManager.initEvents();
 
-                            mostrarMensaje('Asignación realizada correctamente', 'success');
+                            mostrarExito('Asignación realizada correctamente');
                         });
                     } else {
-                        mostrarMensaje('Error al realizar la asignación', 'error');
+                        mostrarError('Error al realizar la asignación');
                         // Reactivar los radio buttons si hay error
                         $row.find('input[type="radio"]').prop('disabled', false);
                     }
                 },
                 error: function () {
-                    mostrarMensaje('Error al realizar la asignación', 'error');
+                    mostrarError('Error al realizar la asignación');
                     // Reactivar los radio buttons si hay error
                     $row.find('input[type="radio"]').prop('disabled', false);
                 }
@@ -305,6 +403,184 @@ $(document).ready(function () {
     MesasManager.initEvents();
 });
 
+// Manejo de carga masiva de testigos
+const CargaMasivaManager = {
+    init: function() {
+        // Actualizar el nombre del archivo seleccionado
+        $('.custom-file-input').on('change', function() {
+            let fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').html(fileName || 'Seleccionar archivo');
+        });
+
+        // Descargar plantilla CSV
+        $('#descargarPlantilla').on('click', function(e) {
+            e.preventDefault();
+            CargaMasivaManager.descargarPlantilla();
+        });
+
+        // Manejar el envío del formulario
+        $('#formCargaMasiva').on('submit', function(e) {
+            e.preventDefault();
+            CargaMasivaManager.procesarArchivo(this);
+        });
+    },
+
+    descargarPlantilla: function() {
+        const headers = [
+            'numero_documento',
+            'nombre_completo',
+            'telefono',
+            'email',
+            'sede',
+            'mesas',
+            'representacion'
+        ];
+        
+        const csvContent = headers.join(',') + '\\n' +
+            '1234567890,Juan Pérez,3001234567,juan@ejemplo.com,Sede Principal,1;2;3,Partido A\\n' +
+            '0987654321,María López,3109876543,maria@ejemplo.com,Sede Norte,4;5,Partido B';
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', 'plantilla_testigos.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+
+    procesarArchivo: function(form) {
+        const fileInput = form.querySelector('input[type="file"]');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            mostrarError('Por favor seleccione un archivo CSV');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            mostrarError('El archivo es demasiado grande. El tamaño máximo es 5MB');
+            return;
+        }
+
+        const formData = new FormData(form);
+        const $submitBtn = $(form).find('button[type="submit"]');
+        const originalBtnText = $submitBtn.html();
+
+        // Mostrar progreso
+        $(form).closest('.card').find('.upload-progress').show();
+        
+        // Deshabilitar botón y mostrar spinner
+        deshabilitarBoton($submitBtn[0], 'Procesando...');
+
+        $.ajax({
+            url: '/testigos/cargar-csv',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function() {
+                const xhr = new XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        $('.progress-bar').width(percent + '%').text(percent + '%');
+                    }
+                });
+                return xhr;
+            },
+            success: function(response) {
+                if (response.success) {
+                    mostrarExito('Archivo procesado exitosamente');
+                    
+                    // Mostrar resultados
+                    let resultadosHTML = `
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Resultados de la carga</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="stats-card bg-success text-white">
+                                            <h6>Registros exitosos</h6>
+                                            <h3>${response.exitosos}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="stats-card bg-warning text-dark">
+                                            <h6>Registros con advertencias</h6>
+                                            <h3>${response.advertencias}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="stats-card bg-danger text-white">
+                                            <h6>Registros fallidos</h6>
+                                            <h3>${response.errores}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Mostrar detalles de errores si existen
+                    if (response.detalles && response.detalles.length > 0) {
+                        resultadosHTML += `
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Detalles de errores</h5>
+                                </div>
+                                <div class="list-group list-group-flush">
+                                    ${response.detalles.map(detalle => `
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Fila ${detalle.fila}</h6>
+                                                <small class="text-${detalle.tipo === 'error' ? 'danger' : 'warning'}">
+                                                    ${detalle.tipo === 'error' ? 'Error' : 'Advertencia'}
+                                                </small>
+                                            </div>
+                                            <p class="mb-1">${detalle.mensaje}</p>
+                                            <small>Documento: ${detalle.documento || 'N/A'}</small>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    $('.upload-results').html(resultadosHTML).show();
+                    
+                    // Actualizar estadísticas si es necesario
+                    if (typeof cargarEstadisticas === 'function') {
+                        cargarEstadisticas();
+                    }
+                } else {
+                    mostrarError(response.message || 'Error al procesar el archivo');
+                }
+            },
+            error: function(xhr) {
+                mostrarError('Error al procesar el archivo: ' + (xhr.responseJSON?.message || 'Error desconocido'));
+            },
+            complete: function() {
+                // Ocultar progreso y restaurar botón
+                $('.upload-progress').hide();
+                $('.progress-bar').width('0%').text('0%');
+                habilitarBoton($submitBtn[0], originalBtnText);
+                
+                // Limpiar input file
+                fileInput.value = '';
+                $(fileInput).next('.custom-file-label').html('Seleccionar archivo');
+            }
+        });
+    }
+};
+
+// Inicializar el manejador de carga masiva cuando el documento esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    CargaMasivaManager.init();
+});
+
 // Otras funciones globales que necesites...
 
 function deshabilitarFormulario(selector, deshabilitar) {
@@ -341,14 +617,14 @@ const TestigosManager = {
             data: datos,
             success: function (response) {
                 if (response.success) {
-                    mostrarMensaje('Testigo registrado exitosamente', 'success');
+                    mostrarExito('Testigo registrado exitosamente');
                     if (callback) callback(response);
                 } else {
-                    mostrarMensaje(response.message, 'error');
+                    mostrarError(response.message);
                 }
             },
             error: function (xhr) {
-                mostrarMensaje('Error al registrar testigo: ' + (xhr.responseJSON?.message || 'Error desconocido'), 'error');
+                mostrarError('Error al registrar testigo: ' + (xhr.responseJSON?.message || 'Error desconocido'));
             }
         });
     }
