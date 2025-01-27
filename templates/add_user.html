@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Administrar Usuarios{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;" class="fas fa-user-graduate">
+        <h1>Administrar Usuarios</h1>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="mt-5">
+    <form method="POST" action="{{ url_for('auth.add_user') }}" class="mb-4"  {% if
+            config.configuracion_finalizada %}style="display: none;" {% endif %}>
+            <h2 style="color: var(--primary-color)">
+                Registrar Usuario
+            </h2>
+        <div class="form-group">
+            <label for="numero_documento">
+                <i class="fas fa-user"></i> Nombre:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                </div>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Ingrese el nombre" required>
+        </div>
+        </div>
+
+        <div class="form-group">
+            <label for="numero_documento">
+                <i class="fas fa-user"></i> Nombre de Usuario:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                </div>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Ingrese el nombre de usuario" required>
+        </div>
+        </div>
+
+        <div class="form-group">
+            <label for="numero_documento">
+                <i class="fas fa-key"></i> Contraseña:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                </div>
+            <input type="Password" class="form-control" id="password" name="password" placeholder="Ingrese la contraseña" required>
+        </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar Usuario</button>
+    </form>
+    
+    <div class="container mt-5">
+        <h2 class="text-center">Lista de Usuarios</h2>
+        <p>Depuración: Se encontraron {{ users_list | length }} usuarios en la lista.</p>
+        <p>{{ users_list | length }} usuarios encontrados.</p>
+        <ul class="list-group">
+            {% for user in users_list %}
+                <li class="list-group-item">{{ user.name }} ({{ user.username }})</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    
+    <form method="POST" action="{{ url_for('auth.modify_user') }}" class="needs-validation"  {% if
+        config.configuracion_finalizada %}style="display: none;" {% endif %}>
+        <h2 style="color: var(--primary-color)">
+            Modificar o Eliminar Usuarios
+        </h2>
+        <div class="form-group">
+            <label for="numero_documento">
+                <i class="fas fa-user"></i> Nombre de Usuario a Modificar o Eliminar:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                </div>
+            <input type="text" class="form-control" id="existing_username" name="existing_username" placeholder="Ingrese el nombre de usuario" required>
+        </div>
+        </div>
+
+        <div class="form-group">
+            <label for="numero_documento">
+                <i class="fas fa-key"></i> Nueva contraseña:
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                </div>
+            <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Ingrese la nueva contraseña" required>
+        </div>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-warning">Modificar Usuario</button>
+            <button type="submit" class="btn btn-danger" formaction="{{ url_for('auth.delete_user') }}">Eliminar Usuario</button>
+        </div>
+        
+    </form>
+</div>
+{% endblock %}

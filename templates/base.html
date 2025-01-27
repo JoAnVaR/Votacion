@@ -24,27 +24,28 @@
 <body>
     <header class="header bg-light py-3">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url_for('index') }}">
-                    <i class="fas fa-vote-yea mr-2"></i>
-                    Sistema de Votación
-                </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#fase1-container">Fase 1: Configuración Inicial</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">Sistema de Votación</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if session['user_id'] %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {% if session['user_id'] %}
+                                Bienvenido, {{ session['name'] }}!
+            {% endif %}
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{ url_for('auth.configurar_usuario') }}">Configurar Usuario</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar Sesión</a>
+                            </div>
                         </li>
+                    {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="#fase2-container">Fase 2: Preparación Electoral</a>
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar Sesión</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#fase3-container">Fase 3: Votación</a>
-                        </li>
-                    </ul>
-                </div>
+                    {% endif %}
+                </ul>
             </div>
         </nav>
     </header>

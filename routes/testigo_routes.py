@@ -1,12 +1,13 @@
-from flask import Blueprint, request, jsonify, url_for, send_file, render_template, make_response
-from models import db, AsignacionTestigo, Sede, Mesa, Candidato
+from flask import Blueprint, request, jsonify, url_for, send_file, render_template, make_response, session
+from models import db, AsignacionTestigo, Sede, Mesa, Candidato, UserActivity
 import csv
 import io
-from utils.decorators import verificar_acceso_ruta
+from utils.decorators import verificar_acceso_ruta, login_required
 
 testigo_bp = Blueprint('testigo', __name__)
 
 @testigo_bp.route('/registro-testigo', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('testigo.registro_testigo')
 def registro_testigo():
     if request.method == 'POST':
@@ -33,6 +34,12 @@ def registro_testigo():
                     )
                     db.session.add(testigo)
                 db.session.commit()
+                
+                # Registrar la actividad del usuario
+                activity = UserActivity(user_id=session['user_id'], action='Testigo agregado: ' + str(testigo.numero_documento))
+                db.session.add(activity)
+                db.session.commit()
+
                 return jsonify({'success': True, 'message': 'Testigos registrados exitosamente'})
             except Exception as e:
                 db.session.rollback()
@@ -65,6 +72,12 @@ def registro_testigo():
                     )
                     db.session.add(testigo)
                 db.session.commit()
+                
+                # Registrar la actividad del usuario
+                activity = UserActivity(user_id=session['user_id'], action='Testigo agregado: ' + str(testigo.numero_documento))
+                db.session.add(activity)
+                db.session.commit()
+                
                 return jsonify({'success': True, 'message': 'Testigo registrado exitosamente'})
             except Exception as e:
                 db.session.rollback()
@@ -76,6 +89,7 @@ def registro_testigo():
     return render_template('registro_testigos.html', sedes=sedes, candidatos=candidatos)
 
 @testigo_bp.route('/obtener-mesas/<int:sede_id>')
+@login_required
 def obtener_mesas(sede_id):
     try:
         mesas = Mesa.query.filter_by(sede_id=sede_id).all()
@@ -91,6 +105,7 @@ def obtener_mesas(sede_id):
 
 
 @testigo_bp.route('/descargar_plantilla_testigos')
+@login_required
 def descargar_plantilla_testigos():
     # Crear un StringIO para escribir el CSV
     si = io.StringIO()
@@ -103,8 +118,17 @@ def descargar_plantilla_testigos():
     sedes = Sede.query.all()
     sede_ejemplo = sedes[0].nombre if sedes else ''
     
+
+    # Obtener todas las mesas para el ejemplo
+    mesas = Mesa.query.all()
+    mesa_ejemplo = mesas[0].mesa_numero if mesas else ''
+    
     # Escribir una fila de ejemplo para testigos
-    writer.writerow(['12345678', 'Nombre Testigo', sede_ejemplo, 'Mesa 1', 'Candidato'])
+    # Escribir filas de ejemplo para testigos
+    writer.writerow(['87654321', 'Juan Pérez', sede_ejemplo, mesa_ejemplo, 'Otro'])  # Testigo normal
+    writer.writerow(['00000000', 'Voto en Blanco', sede_ejemplo, mesa_ejemplo, 'Voto en Blanco'])  # Voto en blanco
+    writer.writerow(['12345678', 'Laura Ramírez', sede_ejemplo, mesa_ejemplo, 'Candidato A'])  # Candidato específico
+    
     
     # Preparar la respuesta
     output = make_response(si.getvalue())
@@ -113,6 +137,7 @@ def descargar_plantilla_testigos():
     return output
 
 @testigo_bp.route('/testigos/obtener_estadisticas')
+@login_required
 def obtener_estadisticas():
     try:
         print("Obteniendo estadísticas de testigos...")  # Debug
@@ -123,7 +148,7 @@ def obtener_estadisticas():
             db.func.count(AsignacionTestigo.id).label('total_asignaciones')
         ).outerjoin(AsignacionTestigo, Sede.id == AsignacionTestigo.sede_id).group_by(Sede.id, Sede.nombre).all()
         
-        print(f"Estadísticas obtenidas: {estadisticas_sede}")  # Debug
+        #print(f"Estadísticas obtenidas: {estadisticas_sede}")  # Debug
         
         # Formatear los resultados
         sedes_data = []
@@ -145,13 +170,14 @@ def obtener_estadisticas():
             'total_asignaciones': total_asignaciones,
             'por_sede': sedes_data
         }
-        print(f"Resultado final: {result}")  # Debug
+        #print(f"Resultado final: {result}")  # Debug
         return jsonify(result)
     except Exception as e:
         print(f"Error en obtener_estadisticas: {str(e)}")  # Para debug
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @testigo_bp.route('/testigos/detalle_sede/<string:sede>')
+@login_required
 def detalle_sede(sede):
     try:
         print(f"Obteniendo detalle para sede: {sede}")  # Debug
@@ -203,6 +229,7 @@ def detalle_sede(sede):
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @testigo_bp.route('/testigos/eliminar/<string:numero_documento>', methods=['DELETE'])
+@login_required
 def eliminar_testigo(numero_documento):
     try:
         print(f"Eliminando testigo con documento: {numero_documento}")  # Debug
@@ -217,6 +244,12 @@ def eliminar_testigo(numero_documento):
             db.session.delete(asignacion)
         
         db.session.commit()
+        
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Testigo eliminado: ' + numero_documento)
+        db.session.add(activity)
+        db.session.commit()
+
         print(f"Testigo eliminado exitosamente")  # Debug
         return jsonify({'success': True, 'message': 'Testigo eliminado exitosamente'})
     except Exception as e:

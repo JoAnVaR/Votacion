@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, jsonify, send_file, render_template_string
-from models import Estudiante, Sede
+from flask import Blueprint, render_template, request, jsonify, send_file, render_template_string, session
+from models import Estudiante, Sede, UserActivity
 from extensions import db
-from utils.decorators import verificar_acceso_ruta
+from utils.decorators import verificar_acceso_ruta, login_required
 import io
 import csv
 from sqlalchemy import func
@@ -9,6 +9,7 @@ from sqlalchemy import func
 estudiante_bp = Blueprint('estudiante', __name__)
 
 @estudiante_bp.route('/registro-estudiante', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('estudiante.registro_estudiante')
 def registro_estudiante():
     if request.method == 'POST':
@@ -63,6 +64,11 @@ def registro_estudiante():
             print("Estudiante creado:", estudiante)  # Para depurar
             db.session.add(estudiante)
             db.session.commit()
+
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='Estudiante registrado: ' + estudiante.numero_documento)
+            db.session.add(activity)
+            db.session.commit()
             
             return jsonify({
                 'success': True,
@@ -83,6 +89,7 @@ def registro_estudiante():
     return render_template('registro_estudiante.html', sedes=sedes)
 
 @estudiante_bp.route('/cargar-csv', methods=['POST'])
+@login_required
 def cargar_csv():
     try:
         if 'file' not in request.files:
@@ -176,6 +183,12 @@ def cargar_csv():
                 if estudiantes_nuevos:
                     db.session.bulk_save_objects(estudiantes_nuevos)
                     db.session.commit()
+
+                    # Registrar la actividad del usuario
+                    activity = UserActivity(user_id=session['user_id'], action='Estudiante cargados CSV')
+                    db.session.add(activity)
+                    db.session.commit()
+
                     return jsonify({
                         'success': True,
                         'message': f'Se registraron {len(estudiantes_nuevos)} estudiantes exitosamente'
@@ -200,6 +213,7 @@ def cargar_csv():
         })
 
 @estudiante_bp.route('/descargar-plantilla-estudiante')
+@login_required
 def descargar_plantilla_estudiante():
     output = io.StringIO()
     writer = csv.writer(output)
@@ -219,6 +233,7 @@ def descargar_plantilla_estudiante():
     )
 
 @estudiante_bp.route('/obtener_estadisticas')
+@login_required
 def obtener_estadisticas():
     try:
         # Obtener estadísticas de estudiantes por sede
@@ -263,6 +278,7 @@ def obtener_estadisticas():
         })
 
 @estudiante_bp.route('/detalle-grado-seccion/<grado>/<seccion>/<sede>')
+@login_required
 @verificar_acceso_ruta('estudiante.detalle_grado_seccion')
 def detalle_grado_seccion(grado, seccion, sede):
     try:
@@ -295,6 +311,7 @@ def detalle_grado_seccion(grado, seccion, sede):
         }), 500
 
 @estudiante_bp.route('/eliminar-estudiante', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('estudiante.eliminar_estudiante')
 def eliminar_estudiante():
     try:
@@ -302,6 +319,11 @@ def eliminar_estudiante():
         estudiante = Estudiante.query.get_or_404(estudiante_id)
         
         db.session.delete(estudiante)
+        db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Estudiante eliminado: ' + estudiante.numero_documento)
+        db.session.add(activity)
         db.session.commit()
         
         return jsonify({
@@ -316,6 +338,7 @@ def eliminar_estudiante():
         }), 500
 
 @estudiante_bp.route('/modificar-estudiante', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('estudiante.modificar_estudiante')
 def modificar_estudiante():
     try:
@@ -327,6 +350,11 @@ def modificar_estudiante():
         estudiante.numero_documento = numero_documento
         estudiante.nombre = nombre
 
+        db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Estudiante modificado: ' + estudiante.numero_documento)
+        db.session.add(activity)
         db.session.commit()
 
         return jsonify({

@@ -583,8 +583,15 @@ header {
     cursor: not-allowed;
 }
 
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+}
+
 canvas {
-    min-height: 300px;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 .card {
@@ -607,13 +614,6 @@ canvas {
 .dashboard-chart {
     padding: 1rem;
     margin-bottom: 1.5rem;
-}
-
-.chart-container {
-    position: relative;
-    margin: auto;
-    height: 300px;
-    width: 100%;
 }
 
 .chart-legend {

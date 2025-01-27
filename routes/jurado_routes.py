@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
-from models import Jurado, Estudiante, Profesor, AsignacionMesa, ReemplazoJurado, Sede, ConfiguracionSorteo
+from models import Jurado, Estudiante, Profesor, AsignacionMesa, ReemplazoJurado, Sede, ConfiguracionSorteo, UserActivity
 from sqlalchemy.sql import func
 from datetime import datetime
 import random
 from extensions import db
-from utils.decorators import verificar_acceso_ruta
+from utils.decorators import verificar_acceso_ruta, login_required
+from functools import wraps
 
 jurado_bp = Blueprint('jurado', __name__)
 
@@ -180,6 +181,7 @@ def realizar_sorteo(fase, grados_seleccionados, jurados_por_mesa, porcentaje_rem
 
 # Ruta para Sorteo de Jurados
 @jurado_bp.route('/sorteo_jurados', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('jurado.sorteo_jurados')
 def sorteo_jurados():
     print("\n=== INICIO DE SORTEO JURADOS ===")
@@ -261,6 +263,11 @@ def sorteo_jurados():
             config_sorteo.fecha_actualizacion = datetime.now()
             
             db.session.add(config_sorteo)
+            db.session.commit()
+
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='Sorteo de jurados')
+            db.session.add(activity)
             db.session.commit()
             
             return jsonify({
@@ -467,6 +474,11 @@ def reemplazar_jurado(jurado_id, remanente_id, razon):
         
         db.session.add(nuevo_reemplazo)
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento))
+        db.session.add(activity)
+        db.session.commit()
         
         return nuevo_jurado
     except Exception as e:
@@ -475,6 +487,7 @@ def reemplazar_jurado(jurado_id, remanente_id, razon):
 
 # Ruta para Reemplazo de Jurados
 @jurado_bp.route('/reemplazo_jurados', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('jurado.reemplazo_jurados')
 def reemplazo_jurados():
     if request.method == 'POST':
@@ -544,6 +557,11 @@ def reemplazo_jurados():
                     # Asegurarnos de que todo se guarde
                     db.session.commit()
 
+                    # Registrar la actividad del usuario
+                    activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento))
+                    db.session.add(activity)
+                    db.session.commit()
+
                     return jsonify({
                         'success': True,
                         'message': 'Reemplazo registrado correctamente'
@@ -601,6 +619,11 @@ def reemplazo_jurados():
                     db.session.add(reemplazo)
                     db.session.commit()
 
+                    # Registrar la actividad del usuario
+                    activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento))
+                    db.session.add(activity)
+                    db.session.commit()
+
                     return jsonify({
                         'success': True,
                         'message': 'Reemplazo registrado correctamente'
@@ -622,7 +645,12 @@ def reemplazo_jurados():
                 db.session.add(reemplazo)
                 db.session.commit()
 
-            return jsonify({
+                # Registrar la actividad del usuario
+                activity = UserActivity(user_id=session['user_id'], action='Jurado exonerado: ' + str(jurado.numero_documento))
+                db.session.add(activity)
+                db.session.commit()
+
+                return jsonify({
                     'success': True,
                     'message': 'Jurado exonerado correctamente'
                 })
@@ -767,6 +795,7 @@ def reemplazo_jurados():
         return redirect(url_for('index'))
 
 @jurado_bp.route('/numero_estudiantes')
+@login_required
 @verificar_acceso_ruta('jurado.sorteo_jurados')
 def numero_estudiantes():
     grados = request.args.getlist('grados[]')
@@ -790,6 +819,7 @@ def numero_estudiantes():
     })
 
 @jurado_bp.route('/buscar_profesores')
+@login_required
 def buscar_profesores():
     try:
         query = request.args.get('q', '').lower()
@@ -833,4 +863,3 @@ def buscar_profesores():
             'error': str(e),
             'profesores': []
         }), 200
-

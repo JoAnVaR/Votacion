@@ -1,13 +1,15 @@
-from flask import Blueprint, render_template, request, jsonify, send_file, make_response
-from models import Profesor, Sede
+from flask import Blueprint, render_template, request, jsonify, send_file, make_response, session
+from models import Profesor, Sede, UserActivity
 import csv
 import io
 from extensions import db
-from utils.decorators import verificar_acceso_ruta
+from utils.decorators import verificar_acceso_ruta, login_required
+
 
 profesor_bp = Blueprint('profesor', __name__)
 
 @profesor_bp.route('/registro-profesor', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('profesor.registro_profesor')
 def registro_profesor():
     if request.method == 'POST':
@@ -101,6 +103,12 @@ def registro_profesor():
                         if profesores_nuevos:
                             db.session.bulk_save_objects(profesores_nuevos)
                             db.session.commit()
+
+                            # Registrar la actividad del usuario
+                            activity = UserActivity(user_id=session['user_id'], action='Profesor registrado: ' + profesor.numero_documento)
+                            db.session.add(activity)
+                            db.session.commit()
+
                             return jsonify({
                                 'success': True,
                                 'message': f'Se registraron {len(profesores_nuevos)} profesores exitosamente'
@@ -144,6 +152,11 @@ def registro_profesor():
                 db.session.add(nuevo_profesor)
                 db.session.commit()
 
+                # Registrar la actividad del usuario
+                activity = UserActivity(user_id=session['user_id'], action='Profesor registrado: ' + nuevo_profesor.numero_documento)
+                db.session.add(activity)
+                db.session.commit()
+
                 return jsonify({
                     'success': True,
                     'message': 'Profesor registrado exitosamente'
@@ -161,6 +174,7 @@ def registro_profesor():
     return render_template('registro_profesor.html', sedes=sedes)
 
 @profesor_bp.route('/descargar_plantilla_profesor')
+@login_required
 def descargar_plantilla_profesor():
     # Crear un StringIO para escribir el CSV
     si = io.StringIO()
@@ -183,11 +197,18 @@ def descargar_plantilla_profesor():
     return output
 
 @profesor_bp.route('/eliminar_profesor/<int:id>', methods=['POST'])
+@login_required
 def eliminar_profesor(id):
     try:
         profesor = Profesor.query.get_or_404(id)
         db.session.delete(profesor)
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Profesor eliminado: ' + profesor.numero_documento)
+        db.session.add(activity)
+        db.session.commit()
+
         return jsonify({
             'success': True,
             'message': 'Profesor eliminado exitosamente'
@@ -200,6 +221,7 @@ def eliminar_profesor(id):
         }), 500
 
 @profesor_bp.route('/modificar_profesor/<int:id>', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('profesor.modificar_profesor')
 def modificar_profesor(id):
     profesor = Profesor.query.get_or_404(id)
@@ -223,6 +245,12 @@ def modificar_profesor(id):
             profesor.sede_id = request.form['sede_id']
 
             db.session.commit()
+
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='Profesor modificado: ' + profesor.numero_documento)
+            db.session.add(activity)
+            db.session.commit()
+
             return jsonify({
                 'success': True,
                 'message': 'Profesor modificado exitosamente',
@@ -244,6 +272,7 @@ def modificar_profesor(id):
     return render_template('modificar_profesor.html', profesor=profesor, sedes=sedes)
 
 @profesor_bp.route('/obtener_estadisticas_profesores')
+@login_required
 def obtener_estadisticas():
     try:
         # Total de profesores
@@ -291,6 +320,7 @@ def obtener_estadisticas():
         }), 500
 
 @profesor_bp.route('/detalle_sede/<sede>')
+@login_required
 def detalle_sede(sede):
     try:
         profesores = Profesor.query.join(Sede).filter(
@@ -309,6 +339,7 @@ def detalle_sede(sede):
         }), 500
 
 @profesor_bp.route('/actualizar_profesor', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('profesor.actualizar_profesor')
 def actualizar_profesor():
     try:
@@ -330,6 +361,12 @@ def actualizar_profesor():
         profesor.titulo = request.form['titulo']
         
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Profesor modificado: ' + profesor.numero_documento)
+        db.session.add(activity)
+        db.session.commit()
+
         return jsonify({'success': True})
     except Exception as e:
         db.session.rollback()
@@ -339,6 +376,7 @@ def actualizar_profesor():
         }), 500
 
 @profesor_bp.route('/borrar_profesor', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('profesor.borrar_profesor')
 def borrar_profesor():
     try:
@@ -346,6 +384,12 @@ def borrar_profesor():
         profesor = Profesor.query.get_or_404(profesor_id)
         db.session.delete(profesor)
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Profesor eliminado: ' + profesor.numero_documento)
+        db.session.add(activity)
+        db.session.commit()
+
         return jsonify({'success': True})
     except Exception as e:
         db.session.rollback()

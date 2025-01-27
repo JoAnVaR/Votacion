@@ -1,5 +1,6 @@
 from extensions import db
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 # Modelos de Base de Datos
 class Estudiante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -370,3 +371,39 @@ class ConfiguracionSorteo(db.Model):
     grados_seleccionados = db.Column(db.String(100), nullable=False)  # Almacenados como string separado por comas
     fase_actual = db.Column(db.Integer, nullable=False, default=1)
     fecha_actualizacion = db.Column(db.DateTime, default=datetime.now)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)  # Nuevo campo para nombre
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    @classmethod
+    def crear_usuario_default(cls):
+        """Crea el primer usuario administrador"""
+        if not cls.query.filter_by(username='admin').first():
+            nuevo_usuario = cls(
+                username='admin',
+                name='Administrador',
+                password_hash=generate_password_hash('admin')
+            )
+            db.session.add(nuevo_usuario)
+            db.session.commit()
+
+
+class UserActivity(db.Model):
+    __tablename__ = 'user_activity'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    action = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='activities')
+
+    

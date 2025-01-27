@@ -1,14 +1,15 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import AsignacionMesa, Estudiante, Sede, Mesa
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from models import AsignacionMesa, Estudiante, Sede, Mesa, UserActivity
 from sqlalchemy import text
 from extensions import db
-from utils.decorators import verificar_acceso_ruta
+from utils.decorators import verificar_acceso_ruta, login_required
 from sqlalchemy.sql import exists, and_
 
 asignar_mesa_bp = Blueprint('asignar_mesa', __name__)
 
 # Ruta para asignar mesas
 @asignar_mesa_bp.route('/asignar_mesas', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('asignar_mesa.asignar_mesas')
 def asignar_mesas():
     if request.method == 'POST':
@@ -48,6 +49,11 @@ def asignar_mesas():
             )
             
             db.session.add(nueva_asignacion)
+            db.session.commit()
+
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='Mesa asignada: ' + mesa_numero)
+            db.session.add(activity)
             db.session.commit()
 
             # Calcular total de estudiantes
@@ -167,6 +173,7 @@ def asignar_mesas():
 
 # Ruta eliminar asignacion mesa
 @asignar_mesa_bp.route('/eliminar_asignacion/<int:id>', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('asignar_mesa.asignar_mesas')
 def eliminar_asignacion(id):
     try:
@@ -176,10 +183,19 @@ def eliminar_asignacion(id):
         grado = asignacion.grado
         seccion = asignacion.seccion
         sede_id = asignacion.sede_id
+        mesa_numero = asignacion.mesa_numero
         
         # Eliminar la asignación
         db.session.delete(asignacion)
         db.session.commit()
+        
+        user = session.get('user')
+        if user:
+            username_to_delete = f"{grado} - {seccion}"
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=user.id, action='Asignación de mesa eliminada: ' + username_to_delete)
+            db.session.add(activity)
+            db.session.commit()
         
         return jsonify({
             'success': True,

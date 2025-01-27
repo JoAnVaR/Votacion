@@ -11,6 +11,7 @@ from .testigo_routes import testigo_bp
 from .votacion_routes import votacion_bp
 from .estadisticas_routes import estadisticas_bp
 from .calendario_routes import calendario_bp
+from .auth_routes import auth_bp
 
 # Lista de todos los blueprints para fácil importación
 all_blueprints = [
@@ -23,5 +24,6 @@ all_blueprints = [
     testigo_bp,
     votacion_bp,
     estadisticas_bp,
-    calendario_bp
+    calendario_bp,
+    auth_bp
 ]

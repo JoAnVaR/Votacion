@@ -1,13 +1,14 @@
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app
-from models import EventoCalendario, Configuracion
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app, session
+from models import EventoCalendario, Configuracion, UserActivity
 from extensions import db
 from datetime import datetime
 from utils.calendar_mappings import ACTIVITY_ROUTES
-from utils.decorators import verificar_acceso_ruta
+from utils.decorators import verificar_acceso_ruta, login_required
 
 calendario_bp = Blueprint('calendario', __name__)
 
 @calendario_bp.route('/calendario-electoral')
+@login_required
 def calendario_electoral():
     eventos = EventoCalendario.query.order_by(EventoCalendario.fase, EventoCalendario.orden).all()
     config = Configuracion.query.first()
@@ -17,6 +18,7 @@ def calendario_electoral():
                          sistema_bloqueado=sistema_bloqueado)
 
 @calendario_bp.route('/calendario/editar', methods=['POST'])
+@login_required
 def editar_calendario():
     if request.method == 'POST':
         try:
@@ -61,6 +63,7 @@ def editar_calendario():
     return redirect(url_for('calendario.calendario_electoral'))
 
 @calendario_bp.route('/calendario/guardar', methods=['POST'])
+@login_required
 def guardar_calendario():
     if request.method == 'POST':
         try:
@@ -85,10 +88,17 @@ def guardar_calendario():
                         evento.estado = 'pendiente'
             
             db.session.commit()
+            
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='Calendario guardado')
+            db.session.add(activity)
+            db.session.commit()
+            
             return jsonify({'success': True})
             
         except Exception as e:
             db.session.rollback()
+            current_app.logger.error(f'Error al guardar el calendario: {str(e)}')
             return jsonify({
                 'success': False,
                 'message': str(e)
@@ -97,6 +107,7 @@ def guardar_calendario():
     return jsonify({'success': False, 'message': 'Método no permitido'}), 405
 
 @calendario_bp.route('/calendario/finalizar-calendario', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('calendario.finalizar_calendario')
 def finalizar_calendario():
     try:
@@ -134,6 +145,7 @@ def finalizar_calendario():
         }), 500
 
 @calendario_bp.route('/verificar-fase', methods=['POST'])
+@login_required
 def verificar_fase():
     data = request.get_json()
     fase = data.get('fase')
@@ -151,6 +163,7 @@ def verificar_fase():
     })
 
 @calendario_bp.route('/verificar-acceso', methods=['POST'])
+@login_required
 def verificar_acceso():
     data = request.get_json()
     ruta = data.get('ruta')

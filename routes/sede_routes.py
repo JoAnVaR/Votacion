@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
-from utils.decorators import verificar_acceso_ruta
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from models import Sede, Mesa, Estudiante
+from utils.decorators import verificar_acceso_ruta, login_required
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, session
+from models import Sede, Mesa, Estudiante, UserActivity
 from extensions import db
 
 # Agregar el directorio raíz al PYTHONPATH
@@ -14,6 +14,7 @@ sede_bp = Blueprint('sede', __name__)
 
 # Ruta para agregar sede
 @sede_bp.route('/sede/agregar', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('sede.agregar_sede')
 def agregar_sede(bloqueado=False):
     if request.method == 'POST':
@@ -28,6 +29,12 @@ def agregar_sede(bloqueado=False):
         nueva_sede = Sede(nombre=nombre_sede, direccion=direccion)
         db.session.add(nueva_sede)
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Sede agregada: ' + nueva_sede.nombre)
+        db.session.add(activity)
+        db.session.commit()
+
         return jsonify({
             'success': True,
             'sede': {
@@ -41,6 +48,7 @@ def agregar_sede(bloqueado=False):
 
 # Ruta para agregar mesas
 @sede_bp.route('/agregar_mesas', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('sede.agregar_mesas')
 def agregar_mesas():
     try:
@@ -76,6 +84,11 @@ def agregar_mesas():
         nueva_mesa = Mesa(sede_id=sede_id, mesa_numero=mesa_numero)
         db.session.add(nueva_mesa)
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Mesa agregada: ' + str(nueva_mesa.mesa_numero))
+        db.session.add(activity)
+        db.session.commit()
         
         print(f"Mesa agregada exitosamente - ID: {nueva_mesa.id}")
         
@@ -97,6 +110,7 @@ def agregar_mesas():
 
 # Ruta mesas existentes
 @sede_bp.route('/mesas_existentes/<int:sede_id>', methods=['GET'])
+@login_required
 @verificar_acceso_ruta('sede.ver_mesas_existentes')
 def mesas_existentes(sede_id):
     try:
@@ -126,11 +140,8 @@ def mesas_existentes(sede_id):
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
-@sede_bp.before_request
-def before_request():
-    print(f"Ruta llamada: {request.path}")
-
 @sede_bp.route('/borrar_mesa/<int:mesa_id>', methods=['POST'])
+@login_required
 @verificar_acceso_ruta('sede.borrar_mesa')
 def borrar_mesa(mesa_id):
     try:
@@ -151,6 +162,12 @@ def borrar_mesa(mesa_id):
             
         db.session.delete(mesa)
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Mesa eliminada: ' + str(mesa.mesa_numero))
+        db.session.add(activity)
+        db.session.commit() 
+
         print(f"Mesa {mesa_id} eliminada exitosamente")
         return jsonify({
             'success': True,
@@ -167,6 +184,7 @@ def borrar_mesa(mesa_id):
         }), 500
 
 @sede_bp.route('/obtener_mesa_id', methods=['GET'])
+@login_required
 @verificar_acceso_ruta('sede.obtener_mesa_id')
 def obtener_mesa_id():
     try:
@@ -199,6 +217,7 @@ def obtener_mesa_id():
         }), 500
 
 @sede_bp.route('/borrar_sede/<int:sede_id>', methods=['POST', 'DELETE'])
+@login_required
 @verificar_acceso_ruta('sede.borrar_sede')
 def borrar_sede(sede_id):
     try:
@@ -217,6 +236,12 @@ def borrar_sede(sede_id):
         print(f"Borrando sede {sede_id}")
         db.session.delete(sede)
         db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Sede eliminada: ' + sede.nombre)
+        db.session.add(activity)
+        db.session.commit()
+        
         print(f"Sede {sede_id} borrada exitosamente")
         
         return jsonify({
@@ -235,6 +260,7 @@ def borrar_sede(sede_id):
         }), 500
 
 @sede_bp.route('/<int:sede_id>/mesas')
+@login_required
 @verificar_acceso_ruta('sede.ver_mesas')
 def obtener_mesas_sede(sede_id):
     try:
@@ -262,6 +288,7 @@ def obtener_mesas_sede(sede_id):
 
 # Agregar esta nueva ruta
 @sede_bp.route('/obtener_sedes', methods=['GET'])
+@login_required
 @verificar_acceso_ruta('sede.obtener_sedes')
 def obtener_sedes():
     try:
@@ -278,7 +305,13 @@ def obtener_sedes():
         }), 500
 
 @sede_bp.route('/administrar_sedes_mesas', methods=['GET'])
+@login_required
 @verificar_acceso_ruta('sede.administrar_sedes_mesas')
 def administrar_sedes_mesas():
     # Lógica para administrar sedes y mesas
     return render_template('administrar_sedes_mesas.html')
+
+@sede_bp.before_request
+@login_required
+def before_request():
+    print(f"Ruta llamada: {request.path}")

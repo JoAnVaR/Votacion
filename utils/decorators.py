@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import jsonify, request, flash, redirect, url_for
+from flask import jsonify, request, flash, redirect, url_for, session, g
 from models import Configuracion, EventoCalendario
 from datetime import datetime
 from utils.calendar_mappings import ACTIVITY_ROUTES
@@ -59,3 +59,19 @@ def fase_requerida(fase_numero):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))  # Cambia 'auth.login' según tu ruta de inicio de sesión
+        return f(*args, **kwargs)
+    return decorated_function
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))  # Cambia 'auth.login' según tu ruta de inicio de sesión
+        return f(*args, **kwargs)
+    return decorated_function

@@ -1,10 +1,10 @@
-from flask import Blueprint, flash, redirect, render_template, request, jsonify, current_app, url_for
+from flask import Blueprint, flash, redirect, render_template, request, jsonify, current_app, url_for, session
 from extensions import db
-from models import Candidato, Estudiante
+from models import Candidato, Estudiante, UserActivity
 from werkzeug.utils import secure_filename
 import os
 from routes.calendario_routes import verificar_acceso
-from utils.decorators import verificar_acceso_ruta
+from utils.decorators import verificar_acceso_ruta, login_required
 
 candidato_bp = Blueprint('candidato', __name__)
 
@@ -14,6 +14,7 @@ def allowed_file(filename):
 
 # Ruta para Registro de Candidatos
 @candidato_bp.route('/registro-candidato', methods=['GET', 'POST'])
+@login_required
 @verificar_acceso_ruta('candidato.registro_candidato')
 def registro_candidato():
     if request.method == 'POST':
@@ -47,6 +48,11 @@ def registro_candidato():
                 estudiante.es_candidato = True
                 db.session.commit()
                 
+                # Registrar la actividad del usuario
+                activity = UserActivity(user_id=session['user_id'], action='Candidato registrado: ' + nuevo_candidato.nombre)
+                db.session.add(activity)
+                db.session.commit()
+                
                 return jsonify({
                     'success': True,
                     'message': 'Candidato registrado exitosamente'
@@ -70,6 +76,7 @@ def registro_candidato():
 
 # Ruta para eliminar de Candidatos
 @candidato_bp.route('/eliminar_candidato/<int:id>', methods=['POST'])
+@login_required
 def eliminar_candidato(id):
     try:
         candidato = Candidato.query.get(id)
@@ -90,6 +97,11 @@ def eliminar_candidato(id):
                 estudiante.es_candidato = False
 
             db.session.delete(candidato)
+            db.session.commit()
+
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='Candidato eliminado: ' + candidato.numero_documento)
+            db.session.add(activity)
             db.session.commit()
             
             return jsonify({

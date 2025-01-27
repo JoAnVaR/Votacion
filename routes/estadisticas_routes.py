@@ -3,10 +3,12 @@ from models import Sede, Estudiante, Profesor, Mesa, AsignacionMesa, EventoCalen
 from sqlalchemy import func, exists, and_, select
 from extensions import db
 from datetime import datetime
+from utils.decorators import verificar_acceso_ruta, login_required
 
 estadisticas_bp = Blueprint('estadisticas', __name__)
 
 @estadisticas_bp.route('/dashboard')
+@login_required
 def dashboard():
     # Estadísticas generales
     total_sedes = Sede.query.count()
@@ -168,6 +170,7 @@ def dashboard():
     )
 
 @estadisticas_bp.route('/finalizar_configuracion', methods=['POST'])
+@login_required
 def finalizar_configuracion():
     try:
         # Verificar si hay errores pendientes

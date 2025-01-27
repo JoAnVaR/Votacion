@@ -23,7 +23,7 @@
                             <div class="card-body text-center">
                                 <i class="fas fa-building fa-2x mb-2"></i>
                                 <h5>Total Sedes</h5>
-                                <h3>{{ total_sedes }}</h3>
+                                <h2>{{ total_sedes }}</h2>
                             </div>
                         </div>
                     </div>
@@ -32,7 +32,7 @@
                             <div class="card-body text-center">
                                 <i class="fas fa-user-graduate fa-2x mb-2"></i>
                                 <h5>Total Estudiantes</h5>
-                                <h3>{{ total_estudiantes }}</h3>
+                                <h2>{{ total_estudiantes }}</h2>
                             </div>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
                             <div class="card-body text-center">
                                 <i class="fas fa-chalkboard-teacher fa-2x mb-2"></i>
                                 <h5>Total Profesores</h5>
-                                <h3>{{ total_profesores }}</h3>
+                                <h2>{{ total_profesores }}</h2>
                                 {% if profesores_sin_sede > 0 %}
                                 <small>({{ profesores_sin_sede }} sin sede asignada)</small>
                                 {% endif %}
@@ -53,7 +53,7 @@
                             <div class="card-body text-center">
                                 <i class="fas fa-chair fa-2x mb-2"></i>
                                 <h5>Total Mesas</h5>
-                                <h3>{{ total_mesas }}</h3>
+                                <h2>{{ total_mesas }}</h2>
                                 {% if mesas_sin_asignaciones > 0 %}
                                 <small>({{ mesas_sin_asignaciones }} sin asignaciones)</small>
                                 {% endif %}
@@ -71,10 +71,10 @@
                 <div class="card">
                     <div class="card-header"
                         style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
-                        <h3 class="mb-0">Estudiantes por Sede</h3>
+                        <h2 class="mb-0">Estudiantes por Sede</h2>
                     </div>
                     <div class="card-body">
-                        <canvas id="estudiantesPorSedeChart"></canvas>
+                        <canvas id="estudiantesPorSedeChart" style="height: 400px; width: 100%;"></canvas>
                     </div>
                 </div>
             </div>
@@ -82,7 +82,8 @@
             <!-- Gráfico de Ocupación de Mesas -->
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header"
+                        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
                         <h3 class="mb-0">Ocupación de Mesas</h3>
                     </div>
                     <div class="card-body">
@@ -97,8 +98,9 @@
             <!-- Distribución de estudiantes por grado -->
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Estudiantes por Grado</h3>
+                    <div class="card-header"
+                        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">  
+                        <h2 class="mb-0">Estudiantes por Grado</h2>
                     </div>
                     <div class="card-body">
                         <canvas id="estudiantesPorGradoChart"></canvas>
@@ -109,8 +111,9 @@
             <!-- Comparación de mesas por sede -->
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Mesas por Sede</h3>
+                    <div class="card-header"
+                        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
+                        <h2 class="mb-0">Mesas por Sede</h2>
                     </div>
                     <div class="card-body">
                         <canvas id="mesasPorSedeChart"></canvas>
@@ -123,8 +126,9 @@
             <!-- Línea temporal de asignaciones -->
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Progreso de Asignaciones</h3>
+                    <div class="card-header"
+                        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
+                        <h2 class="mb-0">Progreso de Asignaciones</h2>
                     </div>
                     <div class="card-body">
                         <canvas id="progresoAsignacionesChart"></canvas>
@@ -135,11 +139,12 @@
             <!-- Distribución de profesores por sede -->
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Profesores por Sede</h3>
+                    <div class="card-header"
+                        style="background: linear-gradient(to right, var(--primary-color), var(--dark-blue)); color: var(--white-color);">
+                        <h2 class="mb-0">Profesores por Sede</h2>
                     </div>
                     <div class="card-body">
-                        <canvas id="profesoresPorSedeChart"></canvas>
+                        <canvas id="profesoresPorSedeChart" style="height: 400px; width: 100%;"></canvas>
                     </div>
                 </div>
             </div>

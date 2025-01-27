@@ -54,7 +54,8 @@
             verificarAccesoRuta('testigo.registro_testigo', '[href="{{ url_for("testigo.registro_testigo") }}"]');
         });
     </script>
-
+    </div>
+<div class="container mt-4">
     <header class="text-center py-1" style="border-radius: 6px 6px 0 0;">
         <h1>Bienvenido al Sistema de Votación</h1>
         <a href="{{ url_for('calendario.calendario_electoral') }}" class="btn btn-primary mt-1">
@@ -67,7 +68,7 @@
             <!-- Fase 1: Configuración Inicial -->
             <div id="fase1-container" class="fase-container mx-auto">
                 <h2>Fase 1: Configuración Inicial</h2>
-                <p>En esta fase, se configuran los parámetros iniciales para el proceso electoral, incluyendo la creación de sedes y la asignación de testigos.</p>
+                <p>En esta fase, se configuran los parámetros iniciales para el proceso electoral, incluyendo la creación de sedes, estudiantes, profesores y mesas.</p>
                 <p>Esta fase es crucial para establecer la base del proceso electoral, ya que se definen los parámetros que regirán el desarrollo de las siguientes fases.</p>
                 <a href="{{ url_for('sede.agregar_sede') }}"
                     class="list-group-item list-group-item-action menu-item fase-1">
@@ -95,7 +96,6 @@
             <div id="fase2-container" class="fase-container mx-auto">
                 <h2>Fase 2: Preparación Electoral</h2>
                 <p>Durante esta fase, se realiza la preparación de los candidatos y se organizan los recursos necesarios para la votación.</p>
-                <p>En esta fase, se lleva a cabo la inscripción de candidatos, la organización de los recursos necesarios para la votación y la preparación de los materiales electorales.</p>
                 <a href="{{ url_for('candidato.registro_candidato') }}"
                     class="list-group-item list-group-item-action menu-item fase-2">
                     <i class="fas fa-user-tie"></i> Inscripción de Candidatos

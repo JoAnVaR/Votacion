@@ -3,10 +3,12 @@ from models import Estudiante, Candidato, Votacion, Mesa, AsignacionMesa
 from extensions import db
 from datetime import datetime
 from utils.decorators import fase_requerida
+from flask_login import login_required
 
 votacion_bp = Blueprint('votacion', __name__)
 
 @votacion_bp.route('/paso1', methods=['GET', 'POST'])
+@login_required
 @fase_requerida(3)
 def paso1():
     if request.method == 'POST':
@@ -28,6 +30,7 @@ def paso1():
     return render_template('votacion/paso1.html')
 
 @votacion_bp.route('/paso2', methods=['GET', 'POST'])
+@login_required
 def paso2():
     if 'votante_id' not in session:
         return redirect(url_for('votacion.paso1'))
@@ -45,6 +48,7 @@ def paso2():
     return render_template('votacion/paso2.html', candidatos=candidatos)
 
 @votacion_bp.route('/paso3', methods=['GET', 'POST'])
+@login_required
 def paso3():
     if 'votante_id' not in session or 'candidato_id' not in session:
         return redirect(url_for('votacion.paso1'))
