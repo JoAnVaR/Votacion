@@ -36,6 +36,7 @@ class Sede(db.Model):
     mesas = db.relationship('Mesa', back_populates='sede', cascade='all, delete-orphan')
     asignaciones = db.relationship('AsignacionMesa', back_populates='sede')
     asignaciones_testigos = db.relationship('AsignacionTestigo', back_populates='sede')
+    configuraciones = db.relationship('ConfiguracionMesa', back_populates='sede')
 
 # Definición del modelo para la tabla de mesas
 class Mesa(db.Model):
@@ -48,6 +49,7 @@ class Mesa(db.Model):
     estudiantes = db.relationship('Estudiante', back_populates='mesa')
     asignaciones = db.relationship('AsignacionMesa', back_populates='mesa')
     asignaciones_testigos = db.relationship('AsignacionTestigo', back_populates='mesa')
+    configuraciones = db.relationship('ConfiguracionMesa', back_populates='mesa')
     
     __table_args__ = (db.UniqueConstraint('sede_id', 'mesa_numero', name='_sede_mesa_uc'),)
 
@@ -372,6 +374,17 @@ class ConfiguracionSorteo(db.Model):
     fase_actual = db.Column(db.Integer, nullable=False, default=1)
     fecha_actualizacion = db.Column(db.DateTime, default=datetime.now)
 
+class ConfiguracionMesa(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sede_id = db.Column(db.Integer, db.ForeignKey('sede.id'), nullable=False)  # Relación con Sede
+    mesa_id = db.Column(db.Integer, db.ForeignKey('mesa.id'), nullable=False)  # Relación con Mesa
+    mac_equipo = db.Column(db.String(17), nullable=False)
+    mac_votantes = db.Column(db.JSON, nullable=False)  # Usar JSON en lugar de PickleType
+
+    # Relaciones
+    sede = db.relationship('Sede', back_populates='configuraciones')
+    mesa = db.relationship('Mesa', back_populates='configuraciones')
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -405,5 +418,3 @@ class UserActivity(db.Model):
     action = db.Column(db.String(255), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref='activities')
-
-    

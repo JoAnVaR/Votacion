@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración de Mesa de Votación{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <header class="text-center py-4" style="border-radius: 6px 6px 0 0;">
+        <h1>Configuración de Mesa de Votación</h1>
+    </header>
+
+    <div class="mt-5">
+        <form id="formMesa" method="post" action="{{ url_for('config_mesas.configurar_mesa') }}">
+            <h2 style="color: var(--primary-color)">Configurar Mesa</h2>
+
+            <div class="form-group">
+                <label for="sede"><i class="fas fa-building"></i> Selecciona la Sede:</label>
+                <select id="sede" name="sede" class="form-control" onchange="cargarMesas(this.value)">
+                    <option value="" disabled selected>Selecciona una sede</option>
+                    {% for sede in sedes %}
+                        <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="mesa"><i class="fas fa-table"></i> Selecciona la Mesa:</label>
+                <select id="mesa" name="mesa" class="form-control">
+                    <option value="" disabled selected>Selecciona una mesa</option>
+                    <!-- Options for tables will be populated here -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="mac_equipo"><i class="fas fa-laptop"></i> MAC del Equipo/Tablet:</label>
+                <input type="text" id="mac_equipo" name="mac_equipo" class="form-control" placeholder="Ingrese la MAC del equipo" required>
+            </div>
+
+            <h3>Configuración de Equipos para Votantes</h3>
+            <div id="equipos_votantes">
+                <div class="form-group">
+                    <label for="mac_votante"><i class="fas fa-user"></i> MAC del Votante:</label>
+                    <input type="text" name="mac_votante[]" class="form-control" placeholder="Ingrese la MAC del votante" required>
+                    <button type="button" onclick="agregarEquipoVotante()" class="btn btn-secondary mt-2">Agregar otro equipo</button>
+                </div>
+            </div>
+
+            <input type="submit" value="Agregar configuración" class="btn btn-primary">
+        </form>
+    </div>
+
+    <div class="mt-5">
+        <h3>Listado de Equipos Configurados</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sede</th>
+                    <th>Mesa</th>
+                    <th>MAC del Equipo</th>
+                    <th>MACs de Votantes</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="listaEquipos">
+                {% for config in configuraciones %}
+                <tr>
+                    <td>{{ config.sede }}</td>
+                    <td>{{ config.mesa }}</td>
+                    <td>{{ config.mac_equipo }}</td>
+                    <td>{{ config.mac_votantes }}</td>
+                    <td>
+                     
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
+<script>
+    function mostrarMensaje(mensaje, tipo) {
+        Swal.fire({
+            title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+            text: mensaje,
+            icon: tipo,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    }
+
+    $(document).ready(function () {
+    $('#formMesa').on('submit', function (e) {
+        e.preventDefault(); // Evita el envío normal del formulario
+        $.ajax({
+            type: 'POST',
+            url: $(this).attr('action'),
+            data: $(this).serialize(),
+            success: function (response) {
+                mostrarMensaje('Configuración guardada exitosamente.', 'success');
+                // Limpiar los inputs y selects
+                $('#formMesa')[0].reset();
+                $('#listaEquipos').html('');  // Limpiar la lista de equipos
+                // Actualizar la lista de equipos
+                $.ajax({
+                    type: 'GET',
+                    url: '/equipos',
+                    success: function (response) {
+                        const equipos = response.equipos;
+                        let html = '';
+                        equipos.forEach(equipo => {
+                            html += `<tr>`;
+                            html += `<td>${equipo.sede}</td>`;
+                            html += `<td>${equipo.mesa}</td>`;
+                            html += `<td>${equipo.mac_equipo}</td>`;
+                            html += `<td>${equipo.mac_votantes.join(', ')}</td>`;
+                            html += `<td><button class="btn btn-danger" onclick="eliminarConfiguracion(${equipo.id})">Eliminar</button></td>`;
+                            html += `</tr>`;
+                        });
+                        $('#listaEquipos').html(html);
+                    },
+                    error: function (xhr) {
+                        console.error('Error al cargar la lista de equipos:', xhr);
+                    }
+                });
+            },
+            error: function (xhr) {
+                mostrarMensaje('Error al guardar la configuración: ' + xhr.responseJSON.error.join(', '), 'error');
+            }
+        });
+    });
+
+    // Cargar equipos al iniciar la página
+    $(document).ready(function() {
+        $.ajax({
+            type: 'GET',
+            url: '/equipos',
+            success: function (response) {
+                const equipos = response.equipos;
+                let html = '';
+                equipos.forEach(equipo => {
+                    html += `<tr>`;
+                    html += `<td>${equipo.sede}</td>`;
+                    html += `<td>${equipo.mesa}</td>`;
+                    html += `<td>${equipo.mac_equipo}</td>`;
+                    html += `<td>${equipo.mac_votantes.join(', ')}</td>`;
+                    html += `<td><button class="btn btn-danger" onclick="eliminarConfiguracion(${equipo.id})">Eliminar</button></td>`;
+                    html += `</tr>`;
+                });
+                $('#listaEquipos').html(html);
+            },
+            error: function (xhr) {
+                console.error('Error al cargar la lista de equipos:', xhr);
+            }
+        });
+    });
+    });
+
+    function agregarEquipoVotante() {
+        const div = document.createElement('div');
+        div.innerHTML = '<div class="form-group"><label for="mac_votante"><i class="fas fa-user"></i> MAC del Votante:</label> <input type="text" name="mac_votante[]" class="form-control" placeholder="Ingrese la MAC del votante" required></div>'; 
+        document.getElementById('equipos_votantes').appendChild(div);
+    }
+
+    function eliminarConfiguracion(configId) {
+        console.log('ID de configuración:', configId);  // Verificar el ID
+        if (confirm('¿Estás seguro de que deseas eliminar esta configuración?')) {
+            fetch(`/configurar_mesa/eliminar/${configId}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la eliminación');
+                }
+                return response.json();
+            })
+            .then(data => {
+                Swal.fire({
+                    title: 'Éxito',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar'
+                });
+                location.reload();  // Recargar la página para actualizar la lista
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message,
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            });
+        }
+    }
+
+    function cargarMesas(sedeId) {
+        $.ajax({
+            type: 'GET',
+            url: '/mesas/' + sedeId, // Asegúrate de que esta URL sea correcta
+            data: { sede_id: sedeId }, // Pasar el ID de la sede
+            success: function(response) {
+                if (!response.mesas) {
+        console.error('No se encontraron mesas en la respuesta');
+        return;
+    }
+    // Limpiar el select de mesas
+    $('#mesa').empty();
+    $('#mesa').append('<option value="" disabled selected>Selecciona una mesa</option>');
+
+    // Agregar las mesas disponibles al select
+    response.mesas.forEach(function(mesa) {
+        $('#mesa').append(`<option value="${mesa.id}">${mesa.numero}</option>`);
+    });
+            },
+            error: function(xhr) {
+                console.error('Error al cargar las mesas:', xhr);
+            }
+        });
+    }
+</script>
+{% endblock %}
