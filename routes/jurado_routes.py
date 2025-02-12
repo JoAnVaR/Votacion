@@ -6,6 +6,7 @@ import random
 from extensions import db
 from utils.decorators import verificar_acceso_ruta, login_required
 from functools import wraps
+from datetime import datetime
 
 jurado_bp = Blueprint('jurado', __name__)
 
@@ -266,7 +267,7 @@ def sorteo_jurados():
             db.session.commit()
 
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=session['user_id'], action='Sorteo de jurados')
+            activity = UserActivity(user_id=session['user_id'], action='Sorteo de jurados', timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
             
@@ -476,7 +477,7 @@ def reemplazar_jurado(jurado_id, remanente_id, razon):
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento))
+        activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento), timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
         
@@ -558,7 +559,7 @@ def reemplazo_jurados():
                     db.session.commit()
 
                     # Registrar la actividad del usuario
-                    activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento))
+                    activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento), timestamp=datetime.now())
                     db.session.add(activity)
                     db.session.commit()
 
@@ -620,7 +621,7 @@ def reemplazo_jurados():
                     db.session.commit()
 
                     # Registrar la actividad del usuario
-                    activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento))
+                    activity = UserActivity(user_id=session['user_id'], action='Reemplazo de jurado: ' + str(jurado.numero_documento) + ' por ' + str(nuevo_jurado.numero_documento), timestamp=datetime.now())
                     db.session.add(activity)
                     db.session.commit()
 
@@ -646,7 +647,7 @@ def reemplazo_jurados():
                 db.session.commit()
 
                 # Registrar la actividad del usuario
-                activity = UserActivity(user_id=session['user_id'], action='Jurado exonerado: ' + str(jurado.numero_documento))
+                activity = UserActivity(user_id=session['user_id'], action='Jurado exonerado: ' + str(jurado.numero_documento), timestamp=datetime.now())
                 db.session.add(activity)
                 db.session.commit()
 

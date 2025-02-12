@@ -5,6 +5,7 @@ from utils.decorators import verificar_acceso_ruta, login_required
 import io
 import csv
 from sqlalchemy import func
+from datetime import datetime
 
 estudiante_bp = Blueprint('estudiante', __name__)
 
@@ -66,7 +67,7 @@ def registro_estudiante():
             db.session.commit()
 
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=session['user_id'], action='Estudiante registrado: ' + estudiante.numero_documento)
+            activity = UserActivity(user_id=session['user_id'], action='Estudiante registrado: ' + estudiante.numero_documento, timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
             
@@ -185,7 +186,7 @@ def cargar_csv():
                     db.session.commit()
 
                     # Registrar la actividad del usuario
-                    activity = UserActivity(user_id=session['user_id'], action='Estudiante cargados CSV')
+                    activity = UserActivity(user_id=session['user_id'], action='Estudiante cargados CSV', timestamp=datetime.now())
                     db.session.add(activity)
                     db.session.commit()
 
@@ -322,7 +323,7 @@ def eliminar_estudiante():
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Estudiante eliminado: ' + estudiante.numero_documento)
+        activity = UserActivity(user_id=session['user_id'], action='Estudiante eliminado: ' + estudiante.numero_documento, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
         
@@ -353,7 +354,7 @@ def modificar_estudiante():
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Estudiante modificado: ' + estudiante.numero_documento)
+        activity = UserActivity(user_id=session['user_id'], action='Estudiante modificado: ' + estudiante.numero_documento, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
 

@@ -43,9 +43,9 @@ def editar_calendario():
             
             # Actualizar estado automáticamente
             hoy = datetime.now()
-            if hoy > fecha_fin:
+            if hoy > evento.fecha_fin:
                 evento.estado = 'completado'
-            elif hoy >= fecha_inicio and hoy <= fecha_fin:
+            elif hoy >= evento.fecha_inicio and hoy <= evento.fecha_fin:
                 evento.estado = 'en-curso'
             else:
                 evento.estado = 'pendiente'
@@ -75,8 +75,16 @@ def guardar_calendario():
                 if evento:
                     evento.titulo = evento_data['titulo']
                     evento.descripcion = evento_data['descripcion']
-                    evento.fecha_inicio = datetime.strptime(evento_data['fecha_inicio'], '%Y-%m-%d')
-                    evento.fecha_fin = datetime.strptime(evento_data['fecha_fin'], '%Y-%m-%d')
+                    
+                    # Parsear fecha de inicio con hora 00:00:00
+                    fecha_inicio = datetime.strptime(evento_data['fecha_inicio'], '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
+                    
+                    # Parsear fecha de fin con hora 23:59:59
+                    fecha_fin = datetime.strptime(evento_data['fecha_fin_impreso'], '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
+                    
+                    evento.fecha_inicio = fecha_inicio
+                    evento.fecha_fin = fecha_fin
+                    evento.fecha_fin_impreso = fecha_fin
                     
                     # Actualizar estado automáticamente
                     hoy = datetime.now()
@@ -90,7 +98,7 @@ def guardar_calendario():
             db.session.commit()
             
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=session['user_id'], action='Calendario guardado')
+            activity = UserActivity(user_id=session['user_id'], action='Calendario guardado', timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
             
@@ -121,15 +129,20 @@ def finalizar_calendario():
         
         # Actualizar estados de eventos
         eventos = EventoCalendario.query.all()
-        hoy = datetime.now().date()
+        hoy = datetime.now()
         for evento in eventos:
-            if hoy > evento.fecha_fin.date():
+            if hoy > evento.fecha_fin:
                 evento.estado = 'completado'
-            elif hoy >= evento.fecha_inicio.date() and hoy <= evento.fecha_fin.date():
+            elif hoy >= evento.fecha_inicio and hoy <= evento.fecha_fin:
                 evento.estado = 'en-curso'
             else:
                 evento.estado = 'pendiente'
         
+        db.session.commit()
+
+        # Registrar la actividad del usuario
+        activity = UserActivity(user_id=session['user_id'], action='Calendario finalizado', timestamp=datetime.now())
+        db.session.add(activity)
         db.session.commit()
         
         return jsonify({
@@ -173,10 +186,50 @@ def verificar_acceso():
             evento = EventoCalendario.query.filter_by(titulo=actividad).first()
             if evento:
                 ahora = datetime.now()
-                fecha_inicio = evento.fecha_inicio.replace(hour=0, minute=0, second=0)
-                fecha_fin = evento.fecha_fin.replace(hour=23, minute=59, second=59)
+                fecha_inicio = evento.fecha_inicio
+                fecha_fin = evento.fecha_fin
                 return jsonify({
                     'permitido': fecha_inicio <= ahora <= fecha_fin
                 })
     
     return jsonify({'permitido': False})
+
+@calendario_bp.route('/calendario/guardar_fecha_fin', methods=['POST'])
+@login_required
+def guardar_fecha_fin():
+    if request.method == 'POST':
+        try:
+            datos = request.get_json()
+            eventos = datos.get('eventos', [])
+            
+            for evento_data in eventos:
+                evento = EventoCalendario.query.get(evento_data['id'])
+                if evento:
+                    evento.fecha_fin = datetime.now()
+                    # Actualizar estado automáticamente
+                    hoy = datetime.now()
+                    if hoy > evento.fecha_fin:
+                        evento.estado = 'completado'
+                    elif hoy >= evento.fecha_inicio and hoy <= evento.fecha_fin:
+                        evento.estado = 'en-curso'
+                    else:
+                        evento.estado = 'pendiente'
+            
+            db.session.commit()
+            
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='Configuración guardada', timestamp=datetime.now())
+            db.session.add(activity)
+            db.session.commit()
+            
+            return jsonify({'success': True})
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Error al guardar la configuración: {str(e)}')
+            return jsonify({
+                'success': False,
+                'message': str(e)
+            }), 500
+
+    return jsonify({'success': False, 'message': 'Método no permitido'}), 405

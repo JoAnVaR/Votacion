@@ -3,6 +3,7 @@ from models import db, AsignacionTestigo, Sede, Mesa, Candidato, UserActivity
 import csv
 import io
 from utils.decorators import verificar_acceso_ruta, login_required
+from datetime import datetime
 
 testigo_bp = Blueprint('testigo', __name__)
 
@@ -36,7 +37,7 @@ def registro_testigo():
                 db.session.commit()
                 
                 # Registrar la actividad del usuario
-                activity = UserActivity(user_id=session['user_id'], action='Testigo agregado: ' + str(testigo.numero_documento))
+                activity = UserActivity(user_id=session['user_id'], action='Testigo agregado: ' + str(testigo.numero_documento), timestamp=datetime.now())
                 db.session.add(activity)
                 db.session.commit()
 
@@ -74,7 +75,7 @@ def registro_testigo():
                 db.session.commit()
                 
                 # Registrar la actividad del usuario
-                activity = UserActivity(user_id=session['user_id'], action='Testigo agregado: ' + str(testigo.numero_documento))
+                activity = UserActivity(user_id=session['user_id'], action='Testigo agregado: ' + str(testigo.numero_documento), timestamp=datetime.now())
                 db.session.add(activity)
                 db.session.commit()
                 
@@ -246,7 +247,7 @@ def eliminar_testigo(numero_documento):
         db.session.commit()
         
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Testigo eliminado: ' + numero_documento)
+        activity = UserActivity(user_id=session['user_id'], action='Testigo eliminado: ' + numero_documento, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
 

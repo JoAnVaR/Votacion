@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 import os
 from routes.calendario_routes import verificar_acceso
 from utils.decorators import verificar_acceso_ruta, login_required
+from datetime import datetime
 
 candidato_bp = Blueprint('candidato', __name__)
 
@@ -49,7 +50,7 @@ def registro_candidato():
                 db.session.commit()
                 
                 # Registrar la actividad del usuario
-                activity = UserActivity(user_id=session['user_id'], action='Candidato registrado: ' + nuevo_candidato.nombre)
+                activity = UserActivity(user_id=session['user_id'], action='Candidato registrado: ' + nuevo_candidato.nombre, timestamp=datetime.now())
                 db.session.add(activity)
                 db.session.commit()
                 
@@ -100,7 +101,7 @@ def eliminar_candidato(id):
             db.session.commit()
 
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=session['user_id'], action='Candidato eliminado: ' + candidato.numero_documento)
+            activity = UserActivity(user_id=session['user_id'], action='Candidato eliminado: ' + candidato.numero_documento, timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
             

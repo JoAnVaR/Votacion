@@ -4,6 +4,7 @@ from utils.decorators import verificar_acceso_ruta, login_required
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, session
 from models import Sede, Mesa, Estudiante, UserActivity
 from extensions import db
+from datetime import datetime
 
 # Agregar el directorio raíz al PYTHONPATH
 root_path = str(Path(__file__).parent.parent)
@@ -31,7 +32,7 @@ def agregar_sede(bloqueado=False):
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Sede agregada: ' + nueva_sede.nombre)
+        activity = UserActivity(user_id=session['user_id'], action='Sede agregada: ' + nueva_sede.nombre, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
 
@@ -86,7 +87,7 @@ def agregar_mesas():
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Mesa agregada: ' + str(nueva_mesa.mesa_numero))
+        activity = UserActivity(user_id=session['user_id'], action='Mesa agregada: ' + str(nueva_mesa.mesa_numero), timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
         
@@ -164,7 +165,7 @@ def borrar_mesa(mesa_id):
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Mesa eliminada: ' + str(mesa.mesa_numero))
+        activity = UserActivity(user_id=session['user_id'], action='Mesa eliminada: ' + str(mesa.mesa_numero), timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit() 
 
@@ -238,7 +239,7 @@ def borrar_sede(sede_id):
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Sede eliminada: ' + sede.nombre)
+        activity = UserActivity(user_id=session['user_id'], action='Sede eliminada: ' + sede.nombre, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
         

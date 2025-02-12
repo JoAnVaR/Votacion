@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from extensions import db
 from models import User, UserActivity
 from utils.decorators import  login_required
+from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -18,7 +19,7 @@ def login():
             flash('Ingreso exitoso', 'success')
             
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=user.id, action='Inicio de sesión')
+            activity = UserActivity(user_id=user.id, action='Inicio de sesión', timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
             
@@ -44,12 +45,10 @@ def add_user():
             db.session.add(new_user)
             db.session.commit()
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=new_user.id, action='Usuario agregado: ' + username)
+            activity = UserActivity(user_id=new_user.id, action='Usuario agregado: ' + username, timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
-            activity = UserActivity(user_id=session['user_id'], action='Usuario agregado: ' + username)
-            db.session.add(activity)
-            db.session.commit()
+
             flash('Usuario agregado exitosamente', 'success')
             return redirect(url_for('auth.list_users'))  # Redirigir a la lista de usuarios
     return render_template('add_user.html')  # Pasar la lista de usuarios
@@ -113,7 +112,7 @@ def delete_user():
         db.session.delete(user)
         db.session.commit()
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Usuario eliminado: ' + username_to_delete)
+        activity = UserActivity(user_id=session['user_id'], action='Usuario eliminado: ' + username_to_delete, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
         flash('Usuario eliminado exitosamente.', 'success')

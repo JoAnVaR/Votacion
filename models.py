@@ -199,7 +199,8 @@ class EventoCalendario(db.Model):
     fase = db.Column(db.Integer, nullable=False)
     titulo = db.Column(db.String(200), nullable=False)
     fecha_inicio = db.Column(db.DateTime, nullable=False)
-    fecha_fin = db.Column(db.DateTime, nullable=False)
+    fecha_fin = db.Column(db.DateTime, nullable=True)
+    fecha_fin_impreso = db.Column(db.DateTime, nullable=True)
     descripcion = db.Column(db.Text, nullable=True)
     estado = db.Column(db.String(20), default='pendiente')
     orden = db.Column(db.Integer, nullable=False)
@@ -241,8 +242,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Registro de las sedes educativas participantes y configuración de mesas de votación',
                 'fase': 1,
                 'orden': 1,
-                'fecha_inicio': fecha_base,
-                'fecha_fin': fecha_base + timedelta(days=2),
+                'fecha_inicio': fecha_base.replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=2)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': fecha_base + timedelta(days=2),
                 'estado': 'pendiente'
             },
             {
@@ -250,8 +252,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Registro de estudiantes habilitados para votar en el proceso electoral',
                 'fase': 1,
                 'orden': 2,
-                'fecha_inicio': fecha_base + timedelta(days=3),
-                'fecha_fin': fecha_base + timedelta(days=5),
+                'fecha_inicio': (fecha_base + timedelta(days=3)).replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=5)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': fecha_base + timedelta(days=5),
                 'estado': 'pendiente'
             },
             {
@@ -259,8 +262,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Registro de profesores que actuarán como jurados de votación',
                 'fase': 1,
                 'orden': 3,
-                'fecha_inicio': fecha_base + timedelta(days=6),
-                'fecha_fin': fecha_base + timedelta(days=8),
+                'fecha_inicio': (fecha_base + timedelta(days=6)).replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=8)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': fecha_base + timedelta(days=8),
                 'estado': 'pendiente'
             },
             {
@@ -268,8 +272,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Asignación de estudiantes a mesas de votación según sede y grado',
                 'fase': 1,
                 'orden': 4,
-                'fecha_inicio': fecha_base + timedelta(days=9),
-                'fecha_fin': fecha_base + timedelta(days=11),
+                'fecha_inicio': (fecha_base + timedelta(days=9)).replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=11)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': fecha_base + timedelta(days=11),
                 'estado': 'pendiente'
             },
             {
@@ -277,8 +282,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Registro de estudiantes candidatos a personería estudiantil',
                 'fase': 2,
                 'orden': 1,
-                'fecha_inicio': fecha_base + timedelta(days=15),
-                'fecha_fin': fecha_base + timedelta(days=17),
+                'fecha_inicio': (fecha_base + timedelta(days=15)).replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=17)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': fecha_base + timedelta(days=17),
                 'estado': 'pendiente'
             },
             {
@@ -286,8 +292,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Asignación de profesores como jurados en las mesas de votación',
                 'fase': 2,
                 'orden': 2,
-                'fecha_inicio': fecha_base + timedelta(days=12),
-                'fecha_fin': fecha_base + timedelta(days=14),
+                'fecha_inicio': (fecha_base + timedelta(days=12)).replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=14)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': fecha_base + timedelta(days=14),
                 'estado': 'pendiente'
             },
             {
@@ -295,8 +302,9 @@ class EventoCalendario(db.Model):
             'descripcion': 'Proceso de sustitución de jurados que presentan impedimentos justificados para ejercer su función durante la jornada electoral. Incluye el registro de la razón del reemplazo y la asignación del nuevo jurado.',
             'fase': 2,
             'orden': 3,
-            'fecha_inicio': fecha_base + timedelta(days=13),
-            'fecha_fin': fecha_base + timedelta(days=16),
+            'fecha_inicio': (fecha_base + timedelta(days=13)).replace(hour=0, minute=0, second=0, microsecond=0),
+            'fecha_fin': (fecha_base + timedelta(days=16)).replace(hour=23, minute=59, second=59, microsecond=999999),
+            'fecha_fin_impreso': (fecha_base + timedelta(days=16)), 
             'estado': 'pendiente'
         },
         {
@@ -304,8 +312,9 @@ class EventoCalendario(db.Model):
             'descripcion': 'Registro de estudiantes candidatos a personería estudiantil',
             'fase': 2,
             'orden': 4,
-            'fecha_inicio': fecha_base + timedelta(days=15),
-            'fecha_fin': fecha_base + timedelta(days=17),
+            'fecha_inicio': (fecha_base + timedelta(days=15)).replace(hour=0, minute=0, second=0, microsecond=0),
+            'fecha_fin': (fecha_base + timedelta(days=17)).replace(hour=23, minute=59, second=59, microsecond=999999),
+            'fecha_fin_impreso': (fecha_base + timedelta(days=17)),
             'estado': 'pendiente'
         },
             {
@@ -313,8 +322,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Inscripción de testigos para garantizar la transparencia del proceso electoral',
                 'fase': 2,
                 'orden': 5,
-                'fecha_inicio': fecha_base + timedelta(days=18),
-                'fecha_fin': fecha_base + timedelta(days=19),
+                'fecha_inicio': (fecha_base + timedelta(days=18)).replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=19)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': (fecha_base + timedelta(days=19)),
                 'estado': 'pendiente'
             },
             {
@@ -322,8 +332,9 @@ class EventoCalendario(db.Model):
                 'descripcion': 'Proceso de votación electrónica para la elección del personero estudiantil',
                 'fase': 3,
                 'orden': 1,
-                'fecha_inicio': fecha_base + timedelta(days=20),
-                'fecha_fin': fecha_base + timedelta(days=21),
+                'fecha_inicio': (fecha_base + timedelta(days=20)).replace(hour=0, minute=0, second=0, microsecond=0),
+                'fecha_fin': (fecha_base + timedelta(days=21)).replace(hour=23, minute=59, second=59, microsecond=999999),
+                'fecha_fin_impreso': (fecha_base + timedelta(days=21)),
                 'estado': 'pendiente'
             }
         ]

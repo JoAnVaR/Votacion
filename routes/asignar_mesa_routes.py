@@ -4,6 +4,7 @@ from sqlalchemy import text
 from extensions import db
 from utils.decorators import verificar_acceso_ruta, login_required
 from sqlalchemy.sql import exists, and_
+from datetime import datetime
 
 asignar_mesa_bp = Blueprint('asignar_mesa', __name__)
 
@@ -52,7 +53,7 @@ def asignar_mesas():
             db.session.commit()
 
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=session['user_id'], action='Mesa asignada: ' + mesa_numero)
+            activity = UserActivity(user_id=session['user_id'], action='Mesa asignada: ' + mesa_numero, timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
 
@@ -193,7 +194,7 @@ def eliminar_asignacion(id):
         if user:
             username_to_delete = f"{grado} - {seccion}"
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=user.id, action='Asignación de mesa eliminada: ' + username_to_delete)
+            activity = UserActivity(user_id=user.id, action='Asignación de mesa eliminada: ' + username_to_delete, timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
         

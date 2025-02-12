@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, jsonify
-from models import Sede, Mesa, ConfiguracionMesa, db  # Asegúrate de que estos modelos existan
+from flask import Blueprint, render_template, request, jsonify, session
+from models import Sede, Mesa, ConfiguracionMesa, db, UserActivity  # Asegúrate de que estos modelos existan
+from datetime import datetime
 
 config_mesas_bp = Blueprint('config_mesas', __name__)
 
@@ -48,6 +49,11 @@ def configurar_mesa():
                 mac_votantes=mac_votantes
             )
             db.session.add(nueva_configuracion)
+            db.session.commit()
+
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='configurar_mesa' + str(mesa_id), timestamp=datetime.now())
+            db.session.add(activity)
             db.session.commit()
 
             return jsonify({'message': 'Configuración guardada exitosamente.'}), 200
@@ -116,6 +122,11 @@ def eliminar_configuracion(config_id):
             db.session.delete(configuracion)
             db.session.commit()
             return jsonify({'message': 'Configuración eliminada exitosamente.'}), 200
+
+            # Registrar la actividad del usuario
+            activity = UserActivity(user_id=session['user_id'], action='eliminar_configuracion' + str(config_id), timestamp=datetime.now())
+            db.session.add(activity)
+            db.session.commit() 
         else:
             return jsonify({'error': 'Configuración no encontrada.'}), 404
     except Exception as e:

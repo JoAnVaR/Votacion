@@ -6,6 +6,9 @@
 <div class="container mt-4">
     <header class="text-center py-4" style="border-radius: 6px 6px 0 0;" class="fas fa-user-graduate">
         <h1>Registro de Estudiantes</h1>
+        <button type="button" class="btn btn-lg btn-success ml-3" id="btnFinalizarConfiguracion">
+            <i class="fas fa-lock"></i> Completar Configuración
+        </button>
     </header>
 
     <div class="mt-5">
@@ -373,6 +376,52 @@
                 });
             }, false);
         })();
+
+        $('#btnFinalizarConfiguracion').click(function () {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Una vez finalizado, no podrás modificar los estudiantes",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, finalizar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Primero guardamos los cambios
+                    const eventos = [];
+                    eventos.push({
+                        id: 2  // ID del evento de registro de estudiantes
+                    });
+
+                    // Guardar primero
+                    $.ajax({
+                        url: "{{ url_for('calendario.guardar_fecha_fin') }}",
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ eventos: eventos }),
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: '¡Finalizado!',
+                                    text: 'La configuración de estudiantes ha sido finalizada exitosamente',
+                                    icon: 'success',
+                                    confirmButtonText: 'Aceptar'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', response.message || 'Error al guardar los cambios', 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'Hubo un problema al guardar los cambios', 'error');
+                        }
+                    });
+                }
+            });
+        });
     </script>
 </div>
 {% endblock %}

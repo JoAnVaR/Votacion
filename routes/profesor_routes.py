@@ -4,6 +4,7 @@ import csv
 import io
 from extensions import db
 from utils.decorators import verificar_acceso_ruta, login_required
+from datetime import datetime
 
 
 profesor_bp = Blueprint('profesor', __name__)
@@ -153,7 +154,7 @@ def registro_profesor():
                 db.session.commit()
 
                 # Registrar la actividad del usuario
-                activity = UserActivity(user_id=session['user_id'], action='Profesor registrado: ' + nuevo_profesor.numero_documento)
+                activity = UserActivity(user_id=session['user_id'], action='Profesor registrado: ' + nuevo_profesor.numero_documento, timestamp=datetime.now())
                 db.session.add(activity)
                 db.session.commit()
 
@@ -205,7 +206,7 @@ def eliminar_profesor(id):
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Profesor eliminado: ' + profesor.numero_documento)
+        activity = UserActivity(user_id=session['user_id'], action='Profesor eliminado: ' + profesor.numero_documento, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
 
@@ -247,7 +248,7 @@ def modificar_profesor(id):
             db.session.commit()
 
             # Registrar la actividad del usuario
-            activity = UserActivity(user_id=session['user_id'], action='Profesor modificado: ' + profesor.numero_documento)
+            activity = UserActivity(user_id=session['user_id'], action='Profesor modificado: ' + profesor.numero_documento, timestamp=datetime.now())
             db.session.add(activity)
             db.session.commit()
 
@@ -363,7 +364,7 @@ def actualizar_profesor():
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Profesor modificado: ' + profesor.numero_documento)
+        activity = UserActivity(user_id=session['user_id'], action='Profesor modificado: ' + profesor.numero_documento, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
 
@@ -386,7 +387,7 @@ def borrar_profesor():
         db.session.commit()
 
         # Registrar la actividad del usuario
-        activity = UserActivity(user_id=session['user_id'], action='Profesor eliminado: ' + profesor.numero_documento)
+        activity = UserActivity(user_id=session['user_id'], action='Profesor eliminado: ' + profesor.numero_documento, timestamp=datetime.now())
         db.session.add(activity)
         db.session.commit()
 

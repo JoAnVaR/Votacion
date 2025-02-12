@@ -32,13 +32,14 @@
 
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered">
+                        <table class="table table-bordered table-calendar">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th width="40%">Actividad</th>
+                                    <th width="20%">Actividad</th>
                                     <th width="20%">Fecha Inicio</th>
                                     <th width="20%">Fecha Fin</th>
                                     <th width="20%">Estado</th>
+                                    <th width="20%">Fecha de Finalización</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -49,7 +50,7 @@
                                             name="titulo_{{ evento.id }}" value="{{ evento.titulo }}" {% if
                                             sistema_bloqueado %}readonly{% endif %}>
                                         <textarea class="form-control-plaintext evento-descripcion"
-                                            name="descripcion_{{ evento.id }}" rows="2" {% if sistema_bloqueado
+                                            name="descripcion_{{ evento.id }}" rows="1" {% if sistema_bloqueado
                                             %}readonly{% endif %}>{{ evento.descripcion }}</textarea>
                                     </td>
                                     <td>
@@ -60,27 +61,44 @@
                                     </td>
                                     <td>
                                         <input type="date" class="form-control-plaintext evento-fecha"
-                                            name="fecha_fin_{{ evento.id }}"
-                                            value="{{ evento.fecha_fin.strftime('%Y-%m-%d') }}" {% if sistema_bloqueado
+                                            name="fecha_fin_impreso_{{ evento.id }}"
+                                            value="{{ evento.fecha_fin_impreso.strftime('%Y-%m-%d') }}" {% if sistema_bloqueado
                                             %}readonly{% endif %}>
                                     </td>
                                     <td>
                                         {% set hoy = now() %}
                                         {% if sistema_bloqueado %}
-                                        {% if hoy.date() > evento.fecha_fin.date() %}
+                                        {% if hoy > evento.fecha_fin %}
                                         <span class="badge badge-completado">Completado</span>
-                                        {% elif hoy.date() >= evento.fecha_inicio.date() and hoy.date() <=
-                                            evento.fecha_fin.date() %} <span class="badge badge-en-curso">En
-                                            Curso</span>
-                                            {% set sistema_bloqueado = false %}
-                                            {% else %}
-                                            <span class="badge badge-pendiente">Pendiente</span>
-                                            {% endif %}
-                                            {% else %}
-                                            <span class="badge badge-{{ evento.estado }}">
-                                                {{ evento.estado|title }}
-                                            </span>
-                                            {% endif %}
+                                        {% set mostrar_fechas = true %}
+                                        {% elif hoy >= evento.fecha_inicio and hoy <= evento.fecha_fin %}
+                                        <span class="badge badge-en-curso">En Curso</span>
+                                        {% set sistema_bloqueado = false %}
+                                        {% set mostrar_fechas = false %}
+                                        {% else %}
+                                        <span class="badge badge-pendiente">Pendiente</span>
+                                        {% set mostrar_fechas = false %}
+                                        {% endif %}
+                                        {% else %}
+                                        {% if evento.estado == 'Completado' %}
+                                        <span class="badge badge-completado">Completado</span>
+                                        {% set mostrar_fechas = true %}
+                                        {% elif evento.estado == 'En Curso' %}
+                                        <span class="badge badge-en-curso">En Curso</span>
+                                        {% set mostrar_fechas = false %}
+                                        {% else %}
+                                        <span class="badge badge-pendiente">Pendiente</span>
+                                        {% set mostrar_fechas = false %}
+                                        {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if mostrar_fechas %}
+                                        <input type="date" class="form-control-plaintext evento-fecha"
+                                            name="fecha_fin_{{ evento.id }}"
+                                            value="{{ evento.fecha_fin.strftime('%Y-%m-%d') }}" {% if sistema_bloqueado
+                                            %}readonly{% endif %} disabled>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -141,7 +159,8 @@
                                 titulo: $(this).find('.evento-titulo').val(),
                                 descripcion: $(this).find('.evento-descripcion').val(),
                                 fecha_inicio: $(this).find('.evento-fecha[name^="fecha_inicio"]').val(),
-                                fecha_fin: $(this).find('.evento-fecha[name^="fecha_fin"]').val()
+                                fecha_fin: $(this).find('.evento-fecha[name^="fecha_fin_impreso"]').val(),
+                                fecha_fin_impreso: $(this).find('.evento-fecha[name^="fecha_fin_impreso"]').val()
                             });
                         });
                     });
@@ -200,7 +219,8 @@
                         titulo: $(this).find('.evento-titulo').val(),
                         descripcion: $(this).find('.evento-descripcion').val(),
                         fecha_inicio: $(this).find('.evento-fecha[name^="fecha_inicio"]').val(),
-                        fecha_fin: $(this).find('.evento-fecha[name^="fecha_fin"]').val()
+                        fecha_fin: $(this).find('.evento-fecha[name^="fecha_fin_impreso"]').val(),
+                        fecha_fin_impreso: $(this).find('.evento-fecha[name^="fecha_fin_impreso"]').val()
                     });
                 });
             });
@@ -229,6 +249,19 @@
             });
         });
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const textareas = document.querySelectorAll('.evento-descripcion');
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            // Ajustar altura inicial
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        });
+    });
 </script>
 {% endblock %}
 
@@ -253,8 +286,11 @@
     }
 
     .evento-descripcion {
-        font-size: 0.875rem;
-        color: #6c757d;
+        width: 100%;
+        resize: none;
+        overflow: hidden;
+        min-height: 50px;
+        height: auto;
     }
 
     .badge {
@@ -279,6 +315,20 @@
     .table th {
         background-color: #004884;
         color: white;
+    }
+
+    .table-calendar {
+        table-layout: fixed;
+        width: 100%;
+    }
+    .table-calendar > thead > tr > th:nth-child(1) {
+        width: 40% !important;
+    }
+    .table-calendar > thead > tr > th:nth-child(2),
+    .table-calendar > thead > tr > th:nth-child(3),
+    .table-calendar > thead > tr > th:nth-child(4),
+    .table-calendar > thead > tr > th:nth-child(5) {
+        width: 15% !important;
     }
 
     #btnGuardarTodo {
